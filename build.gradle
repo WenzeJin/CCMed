@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wenzejin'
-version = '1.0-SNAPSHOT'
+version = '0.1.0'
 mainClassName = 'com.wenzejin.Main'
 
 repositories {
@@ -14,6 +14,10 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // 添加 JAXB 依赖
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
 }
 
 test {
