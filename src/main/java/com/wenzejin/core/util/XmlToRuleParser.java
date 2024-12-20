@@ -110,22 +110,24 @@ public class XmlToRuleParser {
         String pattern = ((Element) quantifierNode).getAttribute("in");
 
         // get child formula
-        Formula formula = parseFormula(((Element) quantifierNode).getElementsByTagName("*").item(0));
+        Formula formula = parseFormula(getDirectChildElements((Element) quantifierNode).item(0));
 
         return new OpQuantifier(opType, var, pattern, formula);
     }
 
     private OpConnector parseOpConnector(Node connectorNode, OpConnector.Op opType) {
-        NodeList childNodes = connectorNode.getChildNodes();
         Formula left = null;
         Formula right = null;
 
-        NodeList elements = ((Element) connectorNode).getElementsByTagName("*");
+        NodeList elements = getDirectChildElements((Element) connectorNode);
+
+        int length = elements.getLength();
+
         // get left and right
-        if (childNodes.getLength() > 0) {
+        if (length > 0) {
             left = parseFormula(elements.item(0));
         }
-        if (childNodes.getLength() > 1) {
+        if (length > 1) {
             right = parseFormula(elements.item(1));
         }
 
@@ -133,23 +135,49 @@ public class XmlToRuleParser {
     }
 
     private OpNot parseOpNot(Node notNode) {
-        Formula formula = parseFormula(((Element) notNode).getElementsByTagName("*").item(0));
+        Formula formula = parseFormula(getDirectChildElements((Element) notNode).item(0));
         return new OpNot(formula);
     }
 
     private LiteralBfunc parseLiteralBfunc(Node bfuncNode) {
-        List<LiteralBfunc.Param> params = new ArrayList<>();
+        String name = ((Element) bfuncNode).getAttribute("name");
         NodeList paramNodes = ((Element) bfuncNode).getElementsByTagName("param");
+        LiteralBfunc bfunc = new LiteralBfunc(name, new ArrayList<>());
 
         for (int i = 0; i < paramNodes.getLength(); i++) {
             Element paramElement = (Element) paramNodes.item(i);
             String pos = paramElement.getAttribute("pos");
             String var = paramElement.getAttribute("var");
             String field = paramElement.getAttribute("field");
-
-            params.add(new LiteralBfunc.Param(pos, var, field));
+            bfunc.addParam(pos, var, field);
         }
 
-        return new LiteralBfunc(params);
+        return bfunc;
+    }
+
+    private static NodeList getDirectChildElements(Element element) {
+        NodeList allChildNodes = element.getChildNodes();
+        // 使用一个 ArrayList 来收集直接子元素
+        List<Element> directChildren = new ArrayList<>();
+
+        for (int i = 0; i < allChildNodes.getLength(); i++) {
+            Node node = allChildNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                directChildren.add((Element) node);
+            }
+        }
+
+        // 将结果转换为 NodeList 返回
+        return new NodeList() {
+            @Override
+            public int getLength() {
+                return directChildren.size();
+            }
+
+            @Override
+            public Node item(int index) {
+                return directChildren.get(index);
+            }
+        };
     }
 }

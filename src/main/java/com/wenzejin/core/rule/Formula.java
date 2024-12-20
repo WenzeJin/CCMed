@@ -1,7 +1,13 @@
 package com.wenzejin.core.rule;
 
-public interface Formula {
-    // 这里保持抽象类的定义
+public interface Formula extends Cloneable {
 
-    public boolean isValid();
+    boolean isValid();
+
+    String getNodeType();
+
+    String toXmlString();
+
+    Formula clone();
+
 }
