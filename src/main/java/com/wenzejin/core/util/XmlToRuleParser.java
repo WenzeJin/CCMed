@@ -4,7 +4,6 @@ import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.rule.*;
 import org.w3c.dom.*;
 
-import javax.lang.model.util.Elements;
 import javax.xml.parsers.*;
 import java.io.*;
 import java.nio.file.Files;

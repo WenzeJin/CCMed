@@ -1,6 +1,9 @@
 package com.wenzejin.core.rule;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class OpNot implements Formula {
     public Formula formula;
@@ -25,6 +28,36 @@ public class OpNot implements Formula {
         return "<not>\n"
                 + formula.toXmlString()
                 + "</not>\n";
+    }
+
+    @Override
+    public void rebindPatterns(Map<String, String> patternMap) {
+        if (formula != null) {
+            formula.rebindPatterns(patternMap);
+        }
+    }
+
+    @Override
+    public Set<String> collectPatterns() {
+        if (formula != null) {
+            return formula.collectPatterns();
+        }
+        return new HashSet<>();
+    }
+
+    @Override
+    public void rebindBfuncs(Map<String, String> bfuncMap) {
+        if (formula != null) {
+            formula.rebindBfuncs(bfuncMap);
+        }
+    }
+
+    @Override
+    public Set<LiteralBfunc> collectBfuncs() {
+        if (formula != null) {
+            return formula.collectBfuncs();
+        }
+        return new HashSet<>();
     }
 
     @Override
@@ -53,5 +86,10 @@ public class OpNot implements Formula {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Cloning not supported for OpNot class", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "not (" + formula + ")";
     }
 }

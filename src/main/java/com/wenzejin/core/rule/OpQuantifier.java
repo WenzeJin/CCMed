@@ -1,6 +1,9 @@
 package com.wenzejin.core.rule;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class OpQuantifier implements Formula {
     public enum Op {
@@ -43,6 +46,41 @@ public class OpQuantifier implements Formula {
     }
 
     @Override
+    public void rebindPatterns(Map<String, String> patternMap) {
+        if (formula != null) {
+            formula.rebindPatterns(patternMap);
+        }
+        if (patternMap.containsKey(pattern)) {
+            pattern = patternMap.get(pattern);
+        }
+    }
+
+    @Override
+    public Set<String> collectPatterns() {
+        Set<String> patterns = new HashSet<>();
+        if (formula != null) {
+            patterns.addAll(formula.collectPatterns());
+        }
+        patterns.add(pattern);
+        return patterns;
+    }
+
+    @Override
+    public void rebindBfuncs(Map<String, String> bfuncMap) {
+        if (formula != null) {
+            formula.rebindBfuncs(bfuncMap);
+        }
+    }
+
+    @Override
+    public Set<LiteralBfunc> collectBfuncs() {
+        if (formula != null) {
+            return formula.collectBfuncs();
+        }
+        return new HashSet<>();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -71,5 +109,10 @@ public class OpQuantifier implements Formula {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Cloning not supported for OpQuantifier class", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return getNodeType() + " " + var + " in " + pattern + " (" + formula + ")";
     }
 }

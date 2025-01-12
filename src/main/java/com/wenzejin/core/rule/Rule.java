@@ -5,7 +5,9 @@
 package com.wenzejin.core.rule;
 
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class Rule implements Cloneable {
     public String id;
@@ -26,6 +28,36 @@ public class Rule implements Cloneable {
             + "<id>" + id + "</id>\n"
             + "<formula>\n" + formula.toXmlString() + "</formula>\n"
             + "</rule>\n";
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void rebindPatterns(Map<String, String> patternMap) {
+        if (formula != null) {
+            formula.rebindPatterns(patternMap);
+        }
+    }
+
+    public void rebindBfuncs(Map<String, String> bfuncMap) {
+        if (formula != null) {
+            formula.rebindBfuncs(bfuncMap);
+        }
+    }
+
+    public Set<String> collectPatterns() {
+        if (formula != null) {
+            return formula.collectPatterns();
+        }
+        return Set.of();
+    }
+
+    public Set<LiteralBfunc> collectBfuncs() {
+        if (formula != null) {
+            return formula.collectBfuncs();
+        }
+        return Set.of();
     }
 
     @Override
@@ -56,5 +88,10 @@ public class Rule implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Cloning not supported for Rule class", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return id + " : " + formula;
     }
 }

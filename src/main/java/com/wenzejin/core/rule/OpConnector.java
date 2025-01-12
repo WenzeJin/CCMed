@@ -1,6 +1,9 @@
 package com.wenzejin.core.rule;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class OpConnector implements Formula {
     public enum Op {
@@ -44,6 +47,50 @@ public class OpConnector implements Formula {
     }
 
     @Override
+    public void rebindPatterns(Map<String, String> patternMap) {
+        if (left != null) {
+            left.rebindPatterns(patternMap);
+        }
+        if (right != null) {
+            right.rebindPatterns(patternMap);
+        }
+    }
+
+    @Override
+    public Set<String> collectPatterns() {
+        Set<String> patternSet = new HashSet<>();
+        if (left != null) {
+            patternSet.addAll(left.collectPatterns());
+        }
+        if (right != null) {
+            patternSet.addAll(right.collectPatterns());
+        }
+        return patternSet;
+    }
+
+    @Override
+    public void rebindBfuncs(Map<String, String> bfuncMap) {
+        if (left != null) {
+            left.rebindBfuncs(bfuncMap);
+        }
+        if (right != null) {
+            right.rebindBfuncs(bfuncMap);
+        }
+    }
+
+    @Override
+    public Set<LiteralBfunc> collectBfuncs(){
+        Set<LiteralBfunc> bfuncSet = new HashSet<>();
+        if (left != null) {
+            bfuncSet.addAll(left.collectBfuncs());
+        }
+        if (right != null) {
+            bfuncSet.addAll(right.collectBfuncs());
+        }
+        return bfuncSet;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -73,5 +120,10 @@ public class OpConnector implements Formula {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Cloning not supported for OpConnector class", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "(" + left + ") " + getNodeType() + " (" + right + ")";
     }
 }

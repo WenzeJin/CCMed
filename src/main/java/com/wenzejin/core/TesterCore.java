@@ -13,13 +13,16 @@
  *      This step will also be performed by FollowExecutor.
  *      Analyse results of follow-up test cases, with `MR` class.
  *      If assertion failed, save records in TestCase. If interrupt-when-failed enabled, stop testing.
- * 5. Analyse result and generate report.       -> report. (Optional: human-readable)
+ * 5. Analyse result and generate report.       -> report.
  * Author: Wenze Jin
  */
 
 package com.wenzejin.core;
 
 public class TesterCore {
+
+    // Configurations
+
 
     public TesterCore() {
 

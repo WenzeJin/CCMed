@@ -3,7 +3,7 @@ package com.wenzejin.core.rule;
 import java.util.*;
 
 public class LiteralBfunc implements Formula{
-    public static class Param implements Cloneable{
+    public static class Param implements Cloneable, Comparable<Param> {
         public String pos;
         public String var;
         public String field;
@@ -12,6 +12,12 @@ public class LiteralBfunc implements Formula{
             this.pos = pos;
             this.var = var;
             this.field = field;
+        }
+
+        public void rebindPattern(Map<String, String> patternMap) {
+            if (patternMap.containsKey(var)) {
+                var = patternMap.get(var);
+            }
         }
 
         public String toXmlString() {
@@ -37,6 +43,15 @@ public class LiteralBfunc implements Formula{
                 return (Param) super.clone();
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError("Cloning not supported for Param class", e);
+            }
+        }
+
+        @Override
+        public int compareTo(Param o) {
+            try {
+                return Integer.parseInt(pos) - Integer.parseInt(((Param) o).pos);
+            } catch (NumberFormatException e) {
+                return pos.compareTo(((Param) o).pos);
             }
         }
     }
@@ -80,6 +95,32 @@ public class LiteralBfunc implements Formula{
     }
 
     @Override
+    public void rebindPatterns(Map<String, String> patternMap) {
+        for (Param param : params) {
+            param.rebindPattern(patternMap);
+        }
+    }
+
+    @Override
+    public Set<String> collectPatterns() {
+        return new HashSet<>();
+    }
+
+    @Override
+    public void rebindBfuncs(Map<String, String> bfuncMap) {
+        if (bfuncMap.containsKey(name)) {
+            name = bfuncMap.get(name);
+        }
+    }
+
+    @Override
+    public Set<LiteralBfunc> collectBfuncs() {
+        Set<LiteralBfunc> bfuncs = new HashSet<>();
+        bfuncs.add(this);
+        return bfuncs;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -112,5 +153,22 @@ public class LiteralBfunc implements Formula{
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("Cloning not supported for LiteralBfunc class", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        List<Param> tempParams = new ArrayList<>(params);
+        tempParams.sort(Param::compareTo);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(name + "(");
+        for (Param param: tempParams) {
+            sb.append(param.var);
+            sb.append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(")");
+
+        return sb.toString();
     }
 }
