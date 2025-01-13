@@ -129,7 +129,7 @@ public class Preprocessor {
         List<String> bfuncNames = new ArrayList<>();
         for (LiteralBfunc bfunc : bfuncs) {
             int paramNum = bfunc.params.size();
-            
+
             bfuncNames.add(bfunc.name);
             String newNamePrefix = rule_id + "_" + bfunc.name;
             var bfuncList = Bfunc.enumerateBinaryBfunc(newNamePrefix, paramNum);
