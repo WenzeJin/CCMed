@@ -1,22 +1,21 @@
 package com.wenzejin.core.worker;
 
+import com.wenzejin.core.result.Link;
+import com.wenzejin.core.result.Result;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
+import com.wenzejin.core.rule.Rule;
 import com.wenzejin.core.util.TestCase;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class InfuseWorker implements TestWorker{
 
@@ -24,6 +23,7 @@ public class InfuseWorker implements TestWorker{
     private final String workspaceRoot;
     private final String jarTargetPath;
     private final String bfuncClassPath;
+    private final List<String> arguments;
 
     // UUID
     private final UUID uuid;
@@ -34,12 +34,25 @@ public class InfuseWorker implements TestWorker{
     private Path copiedJar;
     private Path copiedBfuncClass;
 
+    // 匹配 context 的名字和它其中我们关心的 data 字段的值
+    private final Map<Integer, String> contextMap;
 
-    public InfuseWorker(String workspaceRoot, String jarTargetPath, String bfuncClassPath) {
+    public InfuseWorker(String workspaceRoot, String jarTargetPath, String bfuncClassPath, List<String> args) {
         this.workspaceRoot = workspaceRoot;
         this.jarTargetPath = jarTargetPath;
         this.bfuncClassPath = bfuncClassPath;
+        arguments = args;
         uuid = UUID.randomUUID();
+        contextMap = new HashMap<>();
+    }
+
+    public InfuseWorker(Map<String, Object> args) {
+        workspaceRoot = (String) args.get("infuse.workspace-root");
+        jarTargetPath = (String) args.get("infuse.jar-target-path");
+        bfuncClassPath = (String) args.get("infuse.bfunc-class-path");
+        arguments = (List<String>) args.get("infuse.arguments");
+        uuid = UUID.randomUUID();
+        contextMap = new HashMap<>();
     }
 
 
@@ -117,38 +130,212 @@ public class InfuseWorker implements TestWorker{
      */
     @Override
     public void singleRun(TestCase tc) {
+        contextMap.clear();
+        List<Rule> rules = List.of(tc.getRule());
+        Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
+        List<Bfunc> bfuncs = tc.getBfuncs();
 
+        try {
+            generateRuleInput(rules);
+            generateBfuncInput(bfuncs);
+            generatePatternAndContextInput(patterns);
+        } catch (IOException e) {
+            logger.fatal("IOException occurred when trying to create files for running test: {}", tc.getId());
+        }
+
+        execute();
+
+        analyzeSingleResult(tc);
     }
 
-    /**
-     * @param testCaseList
-     */
-    @Override
-    public void batchRun(List<TestCase> testCaseList) {
+    private void execute() {
+        Path absoluteJar = copiedJar.toAbsolutePath();
+        Path absoluteBfunc = copiedBfuncClass.toAbsolutePath();
+        Path patternInput = Path.of(workspace.toString(), "pattern.xml").toAbsolutePath();
+        Path contextInput = Path.of(workspace.toString(), "data.txt").toAbsolutePath();
+        Path contextPool = Path.of(workspace.toString(), "context_pool.json").toAbsolutePath();
+        Path ruleInput = Path.of(workspace.toString(), "rule.xml").toAbsolutePath();
+        Path output = Path.of(workspace.toString(), "incs.txt").toAbsolutePath();
+        Path outputIncs = Path.of(workspace.toString(), "incs.json").toAbsolutePath();
+        Path outputCCT = Path.of(workspace.toString(), "cct.txt").toAbsolutePath();
+        Path logPath = Path.of(workspace.toString(), "infuse_log.txt").toAbsolutePath();
+        Path errPath = Path.of(workspace.toString(), "infuse_err.txt").toAbsolutePath();
 
+        try {
+            Files.delete(outputIncs);
+        } catch (NoSuchFileException _) {
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<String> args = new ArrayList<>(List.of(
+                "java", "-jar", absoluteJar.toString(),
+                "-test",
+                "-rules", ruleInput.toString(),
+                "-bfuncs", absoluteBfunc.toString(),
+                "-contextpool", contextPool.toString(),
+                "-incs", outputIncs.toString(),
+                "-cct", outputCCT.toString()
+        ));
+
+        args.addAll(arguments);
+
+        ProcessBuilder builder = new ProcessBuilder(args);
+
+        builder.redirectOutput(new File(logPath.toString()));
+        builder.redirectError(new File(errPath.toString()));
+
+        try {
+            // 启动进程
+            Process process = builder.start();
+
+            // 等待进程完成并获取退出码
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                logger.warn("INFUSE exit with non-zero code: {}", exitCode);
+            }
+        } catch (Exception e) {
+            logger.fatal("Exception occurred when executing.");
+        }
     }
 
     private String getWorkspacePath() {
         return Paths.get(workspaceRoot, "infuse_worker_" + uuid.toString()).toString();
     }
 
-    private void generatePatternAndContextInput(List<Pattern> patterns) {
+    private void generatePatternAndContextInput(Set<Pattern> patterns) throws IOException {
         if (workspace == null || !Files.exists(workspace)) {
             return;
         }
+
+//        Path patternInputPath = Path.of(workspace.toString(), "pattern.xml");
+//        Path contextInputPath = Path.of(workspace.toString(), "data.txt");
+//
+//        try (
+//            FileOutputStream pos = new FileOutputStream(patternInputPath.toString());
+//            FileOutputStream cos = new FileOutputStream(contextInputPath.toString());
+//        ) {
+//            pos.write("<?xml version=\"1.0\"?>\n<patterns>\n".getBytes());
+//            int context_cnt = 0;
+//            for (Pattern pat: patterns) {
+//                String name = pat.getName();
+//                String patStr = "<pattern><id>" + name + "</id><freshness><type>number</type><value>2</value></freshness></pattern>\n";
+//                pos.write(patStr.getBytes());
+//                for (String data: pat.getData()) {
+//                    context_cnt++;
+//                    contextMap.put(context_cnt, data);
+//                    String dataStr = String.format("{ \"changeType\": \"+\", \"patternId\": \"%s\", \"context\": " +
+//                            "{ \"contextId\": \"%s\", \"fields\": { \"data\": \"%s\"}}}\n", name, "ctx_" + context_cnt, data);
+//                    cos.write(dataStr.getBytes());
+//                }
+//            }
+//            pos.write("</patterns>".getBytes());
+//        }
+
+        Path contextPoolPath = Path.of(workspace.toString(), "context_pool.json");
+        try (FileOutputStream fos = new FileOutputStream(contextPoolPath.toString())) {
+            JSONArray contextPool = new JSONArray();
+            int context_cnt = 0;
+            for (Pattern pat: patterns) {
+                String name = pat.getName();
+                JSONArray contextArray = new JSONArray();
+                for (String data: pat.getData()) {
+                    context_cnt++;
+                    JSONObject context = new JSONObject();
+                    context.put("ctx_id", "" + context_cnt);
+                    context.put("fields", new JSONObject().put("data", data));
+                    contextArray.put(context);
+                }
+                contextPool.put(new JSONObject().put("pat_id", name).put("contexts", contextArray));
+            }
+            fos.write(contextPool.toString(2).getBytes());
+        }
     }
 
-    private void generateBfuncInput(List<Bfunc> bfuncs) {
+    // TODO: change List<Bfunc> to Set<Bfunc>
+    private void generateBfuncInput(List<Bfunc> bfuncs) throws IOException {
         if (workspace == null || !Files.exists(workspace)) {
             return;
+        }
+
+        Path bfuncInputPath = Path.of(workspace.toString(), "bfunc_in.txt");
+        try (FileOutputStream fos = new FileOutputStream(bfuncInputPath.toString())) {
+            for (Bfunc bfunc: bfuncs) {
+                String name = "#" + bfunc.getName() + "\n";
+                StringBuilder vb = new StringBuilder("@");
+                for (String param: bfunc.getParamList()) {
+                    vb.append(param).append(",");
+                }
+                vb.append("\n");
+                StringBuilder mb = new StringBuilder();
+                for (String key: bfunc.getValueMap().keySet()) {
+                    mb.append(key).append(" ").append(bfunc.getValueMap().get(key));
+                    mb.append("\n");
+                }
+                fos.write((name + vb + mb).getBytes());
+            }
+        }
+
+    }
+
+    private void generateRuleInput(List<Rule> rules) throws IOException {
+        if (workspace == null || !Files.exists(workspace)) {
+            return;
+        }
+        Path ruleInputPath = Path.of(workspace.toString(), "rule.xml");
+        try (FileOutputStream fos = new FileOutputStream(ruleInputPath.toString())) {
+            fos.write("<?xml version=\"1.0\"?>\n<rules>\n".getBytes());
+            for (Rule rule: rules) {
+                fos.write(rule.toXmlString().getBytes());
+            }
+            fos.write("</rules>".getBytes());
         }
     }
 
     private void analyzeSingleResult(TestCase tc) {
 
-    }
+        // Inc example: {"rule_3_365_73":{"truth":true,"links":[{"vaSet":[{"var":"v2","value":{"ctx_id":"1","fields":{"data":"0"}}}],"type":"SATISFIED"},{"vaSet":[{"var":"v1","value":{"ctx_id":"7","fields":{"data":"0"}}}],"type":"SATISFIED"}]}}
+        // Parse the incs.json file to Result
 
-    private void analyzeBatchResult(List<TestCase> testCaseList) {
+        Path incsPath = Path.of(workspace.toString(), "incs.json");
 
+        try (BufferedReader reader = new BufferedReader(new FileReader(incsPath.toString()))) {
+            // read lines
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            // parse json
+            JSONObject incs = new JSONObject(sb.toString());
+            Result result = null;
+            for (String ruleId: incs.keySet()) {
+                if (!ruleId.equals(tc.getRule().id)) {
+                    continue;
+                }
+                JSONObject rule = incs.getJSONObject(ruleId);
+                result = new Result(rule.getBoolean("truth"));
+
+                // parse links
+                Set<Link> links = new HashSet<>();
+                for (Object linkObj: rule.getJSONArray("links")) {
+                    JSONObject link = (JSONObject) linkObj;
+                    Link.Type type = link.getString("type").equals("SATISFIED") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
+                    Set<Map.Entry<String, String>> vaSet = new HashSet<>();
+                    for (Object vaObj: link.getJSONArray("vaSet")) {
+                        JSONObject va = (JSONObject) vaObj;
+                        vaSet.add(Map.entry(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
+                    }
+                    links.add(new Link(type, vaSet));
+                }
+                result.links = links;
+            }
+            tc.setResult(result);
+            tc.setChecked(true);
+        } catch (IOException e) {
+            logger.warn("IOException occurred when trying to read incs.json, maybe INFUSE failed to generate incs.json");
+        }
     }
 }

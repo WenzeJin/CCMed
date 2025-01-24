@@ -1,0 +1,13 @@
+package com.wenzejin.core.worker;
+
+import java.util.Map;
+
+public class TestWorkerFactory {
+    public static TestWorker getTestWorker(String workerType, Map<String, Object> arguments) {
+        if (workerType.equalsIgnoreCase("infuse")) {
+            return new InfuseWorker(arguments);
+        } else {
+            return null;
+        }
+    }
+}

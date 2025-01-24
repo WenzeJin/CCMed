@@ -13,6 +13,4 @@ public interface TestWorker {
 
     void singleRun(TestCase tc);
 
-    void batchRun(List<TestCase> testCaseList);
-
 }

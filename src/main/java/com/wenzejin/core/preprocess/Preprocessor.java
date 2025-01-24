@@ -155,6 +155,7 @@ public class Preprocessor {
         combinations = RandomSubset.getRandom(combinations, enumMax);
 
         // Generate testcases
+        int cnt = 0;
         for (var combination: combinations) {
             Map<String, String> bfuncMap = new HashMap<>();
             for (int i = 0; i < bfuncNames.size(); i++) {
@@ -162,6 +163,7 @@ public class Preprocessor {
             }
 
             Rule newRule = rule.clone();
+            newRule.id = newRule.id + "_" + cnt;
             newRule.rebindBfuncs(bfuncMap);
 
             TestCase tc = new TestCase(newRule);
@@ -170,6 +172,7 @@ public class Preprocessor {
             synchronized (testCases) {
                 testCases.add(tc);
             }
+            cnt++;
         }
     }
 

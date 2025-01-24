@@ -1,6 +1,7 @@
 package com.wenzejin.core.util;
 
 import com.wenzejin.core.mr.TestAssertion;
+import com.wenzejin.core.result.Result;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
@@ -9,23 +10,22 @@ import java.util.List;
 
 public class TestCase {
 
-    static int idCounter = 0;
+    private static int idCounter = 0;
 
-    int id;
+    private final int id;
     // Constraint
-    Rule rule;
-    List<Pattern> patterns;
-    // TODO: Bfunc
-    List<Bfunc> bfuncs;
-    TestAssertion assertion;    // Assertion
-    TestResult result;          // Result
+    private Rule rule;
+    private List<Pattern> patterns;
+    private List<Bfunc> bfuncs;
+    private List<TestAssertion> assertions;    // Assertion
+    private Result result;          // Result
     boolean checked;            // Checked
     boolean passed;             // Passed
 
     public TestCase() {
         id = idCounter++;
         result = null;
-        assertion = null;
+        assertions = null;
         checked = false;
         passed = false;
     }
@@ -55,20 +55,83 @@ public class TestCase {
         this.bfuncs = bfuncs;
     }
 
-    public TestAssertion getAssertion() {
-        return assertion;
+    public List<TestAssertion> getAssertions() {
+        return assertions;
     }
 
-    public void setAssertion(TestAssertion assertion) {
-        this.assertion = assertion;
+    public void setAssertions(List<TestAssertion> assertions) {
+        this.assertions = assertions;
     }
 
     public int getId() {
         return id;
     }
 
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setPassed(boolean passed) {
+        this.passed = passed;
+    }
+
+    public boolean isPassed() {
+        return passed;
+    }
+
+    public void setResult(Result result) {
+        this.result = result;
+    }
+
+    public Result getResult() {
+        return result;
+    }
+
+    public boolean assertTest() {
+        if (result == null) {
+            return false;
+        }
+        boolean res = true;
+        for (TestAssertion a : assertions) {
+            res = res && a.assertTest(result);
+        }
+        return res;
+    }
+
+    public boolean assertTest(List<TestAssertion> failedAssertions) {
+        if (result == null) {
+            return false;
+        }
+        boolean res = true;
+        for (TestAssertion a : assertions) {
+            if (!a.assertTest(result)) {
+                failedAssertions.add(a);
+                res = false;
+            }
+        }
+        return res;
+    }
+
     public boolean isValid() {
         // TODO: Implement this method
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "TestCase{" +
+                "id=" + id +
+                ", rule=" + rule +
+                ", patterns=" + patterns +
+                ", bfuncs=" + bfuncs +
+                ", assertions=" + assertions +
+                ", result=" + result +
+                ", checked=" + checked +
+                ", passed=" + passed +
+                '}';
     }
 }
