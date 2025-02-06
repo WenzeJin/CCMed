@@ -49,9 +49,9 @@ public class LiteralBfunc implements Formula{
         @Override
         public int compareTo(Param o) {
             try {
-                return Integer.parseInt(pos) - Integer.parseInt(((Param) o).pos);
+                return Integer.parseInt(pos) - Integer.parseInt(o.pos);
             } catch (NumberFormatException e) {
-                return pos.compareTo(((Param) o).pos);
+                return pos.compareTo(o.pos);
             }
         }
     }
@@ -66,7 +66,7 @@ public class LiteralBfunc implements Formula{
     }
 
     public LiteralBfunc() {
-        this.params = new ArrayList<Param>();
+        this.params = new ArrayList<>();
     }
 
     public void addParam(String pos, String var, String field) {
@@ -121,6 +121,24 @@ public class LiteralBfunc implements Formula{
     }
 
     @Override
+    public void rebindVariables(Map<String, String> variableMap) {
+        for (Param param : params) {
+            if (variableMap.containsKey(param.var)) {
+                param.var = variableMap.get(param.var);
+            }
+        }
+    }
+
+    @Override
+    public Set<String> collectVariables() {
+        Set<String> variables = new HashSet<>();
+        for (Param param : params) {
+            variables.add(param.var);
+        }
+        return variables;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -161,7 +179,7 @@ public class LiteralBfunc implements Formula{
         tempParams.sort(Param::compareTo);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(name + "(");
+        sb.append(name).append("(");
         for (Param param: tempParams) {
             sb.append(param.var);
             sb.append(",");

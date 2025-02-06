@@ -46,6 +46,12 @@ public class Rule implements Cloneable {
         }
     }
 
+    public void rebindVariables(Map<String, String> variableMap) {
+        if (formula != null) {
+            formula.rebindVariables(variableMap);
+        }
+    }
+
     public Set<String> collectPatterns() {
         if (formula != null) {
             return formula.collectPatterns();
@@ -58,6 +64,10 @@ public class Rule implements Cloneable {
             return formula.collectBfuncs();
         }
         return Set.of();
+    }
+
+    public Set<String> collectVariables() {
+        return formula.collectVariables();
     }
 
     @Override
@@ -94,4 +104,6 @@ public class Rule implements Cloneable {
     public String toString() {
         return id + " : " + formula;
     }
+
+
 }

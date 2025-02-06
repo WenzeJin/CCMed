@@ -1,22 +1,21 @@
 package com.wenzejin.core.executor;
 
 import com.wenzejin.core.exception.XmlParseException;
+import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.preprocess.Preprocessor;
+import com.wenzejin.core.result.Link;
 import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.TestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TestOnlyExecutorTest {
 
-    int TEST_SIZE = 1000;
+    int TEST_SIZE = 100;
 
     List<TestCase> testCaseList;
 
@@ -46,6 +45,18 @@ class TestOnlyExecutorTest {
     @Test
     void testExecuteTest() {
         executor.executeTest(testCaseList);
+
+        for (TestCase tc : testCaseList) {
+            assertTrue(tc.isChecked());
+            System.out.println(tc.getRule().formula);
+            List<Set<Link>> links = CRCFunc.attribution(tc);
+            if (links != null) {
+                Set<Link> leftLinks = links.get(0);
+                Set<Link> rightLinks = links.get(1);
+                System.out.println("Left links: " + leftLinks);
+                System.out.println("Right links: " + rightLinks);
+            }
+        }
     }
 
 }

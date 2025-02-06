@@ -81,6 +81,26 @@ public class OpQuantifier implements Formula {
     }
 
     @Override
+    public void rebindVariables(Map<String, String> variableMap) {
+        if (formula != null) {
+            formula.rebindVariables(variableMap);
+        }
+        if (variableMap.containsKey(var)) {
+            var = variableMap.get(var);
+        }
+    }
+
+    @Override
+    public Set<String> collectVariables() {
+        Set<String> variables = new HashSet<>();
+        if (formula != null) {
+            variables.addAll(formula.collectVariables());
+        }
+        variables.add(var);
+        return variables;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

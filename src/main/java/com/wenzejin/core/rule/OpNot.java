@@ -61,6 +61,21 @@ public class OpNot implements Formula {
     }
 
     @Override
+    public void rebindVariables(Map<String, String> variableMap) {
+        if (formula != null) {
+            formula.rebindVariables(variableMap);
+        }
+    }
+
+    @Override
+    public Set<String> collectVariables() {
+        if (formula != null) {
+            return formula.collectVariables();
+        }
+        return new HashSet<>();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -92,4 +107,6 @@ public class OpNot implements Formula {
     public String toString() {
         return "not (" + formula + ")";
     }
+
+
 }

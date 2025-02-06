@@ -109,6 +109,16 @@ public class Preprocessor {
     private void generateTestCases(Rule rule) {
         String rule_id = rule.getId();
 
+        // Rebind variables to make sure they are unique
+        var variables = rule.collectVariables();
+        Map<String, String> varMap = new HashMap<>();
+        for (var var: variables) {
+            String newVar = rule_id + "_" + var;
+            varMap.put(var, newVar);
+        }
+        rule.rebindVariables(varMap);
+
+
         // Generate random data for each pattern and bind them
         var patterns = rule.collectPatterns();
 

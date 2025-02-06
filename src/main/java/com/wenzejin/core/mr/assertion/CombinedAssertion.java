@@ -3,7 +3,7 @@ package com.wenzejin.core.mr.assertion;
 import com.wenzejin.core.mr.TestAssertion;
 import com.wenzejin.core.result.Result;
 
-public class ConditionalAssertion implements TestAssertion {
+public class CombinedAssertion implements TestAssertion {
 
     public enum Type {
         AND,
@@ -24,7 +24,7 @@ public class ConditionalAssertion implements TestAssertion {
      * @param right right assertion
      * @param type logical operator
      */
-    public ConditionalAssertion(TestAssertion left, TestAssertion right, Type type) {
+    public CombinedAssertion(TestAssertion left, TestAssertion right, Type type) {
         this.left = left;
         this.right = right;
         this.type = type;

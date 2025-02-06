@@ -91,6 +91,28 @@ public class OpConnector implements Formula {
     }
 
     @Override
+    public void rebindVariables(Map<String, String> variableMap) {
+        if (left != null) {
+            left.rebindVariables(variableMap);
+        }
+        if (right != null) {
+            right.rebindVariables(variableMap);
+        }
+    }
+
+    @Override
+    public Set<String> collectVariables() {
+        Set<String> variableSet = new HashSet<>();
+        if (left != null) {
+            variableSet.addAll(left.collectVariables());
+        }
+        if (right != null) {
+            variableSet.addAll(right.collectVariables());
+        }
+        return variableSet;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

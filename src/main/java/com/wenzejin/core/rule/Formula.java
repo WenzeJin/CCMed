@@ -19,6 +19,10 @@ public interface Formula extends Cloneable {
 
     Set<LiteralBfunc> collectBfuncs();
 
+    void rebindVariables(Map<String, String> variableMap);
+
+    Set<String> collectVariables();
+
     Formula clone();
 
     String toString();
