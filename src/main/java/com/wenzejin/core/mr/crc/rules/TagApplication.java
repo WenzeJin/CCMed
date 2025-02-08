@@ -1,22 +1,73 @@
 package com.wenzejin.core.mr.crc.rules;
 
-import com.wenzejin.core.mr.TestAssertion;
+import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.mr.assertion.CombinedAssertion;
+import com.wenzejin.core.mr.assertion.LinksExceptAssertion;
 import com.wenzejin.core.mr.assertion.LinksSubsetAssertion;
 import com.wenzejin.core.mr.assertion.TruthAssertion;
 import com.wenzejin.core.mr.crc.BinaryTag;
 import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.mr.crc.FormulaWithTag;
 import com.wenzejin.core.result.Link;
+import com.wenzejin.core.rule.*;
 import com.wenzejin.core.util.TestCase;
+import jdk.incubator.vector.VectorOperators;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TagApplication {
 
-    public static TestCase binaryEntry(FormulaWithTag left, FormulaWithTag right) {
-        return new TestCase();
+    private static AtomicInteger idCounter = new AtomicInteger();
+
+    public static TestCase binaryEntry(FormulaWithTag left, FormulaWithTag right, String newOp) {
+        Formula leftFormula = left.formula.clone();
+        Formula rightFormula = right.formula.clone();
+        Formula gen = null;
+        List<TestAssertion> assertions = null;
+
+        if (!(left.tag instanceof BinaryTag) || !(right.tag instanceof BinaryTag)) {
+            // Invalid tag
+            return null;
+        }
+
+        switch (newOp) {
+            case "and":
+                gen = new OpConnector(OpConnector.Op.AND, leftFormula, rightFormula);
+                assertions = and((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            case "or":
+                gen = new OpConnector(OpConnector.Op.OR, leftFormula, rightFormula);
+                assertions = or((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            case "implies":
+                gen = new OpConnector(OpConnector.Op.IMPLIES, leftFormula, rightFormula);
+                assertions = implies((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            default:
+                break;
+        }
+
+        if (assertions == null || assertions.isEmpty()) {
+            // Invalid combination
+            return null;
+        }
+        Rule genRule = new Rule("CRC-Gen-" + idCounter.incrementAndGet(), gen);
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.addAll(left.patterns);
+        patterns.addAll(right.patterns);
+        List<Bfunc> bfuncs = new ArrayList<>();
+        bfuncs.addAll(left.bfuncs);
+        bfuncs.addAll(right.bfuncs);
+
+        TestCase genTC = new TestCase(genRule);
+        genTC.setPatterns(patterns);
+        genTC.setBfuncs(bfuncs);
+        genTC.setAssertions(assertions);
+
+        return genTC;
     }
 
 
@@ -32,25 +83,142 @@ public class TagApplication {
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-and-2-a
             assertions.add(new TruthAssertion(false));
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-and-2-b
-            assertions.add(new TruthAssertion(false));
-            Set<Link> union = CRCFunc.union(left.links, right.links);
-            if (!union.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(union));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-and-3
             assertions.add(new TruthAssertion(false));
             Set<Link> union = CRCFunc.union(left.links, right.links);
             if (!union.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(union));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
-
-            TestAssertion pre = new TruthAssertion(true);
-            TestAssertion after = new LinksSubsetAssertion()
+            // TA-and-4-a
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(false);
+                TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(left.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-and-5-a
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-and-6 no assertion pass
+        } else {
+            // try switch to match some rules
+            assertions.addAll(and(right,left));
         }
+        return assertions;
+    }
 
+    private static List<TestAssertion> or(BinaryTag left, BinaryTag right) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-or-1
+            assertions.add(new TruthAssertion(true));
+            Set<Link> union = CRCFunc.union(left.links, right.links);
+            if (!union.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(union));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-or-2-a
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-or-3
+            assertions.add(new TruthAssertion(false));
+            Set<Link> cartesian = CRCFunc.cartesian(left.links, right.links);
+            if (!cartesian.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(cartesian));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-4-a
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-5-a
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(true);
+                TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(left.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-6 no assertion pass
+        } else {
+            // try switch to match some rules
+            assertions.addAll(or(right,left));
+        }
+        return assertions;
+    }
+
+    private static List<TestAssertion> implies(BinaryTag left, BinaryTag right) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-1
+            assertions.add(new TruthAssertion(true));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(right.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-implies-2
+            assertions.add(new TruthAssertion(false));
+            Set<Link> cartesian = CRCFunc.cartesian(CRCFunc.flipSet(left.links), right.links);
+            if (!cartesian.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(cartesian));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-3
+            assertions.add(new TruthAssertion(true));
+            Set<Link> union = CRCFunc.union(CRCFunc.flipSet(left.links), right.links);
+            if (!union.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(union));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            //  TA-implies-4
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-implies-5
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(false);
+                TestAssertion after = new LinksExceptAssertion(left.links);
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-6
+            assertions.add(new TruthAssertion(true));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(right.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-implies-7
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(CRCFunc.flipSet(left.links)));
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-implies-8
+            if (!right.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(true);
+                TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(right.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else {
+            // TA-implies-9 no assertions pass
+        }
+        return assertions;
     }
 
 }

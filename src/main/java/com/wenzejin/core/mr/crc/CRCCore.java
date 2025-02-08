@@ -2,6 +2,7 @@ package com.wenzejin.core.mr.crc;
 
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MRCore;
+import com.wenzejin.core.mr.crc.rules.TagApplication;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -85,7 +86,17 @@ public class CRCCore implements MRCore {
     }
 
     public List<TestCase> generateBinaryCase(Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs) {
-        return null;
+        List<TestCase> genTCs = new ArrayList<>();
+        List<String> ops = List.of("and", "or", "implies");
+        for (var pair: pairs) {
+            for (String op: ops) {
+                TestCase genTC = TagApplication.binaryEntry(pair.getKey(), pair.getValue(), op);
+                if (genTC != null) {
+                    genTCs.add(genTC);
+                }
+            }
+        }
+        return genTCs;
     }
 
     /**

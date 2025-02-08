@@ -1,6 +1,5 @@
 package com.wenzejin.core.mr.assertion;
 
-import com.wenzejin.core.mr.TestAssertion;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 

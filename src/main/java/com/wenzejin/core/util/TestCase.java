@@ -1,11 +1,12 @@
 package com.wenzejin.core.util;
 
-import com.wenzejin.core.mr.TestAssertion;
+import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.result.Result;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestCase {
@@ -13,14 +14,16 @@ public class TestCase {
     private static int idCounter = 0;
 
     private final int id;
+
     // Constraint
     private Rule rule;
     private List<Pattern> patterns;
     private List<Bfunc> bfuncs;
     private List<TestAssertion> assertions;    // Assertion
     private Result result;          // Result
-    boolean checked;            // Checked
-    boolean passed;             // Passed
+    private boolean checked;            // Checked
+    private boolean passed;             // Passed
+    private List<String> ruleUsed;
 
     public TestCase() {
         id = idCounter++;
@@ -28,6 +31,7 @@ public class TestCase {
         assertions = null;
         checked = false;
         passed = false;
+        ruleUsed = new ArrayList<>();
     }
 
     public TestCase(Rule rule) {
@@ -35,9 +39,14 @@ public class TestCase {
         this.rule = rule;
     }
 
+
+    // getters and setters
+
     public Rule getRule() {
         return rule;
     }
+
+    public void setRule(Rule rule) { this.rule = rule; }
 
     public List<Pattern> getPatterns() {
         return patterns;
@@ -90,6 +99,8 @@ public class TestCase {
     public Result getResult() {
         return result;
     }
+
+    public List<String> getRuleUsed() { return ruleUsed; }
 
     public boolean assertTest() {
         if (result == null) {
