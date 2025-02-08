@@ -11,7 +11,6 @@ import com.wenzejin.core.mr.crc.FormulaWithTag;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
 import com.wenzejin.core.util.TestCase;
-import jdk.incubator.vector.VectorOperators;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TagApplication {
 
-    private static AtomicInteger idCounter = new AtomicInteger();
+    private static final AtomicInteger idCounter = new AtomicInteger();
 
     public static TestCase binaryEntry(FormulaWithTag left, FormulaWithTag right, String newOp) {
         Formula leftFormula = left.formula.clone();
@@ -66,6 +65,8 @@ public class TagApplication {
         genTC.setPatterns(patterns);
         genTC.setBfuncs(bfuncs);
         genTC.setAssertions(assertions);
+        genTC.getSource().add(left.parentTestCase);
+        genTC.getSource().add(right.parentTestCase);
 
         return genTC;
     }
@@ -73,8 +74,10 @@ public class TagApplication {
 
     private static List<TestAssertion> and(BinaryTag left, BinaryTag right) {
         List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
         if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
             // TA-and-1
+            usedRule = "TA-and-1";
             assertions.add(new TruthAssertion(true));
             Set<Link> cartesian = CRCFunc.cartesian(left.links, right.links);
             if (!cartesian.isEmpty()) {
@@ -82,12 +85,14 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-and-2-a
+            usedRule = "TA-and-2";
             assertions.add(new TruthAssertion(false));
             if (!right.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-and-3
+            usedRule = "TA-and-3";
             assertions.add(new TruthAssertion(false));
             Set<Link> union = CRCFunc.union(left.links, right.links);
             if (!union.isEmpty()) {
@@ -95,6 +100,7 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-and-4-a
+            usedRule = "TA-and-4";
             if (!left.links.isEmpty()) {
                 TestAssertion pre = new TruthAssertion(false);
                 TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(left.links));
@@ -103,22 +109,31 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-and-5-a
+            usedRule = "TA-and-5";
             if (!left.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(left.links));
             }
         } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-and-6 no assertion pass
+            usedRule = "TA-and-6";
         } else {
             // try switch to match some rules
             assertions.addAll(and(right,left));
+        }
+        if (!usedRule.isEmpty()) {
+            for (TestAssertion assertion : assertions) {
+                assertion.setRule(usedRule);
+            }
         }
         return assertions;
     }
 
     private static List<TestAssertion> or(BinaryTag left, BinaryTag right) {
         List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
         if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
             // TA-or-1
+            usedRule = "TA-or-1";
             assertions.add(new TruthAssertion(true));
             Set<Link> union = CRCFunc.union(left.links, right.links);
             if (!union.isEmpty()) {
@@ -126,12 +141,14 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-or-2-a
+            usedRule = "TA-or-2";
             assertions.add(new TruthAssertion(true));
             if (!left.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(left.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-or-3
+            usedRule = "TA-or-3";
             assertions.add(new TruthAssertion(false));
             Set<Link> cartesian = CRCFunc.cartesian(left.links, right.links);
             if (!cartesian.isEmpty()) {
@@ -139,11 +156,13 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-or-4-a
+            usedRule = "TA-or-4";
             if (!left.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(left.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-or-5-a
+            usedRule = "TA-or-5";
             if (!left.links.isEmpty()) {
                 TestAssertion pre = new TruthAssertion(true);
                 TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(left.links));
@@ -152,23 +171,32 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-or-6 no assertion pass
+            usedRule = "TA-or-6";
         } else {
             // try switch to match some rules
             assertions.addAll(or(right,left));
+        }
+        if (!usedRule.isEmpty()) {
+            for (TestAssertion assertion : assertions) {
+                assertion.setRule(usedRule);
+            }
         }
         return assertions;
     }
 
     private static List<TestAssertion> implies(BinaryTag left, BinaryTag right) {
         List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
         if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
             // TA-implies-1
+            usedRule = "TA-implies-1";
             assertions.add(new TruthAssertion(true));
             if (!right.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-implies-2
+            usedRule = "TA-implies-2";
             assertions.add(new TruthAssertion(false));
             Set<Link> cartesian = CRCFunc.cartesian(CRCFunc.flipSet(left.links), right.links);
             if (!cartesian.isEmpty()) {
@@ -176,19 +204,22 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
             // TA-implies-3
+            usedRule = "TA-implies-3";
             assertions.add(new TruthAssertion(true));
             Set<Link> union = CRCFunc.union(CRCFunc.flipSet(left.links), right.links);
             if (!union.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(union));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
-            //  TA-implies-4
+            // TA-implies-4
+            usedRule = "TA-implies-4";
             assertions.add(new TruthAssertion(true));
             if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(left.links));
+                assertions.add(new LinksSubsetAssertion(CRCFunc.flipSet(left.links)));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-implies-5
+            usedRule = "TA-implies-5";
             if (!left.links.isEmpty()) {
                 TestAssertion pre = new TruthAssertion(false);
                 TestAssertion after = new LinksExceptAssertion(left.links);
@@ -197,18 +228,21 @@ public class TagApplication {
             }
         } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
             // TA-implies-6
+            usedRule = "TA-implies-6";
             assertions.add(new TruthAssertion(true));
             if (!right.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-implies-7
+            usedRule = "TA-implies-7";
             assertions.add(new TruthAssertion(true));
             if (!left.links.isEmpty()) {
                 assertions.add(new LinksSubsetAssertion(CRCFunc.flipSet(left.links)));
             }
         } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
             // TA-implies-8
+            usedRule = "TA-implies-8";
             if (!right.links.isEmpty()) {
                 TestAssertion pre = new TruthAssertion(true);
                 TestAssertion after = new LinksExceptAssertion(CRCFunc.flipSet(right.links));
@@ -217,6 +251,10 @@ public class TagApplication {
             }
         } else {
             // TA-implies-9 no assertions pass
+            usedRule = "TA-implies-9";
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(usedRule);
         }
         return assertions;
     }

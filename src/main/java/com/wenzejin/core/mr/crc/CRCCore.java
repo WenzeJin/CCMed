@@ -6,6 +6,7 @@ import com.wenzejin.core.mr.crc.rules.TagApplication;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
+import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,17 @@ public class CRCCore implements MRCore {
     private List<FormulaWithTag> binaryPool;
     private List<FormulaWithTag> quantifierPool;
 
+    private int limit;
+
     private static final Logger logger = LogManager.getLogger("CRCCore");
+
+    public CRCCore() {
+        limit = Integer.MAX_VALUE;
+    }
+
+    public CRCCore(int limit) {
+        this.limit = limit;
+    }
 
     /**
      * @param sourceTestCases
@@ -25,7 +36,24 @@ public class CRCCore implements MRCore {
      */
     @Override
     public List<TestCase> generateTestCases(List<TestCase> sourceTestCases) {
-        return List.of();
+        init();
+        initPools(sourceTestCases);
+        List<TestCase> genTCs = new ArrayList<>();
+        var binaryPairs = shuffleBinaryPool();
+        genTCs.addAll(generateBinaryCase(binaryPairs));
+        // TODO: add quantifier case
+
+        int beforeSize = genTCs.size();
+
+        genTCs = RandomSubset.getRandom(genTCs, limit);
+        Set<TestCase> utilized = new HashSet<>();
+        for (TestCase tc: genTCs) {
+            utilized.addAll(tc.getSource());
+        }
+        logger.info("Sampled {} test cases from all {} cases, source utilization rate: {}%.",
+                genTCs.size(), beforeSize, (float)utilized.size() * 100 / sourceTestCases.size() );
+        destroy();
+        return genTCs;
     }
 
 
@@ -82,7 +110,7 @@ public class CRCCore implements MRCore {
 
         logger.info("Done, total pairs: {}, ignored NN pairs: {}", pairs.size(), nnCount);
 
-        return null;
+        return pairs;
     }
 
     public List<TestCase> generateBinaryCase(Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs) {
@@ -96,6 +124,8 @@ public class CRCCore implements MRCore {
                 }
             }
         }
+
+        logger.info("Generated {} test cases from binary pool.", genTCs.size());
         return genTCs;
     }
 

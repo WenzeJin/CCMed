@@ -4,6 +4,8 @@ import com.wenzejin.core.result.Result;
 
 public class CombinedAssertion implements TestAssertion {
 
+
+
     public enum Type {
         AND,
         OR,
@@ -15,6 +17,8 @@ public class CombinedAssertion implements TestAssertion {
     private final TestAssertion right;
 
     private final Type type;
+
+
 
     /**
      * Combines two assertions with a logical operator.
@@ -48,5 +52,27 @@ public class CombinedAssertion implements TestAssertion {
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
+    }
+
+    private String rule;
+
+    @Override
+    public void setRule(String rule) {
+        this.rule = rule;
+    }
+
+    @Override
+    public String getRule() {
+        return rule;
+    }
+
+    @Override
+    public String toString() {
+        return "CombinedAssertion{" +
+                "left=" + left +
+                ", right=" + right +
+                ", type=" + type +
+                ", according to rule: " + rule +
+                '}';
     }
 }

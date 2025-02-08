@@ -19,6 +19,19 @@ public class TruthAssertion implements TestAssertion {
     public String toString() {
         return "TruthAssertion{" +
                 "truthValue=" + truthValue +
+                ", according to rule: " + rule +
                 '}';
+    }
+
+    private String rule;
+
+    @Override
+    public void setRule(String rule) {
+        this.rule = rule;
+    }
+
+    @Override
+    public String getRule() {
+        return rule;
     }
 }

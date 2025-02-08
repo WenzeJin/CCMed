@@ -68,15 +68,15 @@ public class TagCreation {
                 break;
             case 4: // TC-AND-5
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
-                rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 5: // TC-AND-6
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 6: // TC-AND-7
-                leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
-                rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
+                leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
                 break;
             case 7: // TC-AND-8
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);

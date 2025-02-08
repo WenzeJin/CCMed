@@ -27,6 +27,19 @@ public class LinksExceptAssertion implements TestAssertion {
     public String toString() {
         return "LinksSubsetAssertion{" +
                 "linkSet=" + linkSet +
+                ", according to rule: " + rule +
                 '}';
+    }
+
+    private String rule;
+
+    @Override
+    public void setRule(String rule) {
+        this.rule = rule;
+    }
+
+    @Override
+    public String getRule() {
+        return rule;
     }
 }

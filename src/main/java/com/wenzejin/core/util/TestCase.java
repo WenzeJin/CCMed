@@ -24,6 +24,7 @@ public class TestCase {
     private boolean checked;            // Checked
     private boolean passed;             // Passed
     private List<String> ruleUsed;
+    private final List<TestCase> source;
 
     public TestCase() {
         id = idCounter++;
@@ -32,6 +33,7 @@ public class TestCase {
         checked = false;
         passed = false;
         ruleUsed = new ArrayList<>();
+        source = new ArrayList<>();
     }
 
     public TestCase(Rule rule) {
@@ -102,6 +104,10 @@ public class TestCase {
 
     public List<String> getRuleUsed() { return ruleUsed; }
 
+    public List<TestCase> getSource() {
+        return source;
+    }
+
     public boolean assertTest() {
         if (result == null) {
             return false;
@@ -145,4 +151,6 @@ public class TestCase {
                 ", passed=" + passed +
                 '}';
     }
+
+
 }

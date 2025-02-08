@@ -6,4 +6,7 @@ public interface TestAssertion {
 
     boolean assertTest(Result testResult);
 
+    void setRule(String rule);
+
+    String getRule();
 }
