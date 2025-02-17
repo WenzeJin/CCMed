@@ -65,7 +65,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         boolean boolRes = tc.assertTest(failedAssertions);
         if (!boolRes) {
             failedCases.put(tc, failedAssertions);
-            logger.info("Test case id {} failed.", tc.getId());
+            logger.warn("Test case id {} failed.", tc.getId());
             return false;
         }
         return true;

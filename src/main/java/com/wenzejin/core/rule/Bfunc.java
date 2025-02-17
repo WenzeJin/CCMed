@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Bfunc {
+public class Bfunc implements Cloneable{
 
     private final String name;
 
@@ -42,10 +42,28 @@ public class Bfunc {
         return paramList;
     }
 
+    public void rebindVariables(Map<String, String> bindMap) {
+        for (String var: paramList) {
+            if (bindMap.containsKey(var)) {
+                paramList.set(paramList.indexOf(var), bindMap.get(var));
+            }
+        }
+    }
+
 
     @Override
     public String toString() {
         return name + " : param=" + paramList + " valueMap=" + valueMap;
+    }
+
+    @Override
+    public Bfunc clone() {
+        Bfunc bfunc = new Bfunc(name, paramNum);
+        bfunc.setParamList(new ArrayList<>(paramList));
+        for (Map.Entry<String, Boolean> entry : valueMap.entrySet()) {
+            bfunc.addValue(entry.getKey(), entry.getValue());
+        }
+        return bfunc;
     }
 
     static private void generateCombinations(List<Pattern> patterns, int index, String current, List<String> result) {

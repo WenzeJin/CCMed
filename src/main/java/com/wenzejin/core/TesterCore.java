@@ -26,6 +26,8 @@ import com.wenzejin.core.mr.crc.CRCCore;
 import com.wenzejin.core.preprocess.Preprocessor;
 import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.TestCase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +36,11 @@ import java.util.Map;
 public class TesterCore {
 
     // Configurations
+    private static final Logger logger = LogManager.getLogger("TesterCore");
 
     private static void developExecute() throws Exception {
-        int TEST_SIZE = 100;
-        int limit = 200;
+        int TEST_SIZE = 200;
+        int limit = 3000;
         List<TestCase> testCaseList;
         AbstractExecutor executor;
         CRCCore mrCore;
@@ -65,6 +68,16 @@ public class TesterCore {
         executor.executeTest(testCaseList);
 
         List<TestCase> afterTestCases = mrCore.generateTestCases(testCaseList);
+
+        Map<String, Integer> ruleCount = new HashMap<>();
+        for (TestCase tc: afterTestCases) {
+            for (String rule: tc.getRuleUsed()) {
+                ruleCount.put(rule, ruleCount.getOrDefault(rule, 0) + 1);
+            }
+        }
+        for (var entry: ruleCount.entrySet()) {
+            logger.info("Rule: {}, count: {}", entry.getKey(), entry.getValue());
+        }
 
         executor = new TestAndCheckExecutor("infuse", arguments);
         executor.executeTest(afterTestCases);

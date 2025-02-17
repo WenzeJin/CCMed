@@ -2,6 +2,7 @@ package com.wenzejin.core.mr.crc;
 
 import com.wenzejin.core.result.Link;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class BinaryTag implements Tag {
@@ -12,10 +13,12 @@ public class BinaryTag implements Tag {
 
     public Truth truth;
     public Set<Link> links;
+    public String ruleUsed;
 
     public BinaryTag(Truth truth, Set<Link> links) {
         this.truth = truth;
         this.links = links;
+        ruleUsed = "";
     }
 
     public void flip() {
@@ -31,6 +34,7 @@ public class BinaryTag implements Tag {
         return "OperatorTag{" +
                 "truth=" + truth +
                 ", links=" + links +
+                ", according to rule: " + ruleUsed +
                 '}';
     }
 

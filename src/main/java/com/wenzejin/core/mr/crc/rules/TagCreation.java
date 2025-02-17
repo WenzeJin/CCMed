@@ -4,11 +4,16 @@ import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.mr.crc.BinaryTag;
+import com.wenzejin.core.mr.crc.QuantifierTag;
 import com.wenzejin.core.mr.crc.Tag;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
+import com.wenzejin.core.rule.Formula;
+import com.wenzejin.core.rule.OpQuantifier;
+import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.util.TestCase;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,7 +28,7 @@ public class TagCreation {
     /**
      * Create tags, based on TC rules
      * @param tc test case
-     * @return a list of tags, [leftTag, rightTag]
+     * @return a list of tags, [leftTag, rightTag] (If the test case's root is a quantifier, only one tag is returned)
      * @throws NoTestResultException if the test case has not been checked yet
      */
     public static List<Tag> entry(TestCase tc) throws NoTestResultException {
@@ -32,6 +37,7 @@ public class TagCreation {
             case "and"      -> and(tc);
             case "or"       -> or(tc);
             case "implies"  -> implies(tc);
+            case "forall", "exists" -> List.of(quantifier(tc));
             default         -> throw new NoRuleException("The test case is not a valid CRC test case.");
         };
     }
@@ -55,35 +61,54 @@ public class TagCreation {
         }
 
         int index = (result.truth ? 0 : 4) + (rightLinks.isEmpty() ? 0 : 2) + (leftLinks.isEmpty() ? 0 : 1);
-        Tag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
-        Tag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        BinaryTag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
+        BinaryTag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        String ruleUsed = "";
 
         switch (index) {
             case 0: // TC-AND-1
+                ruleUsed = "TC-AND-1";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
+                break;
             case 1: // TC-AND-2
+                ruleUsed = "TC-AND-2";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
+                break;
             case 2: // TC-AND-3
+                ruleUsed = "TC-AND-3";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
+                break;
             case 3: // TC-AND-4
+                ruleUsed = "TC-AND-4";
                 leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
                 break;
             case 4: // TC-AND-5
+                ruleUsed = "TC-AND-5";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 5: // TC-AND-6
+                ruleUsed = "TC-AND-6";
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 6: // TC-AND-7
+                ruleUsed = "TC-AND-7";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
                 break;
             case 7: // TC-AND-8
+                ruleUsed = "TC-AND-8";
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
                 break;
         }
-
+        leftTag.ruleUsed = ruleUsed;
+        rightTag.ruleUsed = ruleUsed;
         return List.of(leftTag, rightTag);
     }
 
@@ -107,34 +132,54 @@ public class TagCreation {
         }
 
         int index = (!result.truth ? 0 : 4) + (rightLinks.isEmpty() ? 0 : 2) + (leftLinks.isEmpty() ? 0 : 1);
-        Tag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
-        Tag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        BinaryTag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
+        BinaryTag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        String ruleUsed = "";
 
         switch (index) {
             case 0: // TC-OR-1
+                ruleUsed = "TC-OR-1";
+                leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 1: // TC-OR-2
+                ruleUsed = "TC-OR-2";
+                leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 2: // TC-OR-3
+                ruleUsed = "TC-OR-3";
+                leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 3: // TC-OR-4
+                ruleUsed = "TC-OR-4";
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
                 break;
             case 4: // TC-OR-5
+                ruleUsed = "TC-OR-5";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 5: // TC-OR-6
+                ruleUsed = "TC-OR-6";
                 leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 6: // TC-OR-7
+                ruleUsed = "TC-OR-7";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
                 break;
             case 7: // TC-OR-8
+                ruleUsed = "TC-OR-8";
                 leftTag = new BinaryTag(BinaryTag.Truth.TRUE, leftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
                 break;
         }
+        leftTag.ruleUsed = ruleUsed;
+        rightTag.ruleUsed = ruleUsed;
 
         return List.of(leftTag, rightTag);
     }
@@ -149,8 +194,8 @@ public class TagCreation {
         guardBeforeAll(tc);
         Result result = tc.getResult();
         List<Set<Link>> links = CRCFunc.attribution(tc);
-        Set<Link> leftLinks = links.get(0);
-        Set<Link> rightLinks = links.get(1);
+        Set<Link> leftLinks = new HashSet<>(links.get(0));
+        Set<Link> rightLinks = new HashSet<>(links.get(1));
         Set<Link> flippedLeftLinks = CRCFunc.flipSet(leftLinks);
 
         // self guard
@@ -159,35 +204,118 @@ public class TagCreation {
         }
 
         int index = (!result.truth ? 0 : 4) + (rightLinks.isEmpty() ? 0 : 2) + (leftLinks.isEmpty() ? 0 : 1);
-        Tag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, flippedLeftLinks);
-        Tag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        BinaryTag leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, flippedLeftLinks);
+        BinaryTag rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
+        String ruleUsed = "";
 
         switch (index) {
             case 0: // TC-IMPLIES-1
+                ruleUsed = "TC-IMPLIES-1";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, flippedLeftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 1: // TC-IMPLIES-2
+                ruleUsed = "TC-IMPLIES-2";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, flippedLeftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 2: // TC-IMPLIES-3
+                ruleUsed = "TC-IMPLIES-3";
+                leftTag = new BinaryTag(BinaryTag.Truth.TRUE, flippedLeftLinks);
+                rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
+                break;
             case 3: // TC-IMPLIES-4
+                ruleUsed = "TC-IMPLIES-4";
                 leftTag = new BinaryTag(BinaryTag.Truth.TRUE, flippedLeftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.FALSE, rightLinks);
                 break;
             case 4: // TC-IMPLIES-5
+                ruleUsed = "TC-IMPLIES-5";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, flippedLeftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 5: // TC-IMPLIES-6
+                ruleUsed = "TC-IMPLIES-6";
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, flippedLeftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, rightLinks);
                 break;
             case 6: // TC-IMPLIES-7
+                ruleUsed = "TC-IMPLIES-7";
                 leftTag = new BinaryTag(BinaryTag.Truth.UNKNOWN, flippedLeftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
                 break;
             case 7: // TC-IMPLIES-8
+                ruleUsed = "TC-IMPLIES-8";
                 leftTag = new BinaryTag(BinaryTag.Truth.FALSE, flippedLeftLinks);
                 rightTag = new BinaryTag(BinaryTag.Truth.TRUE, rightLinks);
                 break;
         }
 
+        leftTag.ruleUsed = ruleUsed;
+        rightTag.ruleUsed = ruleUsed;
+
         return List.of(leftTag, rightTag);
+    }
+
+    private static Tag quantifier(TestCase tc) {
+        guardBeforeAll(tc);
+        Result result = tc.getResult();
+        OpQuantifier formula = (OpQuantifier) tc.getRule().formula;
+
+        if (formula == null) {
+            throw new IllegalStateException("The test case is not a valid TC-FORALL test case.");
+        }
+
+        String varName = formula.var;
+        String patternName = formula.pattern;
+        Pattern pattern = null;
+        for (Pattern p: tc.getPatterns()) {
+            if (p.getName().equals(patternName)) {
+                pattern = p;
+                break;
+            }
+        }
+
+        if (pattern == null) {
+            throw new IllegalStateException("The pattern is not found in the test case.");
+        }
+
+        Set<String> allValue = new HashSet<>(pattern.getData());
+        Set<String> valTrue = CRCFunc.val(result.links, true, varName);
+        Set<String> valFalse = CRCFunc.val(result.links, false, varName);
+        QuantifierTag tag = new QuantifierTag(varName);
+
+        if (formula.getNodeType().equalsIgnoreCase("forall")) {
+            if (result.truth) {
+                // TC-FORALL-1
+                tag.valueTrue = allValue;
+                tag.ruleUsed = "TC-FORALL-1";
+                return tag;
+            } else {
+                // TC-FORALL-2
+                allValue.removeAll(valFalse);
+                tag.valueTrue = allValue;
+                tag.valueFalse = valFalse;
+                tag.linksFalse = new HashSet<>(result.links);
+                tag.ruleUsed = "TC-FORALL-2";
+                return tag;
+            }
+        } else {
+            if (result.truth) {
+                // TC-EXISTS-1
+                tag.valueTrue = valTrue;
+                allValue.removeAll(valTrue);
+                tag.valueFalse = allValue;
+                tag.linksTrue = new HashSet<>(result.links);
+                tag.ruleUsed = "TC-EXISTS-1";
+                return tag;
+            } else {
+                // TC-EXISTS-2
+                tag.valueFalse = allValue;
+                tag.ruleUsed = "TC-EXISTS-2";
+                return tag;
+            }
+        }
+
     }
 }

@@ -6,6 +6,8 @@ import java.util.Set;
 
 public class Pattern {
 
+    private static double randomGate = 0.5;
+
     String name;
 
     Set<String> data;
@@ -13,6 +15,11 @@ public class Pattern {
     public Pattern(String name) {
         this.name = name;
         data = new HashSet<>();
+    }
+
+    public Pattern(String name, Set<String> data) {
+        this.name = name;
+        this.data = new HashSet<>(data);
     }
 
     public String getName() {
@@ -47,6 +54,24 @@ public class Pattern {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void randomExtendByGate() {
+        if (Math.random() > randomGate) {
+            int randomCount = (int) (Math.random() * 3) + 1;
+            for (int i = 0; i < randomCount; i++) {
+                data.add(String.valueOf((int) (Math.random() * 10)));
+            }
+        }
+    }
+
+    public void randomReduceByGate() {
+        if (Math.random() > randomGate) {
+            int randomCount = (int) (Math.random() * 2) + 1;
+            for (int i = 0; i < randomCount && data.size() > 1; i++) {
+                data.remove(data.iterator().next());
+            }
+        }
     }
 
     @Override

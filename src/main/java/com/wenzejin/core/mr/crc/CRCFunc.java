@@ -2,6 +2,7 @@ package com.wenzejin.core.mr.crc;
 
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
+import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
 import com.wenzejin.core.util.TestCase;
@@ -86,4 +87,72 @@ public class CRCFunc {
         res.addAll(b);
         return res;
     }
+
+    /**
+     * Extract the possible values of a variable which makes the formula's truth value to be true or false
+     * @param links the links of the formula
+     * @param truth true for true, false for false
+     * @param variable the variable to be extracted
+     * @return the possible values of the variable
+     */
+    public static Set<String> val(Set<Link> links, boolean truth, String variable) {
+        var type = truth ? Link.Type.SATISFIED : Link.Type.VIOLATED;
+        Set<String> res = new HashSet<>();
+        for (Link link: links) {
+            if (link.type == type) {
+                for (var bind: link.vaSet) {
+                    if (bind.getKey().equals(variable)) {
+                        res.add(bind.getValue());
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    public static Set<Link> syncCartesian(Set<Link> a, Set<Link> b, String var, Set<String> target) {
+        Set<Link> res = new HashSet<>();
+
+        for (String c: target) {
+            for (Link al: a) {
+                for (Link bl: b) {
+                    if (al.vaSet.stream().anyMatch(x -> x.getKey().equals(var) && x.getValue().equals(c)) &&
+                            bl.vaSet.stream().anyMatch(x -> x.getKey().equals(var) && x.getValue().equals(c))) {
+                        Link concat = al.concat(bl);
+                        res.add(concat);
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public static void rebindLinks(Set<Link> links, Map<String, String> variableMap) {
+        for (Link link: links) {
+            link.rebindVariables(variableMap);
+        }
+    }
+
+    public static void rebindBfuncs(List<Bfunc> bfuncs, Map<String, String> variableMap) {
+        for (Bfunc bfunc: bfuncs) {
+            bfunc.rebindVariables(variableMap);
+        }
+    }
+
+    public static Set<Link> linksProjection(Set<Link> links, String var, Set<String> target) {
+        Set<Link> res = new HashSet<>();
+
+        for (Link link: links) {
+            for (var pair: link.vaSet) {
+                if (pair.getKey().equals(var) && target.contains(pair.getValue())) {
+                    res.add(link);
+                }
+            }
+        }
+
+        return res;
+    }
+
+
 }

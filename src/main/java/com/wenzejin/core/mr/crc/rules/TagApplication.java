@@ -1,18 +1,17 @@
 package com.wenzejin.core.mr.crc.rules;
 
-import com.wenzejin.core.mr.assertion.TestAssertion;
-import com.wenzejin.core.mr.assertion.CombinedAssertion;
-import com.wenzejin.core.mr.assertion.LinksExceptAssertion;
-import com.wenzejin.core.mr.assertion.LinksSubsetAssertion;
-import com.wenzejin.core.mr.assertion.TruthAssertion;
+import com.wenzejin.core.mr.assertion.*;
 import com.wenzejin.core.mr.crc.BinaryTag;
 import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.mr.crc.FormulaWithTag;
+import com.wenzejin.core.mr.crc.QuantifierTag;
+import com.wenzejin.core.mr.crc.assertion.LinksValueAssertion;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
 import com.wenzejin.core.util.TestCase;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,8 +64,103 @@ public class TagApplication {
         genTC.setPatterns(patterns);
         genTC.setBfuncs(bfuncs);
         genTC.setAssertions(assertions);
-        genTC.getSource().add(left.parentTestCase);
-        genTC.getSource().add(right.parentTestCase);
+        genTC.getSource().add(left.parentTestCase.getId());
+        genTC.getSource().add(right.parentTestCase.getId());
+
+        for (TestAssertion assertion : assertions) {
+            genTC.getRuleUsed().add(assertion.getRule());
+        }
+
+        genTC.getRuleUsed().add(((BinaryTag) left.tag).ruleUsed);
+        genTC.getRuleUsed().add(((BinaryTag) right.tag).ruleUsed);
+
+        return genTC;
+    }
+
+    public static TestCase quantifierEntry(FormulaWithTag f, String newOp, boolean expectTruth) {
+        Formula ori = f.formula;
+        Formula gen = null;
+        List<TestAssertion> assertions = null;
+        if (!(f.tag instanceof QuantifierTag)) {
+            // Invalid tag
+            return null;
+        }
+
+        String newName = "CRC-Gen-" + idCounter.incrementAndGet();
+        String newPatName = newName + "-Pattern";
+        Pattern newPattern = null;
+
+        QuantifierTag tag = (QuantifierTag) f.tag;
+
+        switch (newOp) {
+            case "forall":
+                if (expectTruth) {
+                    newPattern = new Pattern(newPatName, tag.valueTrue);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    newPattern.randomReduceByGate();
+                } else {
+                    newPattern = new Pattern(newPatName, tag.valueFalse);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    newPattern.randomExtendByGate();
+                }
+                gen = new OpQuantifier(OpQuantifier.Op.FORALL, tag.variable, newPatName, ori);
+                assertions = forall(tag, newPattern.getData(), expectTruth);
+                break;
+            case "exists":
+                if (expectTruth) {
+                    newPattern = new Pattern(newPatName, tag.valueTrue);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    newPattern.randomExtendByGate();
+                } else {
+                    newPattern = new Pattern(newPatName, tag.valueFalse);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    newPattern.randomReduceByGate();
+                }
+                gen = new OpQuantifier(OpQuantifier.Op.EXISTS, tag.variable, newPatName, ori);
+                assertions = exists(tag, newPattern.getData(), expectTruth);
+                break;
+            default:
+                break;
+        }
+
+        if (assertions == null || assertions.isEmpty()) {
+            // Invalid combination
+            return null;
+        }
+
+
+        Rule genRule = new Rule(newName, gen);
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.addAll(f.patterns);
+        patterns.add(newPattern);
+        List<Bfunc> bfuncs = new ArrayList<>();
+        bfuncs.addAll(f.bfuncs);
+
+        TestCase genTC = new TestCase(genRule);
+        genTC.setPatterns(patterns);
+        genTC.setBfuncs(bfuncs);
+        genTC.setAssertions(assertions);
+        genTC.getSource().add(f.parentTestCase != null ? f.parentTestCase.getId() : -1);
+
+        for (TestAssertion assertion : assertions) {
+            genTC.getRuleUsed().add(assertion.getRule());
+        }
+        String[] rulesUsed = tag.ruleUsed.split(",");
+        for (String rule : rulesUsed) {
+            genTC.getRuleUsed().add(rule);
+        }
 
         return genTC;
     }
@@ -252,6 +346,66 @@ public class TagApplication {
         } else {
             // TA-implies-9 no assertions pass
             usedRule = "TA-implies-9";
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(usedRule);
+        }
+        return assertions;
+    }
+
+    public static List<TestAssertion> forall(QuantifierTag tag, Set<String> newData, boolean expectTruth) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (expectTruth) {
+            // TA-forall-1
+            if (tag.valueTrue.containsAll(newData)) {
+                assertions.add(new TruthAssertion(true));
+                assertions.add(new LinksEqualsAssertion(new HashSet<>())); // empty set
+                usedRule = "TA-forall-1";
+            }
+        } else {
+            // TA-forall-2
+            Set<String> both = new HashSet<>(tag.valueFalse);
+            both.retainAll(newData);
+            if (!both.isEmpty()) {
+                assertions.add(new TruthAssertion(false));
+                assertions.add(new LinksValueAssertion(tag.variable, false, both));
+                Set<Link> projection = CRCFunc.linksProjection(tag.linksFalse, tag.variable, both);
+                if (!projection.isEmpty()) {
+                    assertions.add(new LinksSubsetAssertion(projection));
+                }
+                usedRule = "TA-forall-2";
+            }
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(usedRule);
+        }
+        return assertions;
+    }
+
+    public static List<TestAssertion> exists(QuantifierTag tag, Set<String> newData, boolean expectTruth) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (expectTruth) {
+            // TA-exists-1
+            Set<String> both = new HashSet<>(tag.valueTrue);
+            both.retainAll(newData);
+            if (!both.isEmpty()) {
+                assertions.add(new TruthAssertion(true));
+                assertions.add(new LinksValueAssertion(tag.variable, true, both));
+                Set<Link> projection = CRCFunc.linksProjection(tag.linksTrue, tag.variable, both);
+                if (!projection.isEmpty()) {
+                    assertions.add(new LinksSubsetAssertion(projection));
+                }
+                usedRule = "TA-exists-1";
+            }
+        } else {
+            // TA-exists-2
+            if (tag.valueFalse.containsAll(newData)) {
+                assertions.add(new TruthAssertion(false));
+                assertions.add(new LinksEqualsAssertion(new HashSet<>())); // empty set
+                usedRule = "TA-exists-2";
+            }
         }
         for (TestAssertion assertion : assertions) {
             assertion.setRule(usedRule);

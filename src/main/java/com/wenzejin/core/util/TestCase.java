@@ -24,7 +24,7 @@ public class TestCase {
     private boolean checked;            // Checked
     private boolean passed;             // Passed
     private List<String> ruleUsed;
-    private final List<TestCase> source;
+    private final List<Integer> source;
 
     public TestCase() {
         id = idCounter++;
@@ -104,7 +104,7 @@ public class TestCase {
 
     public List<String> getRuleUsed() { return ruleUsed; }
 
-    public List<TestCase> getSource() {
+    public List<Integer> getSource() {
         return source;
     }
 
@@ -123,14 +123,14 @@ public class TestCase {
         if (result == null) {
             return false;
         }
-        boolean res = true;
+        passed = true;
         for (TestAssertion a : assertions) {
             if (!a.assertTest(result)) {
                 failedAssertions.add(a);
-                res = false;
+                passed = false;
             }
         }
-        return res;
+        return passed;
     }
 
     public boolean isValid() {

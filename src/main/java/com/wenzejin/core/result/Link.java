@@ -46,6 +46,16 @@ public class Link implements Cloneable {
         return res;
     }
 
+    public void rebindVariables(Map<String, String> variableMap) {
+        Set<Map.Entry<String, String>> newVaSet = new HashSet<>();
+        for (Map.Entry<String, String> entry : vaSet) {
+            String newVariable = variableMap.getOrDefault(entry.getKey(), entry.getKey());
+            String newValue = entry.getValue();
+            newVaSet.add(Map.entry(newVariable, newValue));
+        }
+        vaSet = newVaSet;
+    }
+
     @Override
     public int hashCode() {
         return (type.hashCode() << 1) ^ vaSet.hashCode();
