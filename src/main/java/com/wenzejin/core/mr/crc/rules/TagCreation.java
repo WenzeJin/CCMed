@@ -8,7 +8,6 @@ import com.wenzejin.core.mr.crc.QuantifierTag;
 import com.wenzejin.core.mr.crc.Tag;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
-import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpQuantifier;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.util.TestCase;
@@ -20,7 +19,7 @@ import java.util.Set;
 public class TagCreation {
 
     private static void guardBeforeAll(TestCase tc) throws NoTestResultException {
-        if (!tc.isChecked()) {
+        if (!tc.getChecked()) {
             throw new NoTestResultException("The test case has not been checked yet.");
         }
     }

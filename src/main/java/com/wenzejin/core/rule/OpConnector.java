@@ -23,6 +23,12 @@ public class OpConnector implements Formula {
         this.right = right;
     }
 
+    public OpConnector(Op opType) {
+        this.opType = opType;
+        this.left = null;
+        this.right = null;
+    }
+
     @Override
     public boolean isValid() {
         if (opType == null || left == null || right == null) return false;

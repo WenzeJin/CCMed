@@ -65,7 +65,13 @@ public class LiteralBfunc implements Formula{
         this.name = name;
     }
 
+    public LiteralBfunc(String name) {
+        this.name = name;
+        this.params = new ArrayList<>();
+    }
+
     public LiteralBfunc() {
+        this.name = null;
         this.params = new ArrayList<>();
     }
 

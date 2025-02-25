@@ -1,7 +1,9 @@
 package com.wenzejin.core.mr.crc;
 
+import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MRCore;
+import com.wenzejin.core.mr.MRCoreDB;
 import com.wenzejin.core.mr.crc.rules.TagApplication;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.mr.crc.rules.TagUnification;
@@ -13,9 +15,11 @@ import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
-public class CRCCore implements MRCore {
+public class CRCCore implements MRCore, MRCoreDB {
 
     private List<FormulaWithTag> binaryPool;
     private List<FormulaWithTag> quantifierPool;
@@ -71,6 +75,28 @@ public class CRCCore implements MRCore {
         return genTCs;
     }
 
+    @Override
+    public void generateTestCases(List<Integer> ids, String newBatchName) {
+        init();
+        initPoolsDB(ids);
+        var binaryPairs = shuffleBinaryPool();
+        generateBinaryCaseDB(binaryPairs, newBatchName + "bin");
+        shuffleQuantifierPool();
+        quantifierUnification();
+        generateQuantifierCaseDB(newBatchName + "quant");
+
+
+        int binNum = (int)(limit * binaryRate);
+        int quantNum = limit - binNum;
+
+        TestCaseDB.randomSubset(binNum, newBatchName + "bin", newBatchName);
+        TestCaseDB.randomSubset(quantNum, newBatchName + "quant", newBatchName);
+
+        // TODO: utilization rate analysis
+
+        destroy();
+    }
+
 
     /**
      * Init the CRC core
@@ -83,37 +109,55 @@ public class CRCCore implements MRCore {
     public void initPools(List<TestCase> tcs) {
         logger.info("Initializing CRC core pools, total test cases: {}", tcs.size());
         for (TestCase tc: tcs) {
-            Formula formula = tc.getRule().formula;
-            if (formula instanceof OpConnector) {
-                // binary formula
-                Formula leftFormula = ((OpConnector) formula).left;
-                Formula rightFormula = ((OpConnector) formula).right;
-                List<Tag> tags;
-                try {
-                    tags = TagCreation.entry(tc);
-                } catch (NoTestResultException e) {
-                    logger.warn("No test result for test case: {}, ignore!", tc);
-                    continue;
-                }
+            initPoolSingle(tc);
+        }
+        logger.info("Done, binary pool size: {}, quantifier pool size {}.", binaryPool.size(), quantifierPool.size());
+    }
+
+    public void initPoolsDB(List<Integer> ids) {
+        logger.info("Initializing CRC core pools from DB, total test cases: {}", ids.size());
+        for (int id: ids) {
+            try {
+                TestCase tc = TestCaseDB.getTestCaseById(id);
+                initPoolSingle(tc);
+            } catch (SQLException e) {
+                logger.warn("Failed to get test case with id: {}, check SQL", id);
+            } catch (IOException e) {
+                logger.warn("Failed to get test case with id: {}, check IO", id);
+            }
+        }
+        logger.info("Done, binary pool size: {}, quantifier pool size {}.", binaryPool.size(), quantifierPool.size());
+    }
+
+    private void initPoolSingle(TestCase tc) {
+        Formula formula = tc.getRule().formula;
+        if (formula instanceof OpConnector) {
+            // binary formula
+            Formula leftFormula = ((OpConnector) formula).left;
+            Formula rightFormula = ((OpConnector) formula).right;
+            List<Tag> tags;
+            try {
+                tags = TagCreation.entry(tc);
                 FormulaWithTag left = new FormulaWithTag(leftFormula, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
                 FormulaWithTag right = new FormulaWithTag(rightFormula, tags.get(1), tc.getPatterns(), tc.getBfuncs(), tc);
                 binaryPool.add(left);
                 binaryPool.add(right);
-            } else if (formula instanceof OpQuantifier) {
-                // quantifier formula
-                List<Tag> tags;
-                Formula child = ((OpQuantifier) formula).formula;
-                try {
-                    tags = TagCreation.entry(tc);
-                } catch (NoTestResultException e) {
-                    logger.warn("No test result for test case: {}, ignore!", tc);
-                    continue;
-                }
+            } catch (NoTestResultException e) {
+                logger.warn("No test result for test case: {}, ignore!", tc);
+            }
+
+        } else if (formula instanceof OpQuantifier) {
+            // quantifier formula
+            List<Tag> tags;
+            Formula child = ((OpQuantifier) formula).formula;
+            try {
+                tags = TagCreation.entry(tc);
                 FormulaWithTag quantifier = new FormulaWithTag(child, tags.getFirst(), tc.getPatterns(), tc.getBfuncs(), tc);
                 quantifierPool.add(quantifier);
+            } catch (NoTestResultException e) {
+                logger.warn("No test result for test case: {}, ignore!", tc);
             }
         }
-        logger.info("Done, binary pool size: {}, quantifier pool size {}.", binaryPool.size(), quantifierPool.size());
     }
 
     public Set<Map.Entry<FormulaWithTag, FormulaWithTag>> shuffleBinaryPool() {
@@ -186,6 +230,27 @@ public class CRCCore implements MRCore {
         return genTCs;
     }
 
+    public void generateBinaryCaseDB(Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs, String newBatchName) {
+        String[] ops = {"and", "or", "implies"};
+        int count = 0;
+        for (var pair: pairs) {
+            for (String op: ops) {
+                TestCase genTC = TagApplication.binaryEntry(pair.getKey(), pair.getValue(), op);
+                if (genTC != null) {
+                    try {
+                        TestCaseDB.storeTestCase(genTC, newBatchName);
+                        count++;
+                    } catch (SQLException e) {
+                        logger.warn("Failed to store test case: {}, check SQL", genTC);
+                    } catch (IOException e) {
+                        logger.warn("Failed to store test case: {}, check IO", genTC);
+                    }
+                }
+            }
+        }
+        logger.info("Generated {} test cases from binary pool, and stored in DB.", count);
+    }
+
     public List<TestCase> generateQuantifierCase() {
         List<TestCase> genTCs = new ArrayList<>();
         String[] ops = {"forall", "exists"};
@@ -203,6 +268,38 @@ public class CRCCore implements MRCore {
         }
         logger.info("Generated {} test cases from quantifier pool.", genTCs.size());
         return genTCs;
+    }
+
+    public void generateQuantifierCaseDB(String newBatchName) {
+        String[] ops = {"forall", "exists"};
+        int count = 0;
+        for (var item: quantifierPool) {
+            for (String op: ops) {
+                TestCase genTC = TagApplication.quantifierEntry(item, op, true);
+                if (genTC != null) {
+                    try {
+                        TestCaseDB.storeTestCase(genTC, newBatchName);
+                        count++;
+                    } catch (SQLException e) {
+                        logger.warn("Failed to store test case: {}, check SQL", genTC);
+                    } catch (IOException e) {
+                        logger.warn("Failed to store test case: {}, check IO", genTC);
+                    }
+                }
+                genTC = TagApplication.quantifierEntry(item, op, false);
+                if (genTC != null) {
+                    try {
+                        TestCaseDB.storeTestCase(genTC, newBatchName);
+                        count++;
+                    } catch (SQLException e) {
+                        logger.warn("Failed to store test case: {}, check SQL", genTC);
+                    } catch (IOException e) {
+                        logger.warn("Failed to store test case: {}, check IO", genTC);
+                    }
+                }
+            }
+        }
+        logger.info("Generated {} test cases from quantifier pool, and stored in DB.", count);
     }
 
     /**

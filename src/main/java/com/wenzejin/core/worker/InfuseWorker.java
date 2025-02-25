@@ -1,7 +1,9 @@
 package com.wenzejin.core.worker;
 
+import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
+import com.wenzejin.core.result.VAPair;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
@@ -12,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.*;
+import java.sql.SQLException;
 import java.util.*;
 
 import org.json.JSONObject;
@@ -209,30 +212,6 @@ public class InfuseWorker implements TestWorker{
             return;
         }
 
-//        Path patternInputPath = Path.of(workspace.toString(), "pattern.xml");
-//        Path contextInputPath = Path.of(workspace.toString(), "data.txt");
-//
-//        try (
-//            FileOutputStream pos = new FileOutputStream(patternInputPath.toString());
-//            FileOutputStream cos = new FileOutputStream(contextInputPath.toString());
-//        ) {
-//            pos.write("<?xml version=\"1.0\"?>\n<patterns>\n".getBytes());
-//            int context_cnt = 0;
-//            for (Pattern pat: patterns) {
-//                String name = pat.getName();
-//                String patStr = "<pattern><id>" + name + "</id><freshness><type>number</type><value>2</value></freshness></pattern>\n";
-//                pos.write(patStr.getBytes());
-//                for (String data: pat.getData()) {
-//                    context_cnt++;
-//                    contextMap.put(context_cnt, data);
-//                    String dataStr = String.format("{ \"changeType\": \"+\", \"patternId\": \"%s\", \"context\": " +
-//                            "{ \"contextId\": \"%s\", \"fields\": { \"data\": \"%s\"}}}\n", name, "ctx_" + context_cnt, data);
-//                    cos.write(dataStr.getBytes());
-//                }
-//            }
-//            pos.write("</patterns>".getBytes());
-//        }
-
         Path contextPoolPath = Path.of(workspace.toString(), "context_pool.json");
         try (FileOutputStream fos = new FileOutputStream(contextPoolPath.toString())) {
             JSONArray contextPool = new JSONArray();
@@ -323,10 +302,10 @@ public class InfuseWorker implements TestWorker{
                 for (Object linkObj: rule.getJSONArray("links")) {
                     JSONObject link = (JSONObject) linkObj;
                     Link.Type type = link.getString("type").equals("SATISFIED") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
-                    Set<Map.Entry<String, String>> vaSet = new HashSet<>();
+                    Set<VAPair> vaSet = new HashSet<>();
                     for (Object vaObj: link.getJSONArray("vaSet")) {
                         JSONObject va = (JSONObject) vaObj;
-                        vaSet.add(Map.entry(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
+                        vaSet.add(new VAPair(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
                     }
                     links.add(new Link(type, vaSet));
                 }

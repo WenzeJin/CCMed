@@ -12,5 +12,4 @@ public interface TestWorker {
     void destroyWorkspace() throws IOException;
 
     void singleRun(TestCase tc);
-
 }

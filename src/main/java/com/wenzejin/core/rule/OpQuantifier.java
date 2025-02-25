@@ -23,6 +23,13 @@ public class OpQuantifier implements Formula {
         this.formula = formula;
     }
 
+    public OpQuantifier(Op opType) {
+        this.opType = opType;
+        this.var = null;
+        this.pattern = null;
+        this.formula = null;
+    }
+
     @Override
     public boolean isValid() {
         if (opType == null || var == null || pattern == null) return false;

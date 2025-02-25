@@ -12,6 +12,10 @@ public class OpNot implements Formula {
         this.formula = formula;
     }
 
+    public OpNot() {
+        this.formula = null;
+    }
+
     @Override
     public boolean isValid() {
         if (formula == null) return false;

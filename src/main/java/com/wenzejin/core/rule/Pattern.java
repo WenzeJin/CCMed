@@ -78,4 +78,12 @@ public class Pattern {
     public String toString() {
         return name + " : " + data;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pattern pattern = (Pattern) o;
+        return name.equals(pattern.name) && data.equals(pattern.data);
+    }
 }

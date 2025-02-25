@@ -152,7 +152,7 @@ class InfuseWorkerTest {
 
         // 检查未完成的用例
         for (TestCase tc : tcs) {
-            if (!tc.isChecked() && !failedIds.contains(tc.getId())) {
+            if (!tc.getChecked() && !failedIds.contains(tc.getId())) {
                 failedIds.add(tc.getId());
             }
         }
@@ -164,7 +164,7 @@ class InfuseWorkerTest {
 
         System.out.println("Empty link cases:");
         for (TestCase tc : tcs) {
-            assertTrue(tc.isChecked());
+            assertTrue(tc.getChecked());
 
             if (tc.getResult().links.isEmpty()) {
                 System.out.println(tc);

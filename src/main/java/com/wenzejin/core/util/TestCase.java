@@ -8,10 +8,16 @@ import com.wenzejin.core.rule.Rule;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestCase {
 
-    private static int idCounter = 0;
+    private static AtomicInteger idCounter = new AtomicInteger(0);
+
+    public static void syncCounter(int id) {
+        idCounter.set(id);
+    }
 
     private final int id;
 
@@ -21,13 +27,15 @@ public class TestCase {
     private List<Bfunc> bfuncs;
     private List<TestAssertion> assertions;    // Assertion
     private Result result;          // Result
-    private boolean checked;            // Checked
-    private boolean passed;             // Passed
     private List<String> ruleUsed;
     private final List<Integer> source;
 
+    // Only used in memory-only mode
+    private boolean checked;            // Checked
+    private boolean passed;             // Passed
+
     public TestCase() {
-        id = idCounter++;
+        id = idCounter.getAndIncrement();
         result = null;
         assertions = null;
         checked = false;
@@ -82,7 +90,7 @@ public class TestCase {
         this.checked = checked;
     }
 
-    public boolean isChecked() {
+    public boolean getChecked() {
         return checked;
     }
 
@@ -90,7 +98,7 @@ public class TestCase {
         this.passed = passed;
     }
 
-    public boolean isPassed() {
+    public boolean getPassed() {
         return passed;
     }
 
@@ -106,6 +114,10 @@ public class TestCase {
 
     public List<Integer> getSource() {
         return source;
+    }
+
+    public void setSource(List<Integer> source) {
+        this.source.addAll(source);
     }
 
     public boolean assertTest() {
@@ -136,6 +148,18 @@ public class TestCase {
     public boolean isValid() {
         // TODO: Implement this method
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TestCase testCase = (TestCase) o;
+        if (!Objects.equals(rule, testCase.rule)) return false;
+        if (!Objects.equals(patterns, testCase.patterns)) return false;
+        if (!Objects.equals(bfuncs, testCase.bfuncs)) return false;
+        if (!Objects.equals(assertions, testCase.assertions)) return false;
+        return Objects.equals(result, testCase.result);
     }
 
     @Override

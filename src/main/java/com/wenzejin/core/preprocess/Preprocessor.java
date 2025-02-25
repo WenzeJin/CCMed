@@ -1,5 +1,6 @@
 package com.wenzejin.core.preprocess;
 
+import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.LiteralBfunc;
@@ -9,6 +10,8 @@ import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.XmlToRuleParser;
 import com.wenzejin.core.util.TestCase;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 public class Preprocessor {
 
     private List<Rule> rulesInput;
-    private final List<TestCase> testCases;
+    private List<TestCase> testCases;
 
     // configurable arguments
     private String rulesInputDirectory;
@@ -213,6 +216,14 @@ public class Preprocessor {
 
     public List<TestCase> getTestCases() {
         return testCases;
+    }
+
+    public void reduceSize(int size) {
+        testCases = RandomSubset.getRandom(testCases, size);
+    }
+
+    public void saveTestCasesDB(String batchName) throws SQLException, IOException {
+        TestCaseDB.storeTestCases(testCases, batchName);
     }
 
     public static void main(String[] args) {

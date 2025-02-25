@@ -85,6 +85,24 @@ public class XmlToRuleParser {
         return rules;
     }
 
+    public Formula parseXmlToFormula(String xml) throws XmlParseException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        Document document;
+
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            document = builder.parse(new ByteArrayInputStream(xml.getBytes()));
+        } catch (Exception e) {
+            throw new XmlParseException(e.getMessage());
+        }
+
+        // get root element
+        Element root = document.getDocumentElement();
+        Formula formula = parseFormula(root);
+
+        return formula;
+    }
+
     private Formula parseFormula(Node formulaNode) {
         if (formulaNode == null) {
             return null;

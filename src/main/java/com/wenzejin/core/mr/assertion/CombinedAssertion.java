@@ -2,8 +2,13 @@ package com.wenzejin.core.mr.assertion;
 
 import com.wenzejin.core.result.Result;
 
-public class CombinedAssertion implements TestAssertion {
+import java.util.Objects;
 
+public class CombinedAssertion implements TestAssertion {
+    static {
+        // 在 TestAssertionRegistry 中注册该断言，以便测试用例的序列化和反序列化
+        TestAssertionRegistry.register(CombinedAssertion.class);
+    }
 
 
     public enum Type {
@@ -74,5 +79,17 @@ public class CombinedAssertion implements TestAssertion {
                 ", type=" + type +
                 ", according to rule: " + rule +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        CombinedAssertion that = (CombinedAssertion) obj;
+        return Objects.equals(left, that.left) && Objects.equals(right,  that.right) && type == that.type;
     }
 }

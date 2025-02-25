@@ -19,16 +19,19 @@
 
 package com.wenzejin.core;
 
-import com.wenzejin.core.executor.AbstractExecutor;
+import com.wenzejin.core.db.TestCaseDB;
+import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.executor.TestAndCheckExecutor;
 import com.wenzejin.core.executor.TestOnlyExecutor;
+import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.crc.CRCCore;
 import com.wenzejin.core.preprocess.Preprocessor;
-import com.wenzejin.core.util.RandomSubset;
-import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,61 +41,119 @@ public class TesterCore {
     // Configurations
     private static final Logger logger = LogManager.getLogger("TesterCore");
 
-    private static void developExecute() throws Exception {
-        int TEST_SIZE = 200;
-        int limit = 3000;
-        List<TestCase> testCaseList;
-        AbstractExecutor executor;
-        CRCCore mrCore;
+    int         sourceLimit;
+    int         followUpLimit;
+    boolean     enableBatch;
+    int         batchSize;
+    String      workerType;
+    String      targetPath;
+    String      bfuncPath;
+    String      workspaceRoot;
+    List<String> arguments;
+    Map<String, Object> otherArgs;
 
-        // prepare test cases
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("preprocessor.rules-input-directory", "rules/4_level_rule/rule_data");
-        Preprocessor preprocessor = new Preprocessor(arguments);
-        preprocessor.readRules();
-        preprocessor.generateTestCases();
-        testCaseList = preprocessor.getTestCases();
-        testCaseList = RandomSubset.getRandom(testCaseList, TEST_SIZE);
+    private void developExecuteWithDB() {
+        try {
+            TestCaseDB.clearDB();
+            TestCaseDB.initializeDB();
+            int TEST_SIZE = 1000;
+            int limit = 3000;
+            int batch_size = 100;
+            TestOnlyExecutor preExecutor;
+            TestAndCheckExecutor postExecutor;
+            CRCCore mrCore;
 
-        // prepare executor
-        arguments.put("infuse.workspace-root", "workspace");
-        arguments.put("infuse.jar-target-path", "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified.jar");
-        arguments.put("infuse.bfunc-class-path", "cc_utils/INFUSE_ORI/Bfunction.class");
-        arguments.put("infuse.arguments", List.of("-approach", "INFUSE", "-mg"));
-        executor = new TestOnlyExecutor("infuse", arguments);
+            // prepare test cases
+            Map<String, Object> arguments = new HashMap<>();
+            arguments.put("preprocessor.rules-input-directory", "rules/4_level_rule/rule_data");
+            Preprocessor preprocessor = new Preprocessor(arguments);
+            preprocessor.readRules();
+            preprocessor.generateTestCases();
+            preprocessor.reduceSize(TEST_SIZE);
+            preprocessor.saveTestCasesDB("source");
 
-        // init core
-        mrCore = new CRCCore(limit);
+            // TODO: split batch
 
-        // test source
-        executor.executeTest(testCaseList);
+            List<String> batches = TestCaseDB.splitAndUpdateBatchNames("source", batch_size);
+            int count = 0;
+            int checked = 0;
+            int failed = 0;
+            Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
-        List<TestCase> afterTestCases = mrCore.generateTestCases(testCaseList);
+            // prepare executor
+            arguments.put("infuse.workspace-root", "workspace");
+            arguments.put("infuse.jar-target-path", "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified.jar");
+            arguments.put("infuse.bfunc-class-path", "cc_utils/INFUSE_ORI/Bfunction.class");
+            arguments.put("infuse.arguments", List.of("-approach", "INFUSE", "-mg"));
+            preExecutor = new TestOnlyExecutor("infuse", arguments);
+            postExecutor = new TestAndCheckExecutor("infuse", arguments);
 
-        Map<String, Integer> ruleCount = new HashMap<>();
-        for (TestCase tc: afterTestCases) {
-            for (String rule: tc.getRuleUsed()) {
-                ruleCount.put(rule, ruleCount.getOrDefault(rule, 0) + 1);
+            for (String batchName: batches) {
+                count++;
+                logger.info("*** EXECUTING BATCH {} / {}: ***", count, batches.size());
+
+                // test source
+                preExecutor.executeTestDB(TestCaseDB.getBatchIds(batchName));
+
+                mrCore = new CRCCore(limit / batches.size());
+                mrCore.generateTestCases(TestCaseDB.getBatchIds(batchName), batchName + "-f");
+
+                // test follow-up
+                postExecutor.executeTestDB(TestCaseDB.getBatchIds(batchName + "-f"));
+
+                checked += postExecutor.getChecked();
+                failedCases.putAll(postExecutor.getFailedCases());
+
+                TestCaseDB.updateBatchNameFromOld(batchName + "-f", "follow_up");
+
             }
-        }
-        for (var entry: ruleCount.entrySet()) {
-            logger.info("Rule: {}, count: {}", entry.getKey(), entry.getValue());
+            logger.info("Follow up limit: {}, {} checked, {} passed. Test passed? {}", limit, checked, checked - failedCases.size(), failedCases.isEmpty());
+
+            try (FileOutputStream fos = new FileOutputStream("./result.txt")){
+                fos.write(("Passed: " + failedCases.isEmpty() + "\n").getBytes());
+                fos.write(failedCases.toString().getBytes());
+            }
+
+            System.out.println("Done!");
+        } catch (SQLException e) {
+            logger.error("SQL Exception: {}", e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.error("IO Exception: {}", e.getMessage());
+        } catch (XmlParseException e) {
+            logger.error("XML Parse Exception: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception: {}", e.getMessage());
         }
 
-        executor = new TestAndCheckExecutor("infuse", arguments);
-        executor.executeTest(afterTestCases);
-
-        System.out.println("done");
     }
 
     public TesterCore() {
+        this.otherArgs = new HashMap<>();
+    }
+
+    public void loadDefaultSettings() {
+        this.sourceLimit = 1000;
+        this.followUpLimit = 3000;
+        this.enableBatch = true;
+        this.batchSize = 100;
+        this.workerType = "infuse";
+        this.workspaceRoot = "workspace";
+        this.targetPath = "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified.jar";
+        this.bfuncPath = "cc_utils/INFUSE_ORI/Bfunction.class";
+        this.arguments = List.of("-approach", "INFUSE", "-mg");
+        this.otherArgs.clear();
+    }
+
+    public void loadSettingsFromYaml(String yamlPath) throws IOException {
 
     }
 
 
     public static void main(String[] args) {
+        TesterCore testerCore = new TesterCore();
         try {
-            developExecute();
+            testerCore.developExecuteWithDB();
         } catch (Exception e) {
             e.printStackTrace();
         }

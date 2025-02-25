@@ -13,6 +13,11 @@ public class Rule implements Cloneable {
     public String id;
     public Formula formula;
 
+    public Rule() {
+        this.id = "";
+        this.formula = null;
+    }
+
     public Rule(String id, Formula formula) {
         this.id = id;
         this.formula = formula;

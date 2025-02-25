@@ -12,20 +12,20 @@ public class Link implements Cloneable {
 
     public Type type;
 
-    public Set<Map.Entry<String, String>> vaSet;
+    public Set<VAPair> vaSet;
 
     public Link(Type type) {
         this.type = type;
         vaSet = new HashSet<>();
     }
 
-    public Link(Type type, Set<Map.Entry<String, String>> vaSet) {
+    public Link(Type type, Set<VAPair> vaSet) {
         this.type = type;
         this.vaSet = vaSet;
     }
 
     public void addVaPair(String variable, String value) {
-        vaSet.add(Map.entry(variable, value));
+        vaSet.add(new VAPair(variable, value));
     }
 
     public void flip() {
@@ -47,11 +47,11 @@ public class Link implements Cloneable {
     }
 
     public void rebindVariables(Map<String, String> variableMap) {
-        Set<Map.Entry<String, String>> newVaSet = new HashSet<>();
-        for (Map.Entry<String, String> entry : vaSet) {
+        Set<VAPair> newVaSet = new HashSet<>();
+        for (VAPair entry : vaSet) {
             String newVariable = variableMap.getOrDefault(entry.getKey(), entry.getKey());
             String newValue = entry.getValue();
-            newVaSet.add(Map.entry(newVariable, newValue));
+            newVaSet.add(new VAPair(newVariable, newValue));
         }
         vaSet = newVaSet;
     }

@@ -1,5 +1,6 @@
 package com.wenzejin.core.executor;
 
+import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.util.TestCase;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
@@ -27,6 +28,7 @@ public abstract class AbstractExecutor {
     Map<String, Object> workerArguments;
     int threadNum;
     ExecutorService executor;
+    int checked;
 
     private static final Logger logger = LogManager.getLogger("AbstractExecutor");
 
@@ -42,6 +44,10 @@ public abstract class AbstractExecutor {
         this.threadNum = threadNum;
     }
 
+    public int getChecked() {
+        return checked;
+    }
+
     public void executeTest(List<TestCase> tcs) {
         // hook method
         beforeTest(tcs);
@@ -51,11 +57,28 @@ public abstract class AbstractExecutor {
         afterTest(tcs);
     }
 
+    public void executeTestDB(List<Integer> ids) {
+        beforeTestDB(ids);
+        runTestDB(ids);
+        afterTestDB(ids);
+    }
+
+
     protected void beforeTest(List<TestCase> tcs) {
         // do nothing
+        checked = 0;
+    }
+
+    protected void beforeTestDB(List<Integer> ids) {
+        // do nothing
+        checked = 0;
     }
 
     protected void afterTest(List<TestCase> tcs) {
+        // do nothing
+    }
+
+    protected void afterTestDB(List<Integer> ids) {
         // do nothing
     }
 
@@ -112,12 +135,85 @@ public abstract class AbstractExecutor {
             logger.fatal("Execution interrupted.");
         }
 
+        checked = tcs.size() - failedIds.size();
+
         // 销毁线程本地 Worker 的工作区
         for (int i = 0; i < numThreads; i++) {
             executor.submit(() -> {
                 TestWorker worker = threadLocalWorker.get();
                 try {
                     worker.destroyWorkspace(); // 每个线程的 Worker 只销毁一次工作区
+                } catch (IOException e) {
+                    logger.warn("Destroy Workspace Failed. Maybe there is no workspace to destroy.");
+                }
+                return null;
+            });
+        }
+
+        executor.shutdown();
+    }
+
+    private void runTestDB(List<Integer> ids) {
+        int totalTasks = ids.size();
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        executor = Executors.newFixedThreadPool(numThreads);
+
+        AtomicInteger progress = new AtomicInteger(0);
+        AtomicInteger checkCount = new AtomicInteger(0);
+        List<Integer> failedIds = Collections.synchronizedList(new ArrayList<>());
+
+        ThreadLocal<TestWorker> threadLocalWorker = ThreadLocal.withInitial(() -> {
+            TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workerArguments);
+            try {
+                worker.initWorkspace();
+            } catch (IOException e) {
+                logger.fatal("Init Workspace Failed.");
+            }
+            return worker;
+        });
+
+        List<Callable<Object>> tasks = new ArrayList<>();
+        for (int id : ids) {
+            tasks.add(() -> {
+                TestWorker worker = threadLocalWorker.get();
+                try {
+                    TestCase tc = TestCaseDB.getTestCaseById(id);
+                    worker.singleRun(tc);
+                    checkCount.incrementAndGet();
+                    TestCaseDB.setChecked(id, true);
+                    boolean passed = checkResult(tc);
+                    if (passed) {
+                        passTestCase(tc);
+                        TestCaseDB.setPassed(id, true);
+                    } else {
+                        failTestCase(tc);
+                        TestCaseDB.setPassed(id, false);
+                    }
+                    TestCaseDB.updateCompressedData(id, tc);
+                } catch (Exception e) {
+                    synchronized (failedIds) {
+                        failedIds.add(id);
+                    }
+                }
+                int currentProgress = progress.incrementAndGet();
+                procedureCallback(currentProgress, totalTasks);
+                return null;
+            });
+        }
+
+        checked = checkCount.get();
+
+        try {
+            executor.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            logger.fatal("Execution interrupted.");
+        }
+
+        for (int i = 0; i < numThreads; i++) {
+            executor.submit(() -> {
+                TestWorker worker = threadLocalWorker.get();
+                try {
+                    worker.destroyWorkspace();
                 } catch (IOException e) {
                     logger.warn("Destroy Workspace Failed. Maybe there is no workspace to destroy.");
                 }
@@ -139,4 +235,6 @@ public abstract class AbstractExecutor {
     protected abstract void passTestCase(TestCase tc);
 
     protected abstract void failTestCase(TestCase tc);
+
+    // TODO: provide DB version of passTestCase and failTestCase
 }

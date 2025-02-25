@@ -66,6 +66,14 @@ public class Bfunc implements Cloneable{
         return bfunc;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bfunc bfunc = (Bfunc) o;
+        return name.equals(bfunc.name) && valueMap.equals(bfunc.valueMap) && paramList.equals(bfunc.paramList);
+    }
+
     static private void generateCombinations(List<Pattern> patterns, int index, String current, List<String> result) {
         if (index == patterns.size()) {
             result.add("(" + current + ")");

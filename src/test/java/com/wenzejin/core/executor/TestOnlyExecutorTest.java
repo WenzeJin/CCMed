@@ -1,6 +1,5 @@
 package com.wenzejin.core.executor;
 
-import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.preprocess.Preprocessor;
 import com.wenzejin.core.result.Link;
@@ -47,7 +46,7 @@ class TestOnlyExecutorTest {
         executor.executeTest(testCaseList);
 
         for (TestCase tc : testCaseList) {
-            assertTrue(tc.isChecked());
+            assertTrue(tc.getChecked());
             System.out.println(tc.getRule().formula);
             List<Set<Link>> links = CRCFunc.attribution(tc);
             if (links != null) {

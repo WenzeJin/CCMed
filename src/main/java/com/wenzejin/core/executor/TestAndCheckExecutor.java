@@ -1,5 +1,6 @@
 package com.wenzejin.core.executor;
 
+import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +23,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
     private long startTime;
     private long endTime;
 
-    private Map<TestCase, List<TestAssertion>> failedCases;
+    private Map<Integer, List<TestAssertion>> failedCases;
 
     public TestAndCheckExecutor(String workerType, Map<String, Object> arguments) {
         super(workerType, arguments);
@@ -30,9 +31,15 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         failedCases = new HashMap<>();
     }
 
+    public Map<Integer, List<TestAssertion>> getFailedCases() {
+        return failedCases;
+    }
+
     @Override
     protected void beforeTest(List<TestCase> tcs) {
+        super.beforeTest(tcs);
         startTime = System.currentTimeMillis();
+        failedCases.clear();
     }
 
     @Override
@@ -40,7 +47,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         endTime = System.currentTimeMillis();
         int checked = 0;
         for (TestCase tc : tcs) {
-            if(tc.isChecked()) {
+            if(tc.getChecked()) {
                 checked++;
             }
         }
@@ -60,11 +67,43 @@ public class TestAndCheckExecutor extends AbstractExecutor{
     }
 
     @Override
+    protected void beforeTestDB(List<Integer> ids) {
+        super.beforeTestDB(ids);
+        startTime = System.currentTimeMillis();
+        failedCases.clear();
+    }
+
+    @Override
+    protected void afterTestDB(List<Integer> ids) {
+        endTime = System.currentTimeMillis();
+        checked = 0;
+        for(int id : ids) {
+            checked += TestCaseDB.getSizeByCondition("id = " + id + " AND checked = TRUE");
+        }
+
+        logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
+                checked, ids.size(), endTime - startTime);
+
+        int failed = failedCases.size();
+
+        int passed = checked - failed;
+
+        logger.info("Report: {} cases passed, {} cases failed, pass rate: {}%.", passed, failed, (float)passed * 100 / checked);
+
+        for (var fc: failedCases.keySet()) {
+            logger.info("Failed test case id:");
+            logger.info(fc.toString());
+            logger.info("Failed assertions:");
+            logger.info(failedCases.get(fc).toString());
+        }
+    }
+
+    @Override
     protected boolean checkResult(TestCase tc) {
         List<TestAssertion> failedAssertions = new ArrayList<>();
         boolean boolRes = tc.assertTest(failedAssertions);
         if (!boolRes) {
-            failedCases.put(tc, failedAssertions);
+            failedCases.put(tc.getId(), failedAssertions);
             logger.warn("Test case id {} failed.", tc.getId());
             return false;
         }

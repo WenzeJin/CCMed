@@ -7,3 +7,4 @@ import java.util.List;
 public interface MRCore {
     List<TestCase> generateTestCases(List<TestCase> sourceTestCases);
 }
+

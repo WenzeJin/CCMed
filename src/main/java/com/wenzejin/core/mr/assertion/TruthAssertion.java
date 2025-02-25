@@ -3,6 +3,10 @@ package com.wenzejin.core.mr.assertion;
 import com.wenzejin.core.result.Result;
 
 public class TruthAssertion implements TestAssertion {
+    static {
+        // 在 TestAssertionRegistry 中注册该断言，以便测试用例的序列化和反序列化
+        TestAssertionRegistry.register(TruthAssertion.class);
+    }
 
     private final boolean truthValue;
 
@@ -33,5 +37,17 @@ public class TruthAssertion implements TestAssertion {
     @Override
     public String getRule() {
         return rule;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        TruthAssertion that = (TruthAssertion) obj;
+        return truthValue == that.truthValue;
     }
 }
