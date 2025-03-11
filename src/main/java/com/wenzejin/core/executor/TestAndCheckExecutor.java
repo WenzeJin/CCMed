@@ -31,50 +31,24 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         failedCases = new HashMap<>();
     }
 
+    public TestAndCheckExecutor(String workerType, Map<String, Object> arguments, int threadNum) {
+        super(workerType, arguments, threadNum);
+        failedCases = new HashMap<>();
+    }
+
     public Map<Integer, List<TestAssertion>> getFailedCases() {
         return failedCases;
     }
 
     @Override
-    protected void beforeTest(List<TestCase> tcs) {
-        super.beforeTest(tcs);
+    protected void beforeTest(List<Integer> ids) {
+        super.beforeTest(ids);
         startTime = System.currentTimeMillis();
         failedCases.clear();
     }
 
     @Override
-    protected void afterTest(List<TestCase> tcs) {
-        endTime = System.currentTimeMillis();
-        int checked = 0;
-        for (TestCase tc : tcs) {
-            if(tc.getChecked()) {
-                checked++;
-            }
-        }
-        logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
-                checked, tcs.size(), endTime - startTime);
-
-        int failed = failedCases.size();
-        int passed = checked - failed;
-        logger.info("Report: {} cases passed, {} cases failed, pass rate: {}%.", passed, failed, (float)passed * 100 / checked);
-
-        for (var fc: failedCases.keySet()) {
-            logger.info("Failed Test Case:");
-            logger.info(fc.toString());
-            logger.info("failed assertions:");
-            logger.info(failedCases.get(fc).toString());
-        }
-    }
-
-    @Override
-    protected void beforeTestDB(List<Integer> ids) {
-        super.beforeTestDB(ids);
-        startTime = System.currentTimeMillis();
-        failedCases.clear();
-    }
-
-    @Override
-    protected void afterTestDB(List<Integer> ids) {
+    protected void afterTest(List<Integer> ids) {
         endTime = System.currentTimeMillis();
         checked = 0;
         for(int id : ids) {
@@ -99,7 +73,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
     }
 
     @Override
-    protected boolean checkResult(TestCase tc) {
+    protected synchronized boolean checkResult(TestCase tc) {
         List<TestAssertion> failedAssertions = new ArrayList<>();
         boolean boolRes = tc.assertTest(failedAssertions);
         if (!boolRes) {
@@ -138,6 +112,12 @@ public class TestAndCheckExecutor extends AbstractExecutor{
                     currentProgress * 100 / totalTasks,
                     formattedETA);
         }
+    }
+
+    @Override
+    protected synchronized void uncheckTestCase(TestCase tc) {
+        failedCases.put(tc.getId(), tc.getAssertions());
+        logger.warn("Test case id {} TLE or RE.", tc.getId());
     }
 
     /**

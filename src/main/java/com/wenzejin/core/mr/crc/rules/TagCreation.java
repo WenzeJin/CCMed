@@ -283,6 +283,7 @@ public class TagCreation {
         Set<String> valTrue = CRCFunc.val(result.links, true, varName);
         Set<String> valFalse = CRCFunc.val(result.links, false, varName);
         QuantifierTag tag = new QuantifierTag(varName);
+        tag.parentID = "" + tc.getId();
 
         if (formula.getNodeType().equalsIgnoreCase("forall")) {
             if (result.truth) {
@@ -295,7 +296,6 @@ public class TagCreation {
                 allValue.removeAll(valFalse);
                 tag.valueTrue = allValue;
                 tag.valueFalse = valFalse;
-                tag.linksFalse = new HashSet<>(result.links);
                 tag.ruleUsed = "TC-FORALL-2";
                 return tag;
             }
@@ -305,7 +305,6 @@ public class TagCreation {
                 tag.valueTrue = valTrue;
                 allValue.removeAll(valTrue);
                 tag.valueFalse = allValue;
-                tag.linksTrue = new HashSet<>(result.links);
                 tag.ruleUsed = "TC-EXISTS-1";
                 return tag;
             } else {

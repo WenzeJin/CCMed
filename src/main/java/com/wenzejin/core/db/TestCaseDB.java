@@ -3,6 +3,7 @@ package com.wenzejin.core.db;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import com.wenzejin.core.mr.assertion.TestAssertionTypeAdapter;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.FormulaTypeAdapter;
@@ -11,11 +12,9 @@ import com.wenzejin.core.util.TestCase;
 
 import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.*;
+
+
 
 /**
  * Database driver for test cases.
@@ -34,12 +33,6 @@ public class TestCaseDB {
 
     // 创建数据库和表
     public static void initializeDB() throws SQLException {
-        // 确保 ./data 目录存在
-        File dataDir = new File("./data");
-        if (!dataDir.exists()) {
-            dataDir.mkdir();  // 如果目录不存在，则创建
-        }
-
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
              Statement stmt = conn.createStatement()) {
             String createTableSQL = "CREATE TABLE IF NOT EXISTS testcases ("
@@ -57,22 +50,11 @@ public class TestCaseDB {
 
     // 清除数据库
     public static void clearDB() throws SQLException {
-        // 确保 ./data 目录存在
-        File dataDir = new File("./data");
-        if (!dataDir.exists()) {
-            dataDir.mkdir();  // 如果目录不存在，则创建
-        }
-
         // 删除 database 文件
         File databaseFile = new File(DATABASE_URL);
         if (databaseFile.exists()) {
             databaseFile.delete();
         }
-    }
-
-    // 将 TestCase 存储到数据库中
-    public static void storeTestCase(TestCase testCase) throws SQLException, IOException {
-        storeTestCase(testCase, null);
     }
 
     // 将 TestCase 存储到数据库中，完整的方法
@@ -172,10 +154,6 @@ public class TestCaseDB {
 
     }
 
-    public static void storeTestCases(List<TestCase> testCases) throws SQLException, IOException {
-        storeTestCases(testCases, null);
-    }
-
     // 按 ID 提取 TestCase
     public static TestCase getTestCaseById(int id) throws SQLException, IOException {
         String selectSQL = "SELECT compressed_data FROM testcases WHERE id = ?";
@@ -193,31 +171,6 @@ public class TestCaseDB {
         return null;  // 如果没有找到，则返回 null
     }
 
-    public static String getBatchNameById(int id) throws SQLException {
-        String selectSQL = "SELECT batch_name FROM testcases WHERE id = ?";
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("batch_name");
-            }
-        }
-        return null;
-    }
-
-    public static int getMaxId() throws SQLException {
-        String selectSQL = "SELECT MAX(id) FROM testcases";
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
-             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        }
-        return 0;
-    }
-
     public static List<Integer> getBatchIds(String batchName) throws SQLException {
         String selectSQL = "SELECT id FROM testcases WHERE batch_name = ?";
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
@@ -231,7 +184,7 @@ public class TestCaseDB {
             return ids;
         }
     }
-    
+
     public static void randomSubsetWithCond(int size, String parentBatch, String newBatchName, String sqlCondition) {
         if (sqlCondition != null && !sqlCondition.isEmpty()) {
             sqlCondition = "(" + sqlCondition + ")";
@@ -384,6 +337,33 @@ public class TestCaseDB {
         }
     }
 
+    public static Set<Integer> getParentSet(String batchName) throws SQLException {
+        String selectSQL = "SELECT parent_id FROM testcases WHERE batch_name = ?";
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
+             PreparedStatement stmt = conn.prepareStatement(selectSQL)) {
+            stmt.setString(1, batchName);
+            ResultSet rs = stmt.executeQuery();
+            Set<Integer> parentSet = new HashSet<>();
+            while (rs.next()) {
+                String parent_id = rs.getString("parent_id");
+                if (parent_id != null && !parent_id.isEmpty()) {
+                    String[] ids = parent_id.split(",");
+                    for (String id: ids) {
+                        parentSet.add(Integer.parseInt(id));
+                    }
+                }
+            }
+            return parentSet;
+        }
+    }
 
+    public static void deleteBatch(String batchName) throws SQLException {
+        String deleteSQL = "DELETE FROM testcases WHERE batch_name = ?";
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
+             PreparedStatement stmt = conn.prepareStatement(deleteSQL)) {
+            stmt.setString(1, batchName);
+            stmt.executeUpdate();
+        }
+    }
 
 }

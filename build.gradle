@@ -4,11 +4,27 @@ plugins {
 }
 
 group = 'com.wenzejin'
-version = '0.1.0'
+version = '1.0.0'
 mainClassName = 'com.wenzejin.Main'
 
 repositories {
     mavenCentral()
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // 忽略重复的文件
+
+    manifest {
+        attributes(
+            'Main-Class': mainClassName
+        )
+    }
+
+    from {
+        (configurations.runtimeClasspath).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }
 
 dependencies {
@@ -33,6 +49,8 @@ dependencies {
 
     // sqlite3 driver
     implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+
+    implementation 'commons-cli:commons-cli:1.5.0'
 }
 
 test {

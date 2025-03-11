@@ -220,22 +220,10 @@ public class Preprocessor {
 
     public void reduceSize(int size) {
         testCases = RandomSubset.getRandom(testCases, size);
+        logger.info("We will use {} / {} testCases.", testCases.size(), size);
     }
 
     public void saveTestCasesDB(String batchName) throws SQLException, IOException {
         TestCaseDB.storeTestCases(testCases, batchName);
-    }
-
-    public static void main(String[] args) {
-        Map<String, Object> arguments = new HashMap<>();
-        arguments.put("preprocessor.rules-input-directory", "rules/4_level_rule/rule_data");
-
-        Preprocessor preprocessor = new Preprocessor(arguments);
-        try {
-            preprocessor.readRules();
-        } catch (XmlParseException e) {
-            e.printStackTrace();
-        }
-        preprocessor.generateTestCases();
     }
 }

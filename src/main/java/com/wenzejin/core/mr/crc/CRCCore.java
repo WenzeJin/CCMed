@@ -3,14 +3,12 @@ package com.wenzejin.core.mr.crc;
 import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MRCore;
-import com.wenzejin.core.mr.MRCoreDB;
 import com.wenzejin.core.mr.crc.rules.TagApplication;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.mr.crc.rules.TagUnification;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
 import com.wenzejin.core.rule.OpQuantifier;
-import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,81 +16,74 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
-public class CRCCore implements MRCore, MRCoreDB {
+public class CRCCore implements MRCore {
 
     private List<FormulaWithTag> binaryPool;
     private List<FormulaWithTag> quantifierPool;
 
-    private int limit;
-
-    private double binaryRate;
+    private final int limit;
+    private final boolean enableBoost;
+    private final Map<String, Integer> categoricalCount;
 
     private static final Logger logger = LogManager.getLogger("CRCCore");
 
-    public CRCCore() {
-        limit = Integer.MAX_VALUE;
-        binaryRate = 0.7;
-    }
-
-    public CRCCore(int limit) {
+    public CRCCore(int limit, boolean enableBoost) {
         this.limit = limit;
-        binaryRate = 0.7;
+        this.enableBoost = enableBoost;
+        categoricalCount = new HashMap<>();
     }
 
-    /**
-     * @param sourceTestCases
-     * @return
-     */
-    @Override
-    public List<TestCase> generateTestCases(List<TestCase> sourceTestCases) {
-        init();
-        initPools(sourceTestCases);
-        List<TestCase> genBinTCs = new ArrayList<>();
-        var binaryPairs = shuffleBinaryPool();
-        genBinTCs.addAll(generateBinaryCase(binaryPairs));
-        List<TestCase> genQuantTCs = new ArrayList<>();
-        shuffleQuantifierPool();
-        quantifierUnification();
-        genQuantTCs.addAll(generateQuantifierCase());
-
-        int binNum = (int)(limit * binaryRate);
-        int quantNum = limit - binNum;
-
-        int beforeSize = genBinTCs.size() + genQuantTCs.size();
-
-        genBinTCs = RandomSubset.getRandom(genBinTCs, binNum);
-        genQuantTCs = RandomSubset.getRandom(genQuantTCs, quantNum);
-        List<TestCase> genTCs = new ArrayList<>(genQuantTCs);
-        genTCs.addAll(genBinTCs);
-        Set<Integer> utilized = new HashSet<>();
-        for (TestCase tc: genTCs) {
-            utilized.addAll(tc.getSource());
+    public int getCategoricalLimit(String type, int limit) {
+        if (!enableBoost) {
+            return Integer.MAX_VALUE;
         }
-        logger.info("Sampled {} test cases from all {} cases, source utilization rate: {}%.",
-                genTCs.size(), beforeSize, (float)utilized.size() * 100 / sourceTestCases.size() );
-        destroy();
-        return genTCs;
+        int typeLimit = limit / 5; // and, or, implies, forall, exists
+        return switch (type) {
+            case "and", "or" ->     typeLimit / 6;
+            case "implies" ->       typeLimit / 8;
+            case "forall", "exists" -> typeLimit / 4;
+            default ->              Integer.MAX_VALUE;
+        };
     }
 
     @Override
-    public void generateTestCases(List<Integer> ids, String newBatchName) {
+    public void generateTestCases(List<Integer> ids, String newBatchName) throws SQLException {
         init();
-        initPoolsDB(ids);
+        initPools(ids);
         var binaryPairs = shuffleBinaryPool();
-        generateBinaryCaseDB(binaryPairs, newBatchName + "bin");
-        shuffleQuantifierPool();
-        quantifierUnification();
-        generateQuantifierCaseDB(newBatchName + "quant");
 
+        var quantifierPairs = shuffleQuantifierPool();
 
-        int binNum = (int)(limit * binaryRate);
-        int quantNum = limit - binNum;
+        generateBinaryCase(binaryPairs, newBatchName + "temp");
+        generateQuantifierCase(quantifierPairs, newBatchName + "temp");
 
-        TestCaseDB.randomSubset(binNum, newBatchName + "bin", newBatchName);
-        TestCaseDB.randomSubset(quantNum, newBatchName + "quant", newBatchName);
+        // 先平衡地从每个类别中选取一定数量的测试用例
+        for (String type: categoricalCount.keySet()) {
+            String[] parts = type.split("-");
+            String op = parts[1];
+            int count = getCategoricalLimit(op, limit);
+            TestCaseDB.randomSubsetWithCond(count, newBatchName + "temp", newBatchName, "ta_rule = '" + type + "'");
+        }
 
-        // TODO: utilization rate analysis
+        // 再从剩余的测试用例中随机选取一定数量的测试用例补齐
+        int currSize = TestCaseDB.getSizeByCondition("batch_name = '" + newBatchName + "'");
+        int left = limit - currSize;
+        if (left > 0) {
+            TestCaseDB.randomSubset(left, newBatchName + "temp", newBatchName);
+        }
+
+        try {
+            var parentSet = TestCaseDB.getParentSet(newBatchName);
+            double rate = (double) parentSet.size() / ids.size();
+            logger.info("Utilization rate analysis: {} %", rate * 100);
+        } catch (SQLException e) {
+            logger.warn("Utilization rate analysis failed, check SQL");
+        }
+
+        // 删除没有选中的测试用例
+        TestCaseDB.deleteBatch(newBatchName + "temp");
 
         destroy();
     }
@@ -106,20 +97,14 @@ public class CRCCore implements MRCore, MRCoreDB {
         quantifierPool = new ArrayList<>();
     }
 
-    public void initPools(List<TestCase> tcs) {
-        logger.info("Initializing CRC core pools, total test cases: {}", tcs.size());
-        for (TestCase tc: tcs) {
-            initPoolSingle(tc);
-        }
-        logger.info("Done, binary pool size: {}, quantifier pool size {}.", binaryPool.size(), quantifierPool.size());
-    }
-
-    public void initPoolsDB(List<Integer> ids) {
+    public void initPools(List<Integer> ids) {
         logger.info("Initializing CRC core pools from DB, total test cases: {}", ids.size());
         for (int id: ids) {
             try {
                 TestCase tc = TestCaseDB.getTestCaseById(id);
-                initPoolSingle(tc);
+                if (tc != null) {
+                    initPoolSingle(tc);
+                }
             } catch (SQLException e) {
                 logger.warn("Failed to get test case with id: {}, check SQL", id);
             } catch (IOException e) {
@@ -160,17 +145,21 @@ public class CRCCore implements MRCore, MRCoreDB {
         }
     }
 
-    public Set<Map.Entry<FormulaWithTag, FormulaWithTag>> shuffleBinaryPool() {
+    private List<Map.Entry<FormulaWithTag, FormulaWithTag>> shuffleBinaryPool() {
         logger.info("Shuffling binary pool, size: {}", binaryPool.size());
 
         int nnCount = 0;
 
-        Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs = new HashSet<>();
+        List<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs = new ArrayList<>();
 
         for (FormulaWithTag first: binaryPool) {
             for (FormulaWithTag second: binaryPool) {
                 BinaryTag firstTag = (BinaryTag) first.tag;
                 BinaryTag secondTag = (BinaryTag) second.tag;
+                if (firstTag == secondTag) {
+                    continue;
+                }
+
                 if (firstTag.truth == BinaryTag.Truth.UNKNOWN && secondTag.truth == BinaryTag.Truth.UNKNOWN) {
                     nnCount++;
                     continue;
@@ -178,128 +167,124 @@ public class CRCCore implements MRCore, MRCoreDB {
                 pairs.add(Map.entry(first, second));
             }
         }
-
+        Collections.shuffle(pairs);
         logger.info("Done, total pairs: {}, ignored NN pairs: {}", pairs.size(), nnCount);
 
         return pairs;
     }
 
-    public Set<Map.Entry<FormulaWithTag, FormulaWithTag>> shuffleQuantifierPool() {
+    private List<Map.Entry<FormulaWithTag, FormulaWithTag>> shuffleQuantifierPool() {
         logger.info("Shuffling quantifier pool, size: {}", quantifierPool.size());
 
-        Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs = new HashSet<>();
+        List<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs = new ArrayList<>();
 
         for (FormulaWithTag first: quantifierPool) {
             for (FormulaWithTag second: quantifierPool) {
+                if (first == second) {
+                    continue;
+                }
                 pairs.add(Map.entry(first, second));
             }
         }
-
+        Collections.shuffle(pairs);
         logger.info("Done, total pairs: {}", pairs.size());
 
         return pairs;
     }
 
-    public void quantifierUnification() {
-        Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs = shuffleQuantifierPool();
-        quantifierPool = new ArrayList<>();
-        List<String> ops = List.of("and", "or", "implies");
-        for (var pair: pairs) {
-            for (String op: ops) {
-                FormulaWithTag gen = TagUnification.unify(pair.getKey(), pair.getValue(), op);
-                if (gen != null) {
-                    quantifierPool.add(gen);
-                }
-            }
-        }
 
-    }
-
-    public List<TestCase> generateBinaryCase(Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs) {
-        List<TestCase> genTCs = new ArrayList<>();
-        String[] ops = {"and", "or", "implies"};
-        for (var pair: pairs) {
-            for (String op: ops) {
-                TestCase genTC = TagApplication.binaryEntry(pair.getKey(), pair.getValue(), op);
-                if (genTC != null) {
-                    genTCs.add(genTC);
-                }
-            }
-        }
-        logger.info("Generated {} test cases from binary pool.", genTCs.size());
-        return genTCs;
-    }
-
-    public void generateBinaryCaseDB(Set<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs, String newBatchName) {
+    private void generateBinaryCase(List<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs, String newBatchName) {
         String[] ops = {"and", "or", "implies"};
         int count = 0;
+        int progress = 0;
+        final int total = pairs.size() * ops.length;
+
         for (var pair: pairs) {
             for (String op: ops) {
                 TestCase genTC = TagApplication.binaryEntry(pair.getKey(), pair.getValue(), op);
+                progress++;
+                if (progress % (total / 10) == 0) {
+                    logger.info("BinaryOp progress: {} %", progress * 100 / total);
+                }
                 if (genTC != null) {
+                    String taRule = "";
+                    for(String rule: genTC.getRuleUsed()) {
+                        if(rule.startsWith("TA")) {
+                            taRule = rule;
+                            break;
+                        }
+                    }
+                    if (categoricalCount.getOrDefault(taRule, 0) >= getCategoricalLimit(op, 5 * limit)) {
+                        continue;
+                    }
                     try {
                         TestCaseDB.storeTestCase(genTC, newBatchName);
                         count++;
+                        categoricalCount.put(taRule, categoricalCount.getOrDefault(taRule, 0) + 1);
                     } catch (SQLException e) {
                         logger.warn("Failed to store test case: {}, check SQL", genTC);
                     } catch (IOException e) {
                         logger.warn("Failed to store test case: {}, check IO", genTC);
                     }
                 }
+
             }
         }
         logger.info("Generated {} test cases from binary pool, and stored in DB.", count);
     }
 
-    public List<TestCase> generateQuantifierCase() {
-        List<TestCase> genTCs = new ArrayList<>();
-        String[] ops = {"forall", "exists"};
-        for (var item: quantifierPool) {
-            for (String op: ops) {
-                TestCase genTC = TagApplication.quantifierEntry(item, op, true);
-                if (genTC != null) {
-                    genTCs.add(genTC);
+    private void generateQuantifierCase(List<Map.Entry<FormulaWithTag, FormulaWithTag>> pairs, String newBatchName) {
+        String[] bops = {"and", "or", "implies"};
+        String[] qops = {"forall", "exists"};
+        int count = 0;
+        final int total = pairs.size() * bops.length;
+        int progress = 0;
+
+        for (var pair: pairs) {
+            for (String op: bops) {
+                FormulaWithTag gen = TagUnification.unify(pair.getKey(), pair.getValue(), op);
+                progress++;
+                if (progress % (total / 10) == 0) {
+                    logger.info("Quantifier progress: {} %", progress * 100 / total);
                 }
-                genTC = TagApplication.quantifierEntry(item, op, false);
-                if (genTC != null) {
-                    genTCs.add(genTC);
+                if (gen == null) {
+                    continue;
+                }
+                for (String qop: qops) {
+                    TestCase genTC = TagApplication.quantifierEntry(gen, qop, true);
+                    count += postProcessQuantifier(genTC, newBatchName, qop);
+                    genTC = TagApplication.quantifierEntry(gen, qop, false);
+                    count += postProcessQuantifier(genTC, newBatchName, qop);
                 }
             }
         }
-        logger.info("Generated {} test cases from quantifier pool.", genTCs.size());
-        return genTCs;
+
+        logger.info("Generated {} test cases from quantifier pool, and stored in DB.", count);
     }
 
-    public void generateQuantifierCaseDB(String newBatchName) {
-        String[] ops = {"forall", "exists"};
-        int count = 0;
-        for (var item: quantifierPool) {
-            for (String op: ops) {
-                TestCase genTC = TagApplication.quantifierEntry(item, op, true);
-                if (genTC != null) {
-                    try {
-                        TestCaseDB.storeTestCase(genTC, newBatchName);
-                        count++;
-                    } catch (SQLException e) {
-                        logger.warn("Failed to store test case: {}, check SQL", genTC);
-                    } catch (IOException e) {
-                        logger.warn("Failed to store test case: {}, check IO", genTC);
-                    }
-                }
-                genTC = TagApplication.quantifierEntry(item, op, false);
-                if (genTC != null) {
-                    try {
-                        TestCaseDB.storeTestCase(genTC, newBatchName);
-                        count++;
-                    } catch (SQLException e) {
-                        logger.warn("Failed to store test case: {}, check SQL", genTC);
-                    } catch (IOException e) {
-                        logger.warn("Failed to store test case: {}, check IO", genTC);
-                    }
+    private int postProcessQuantifier(TestCase genTC, String newBatchName, String op) {
+        if (genTC != null) {
+            String taRule = "";
+            for(String rule: genTC.getRuleUsed()) {
+                if(rule.startsWith("TA")) {
+                    taRule = rule;
+                    break;
                 }
             }
+            if (categoricalCount.getOrDefault(taRule, 0) >= getCategoricalLimit(op, 5 * limit)) {
+                return 0;
+            }
+            try {
+                TestCaseDB.storeTestCase(genTC, newBatchName);
+                categoricalCount.put(taRule, categoricalCount.getOrDefault(taRule, 0) + 1);
+                return 1;
+            } catch (SQLException e) {
+                logger.warn("Failed to store test case: {}, check SQL", genTC);
+            } catch (IOException e) {
+                logger.warn("Failed to store test case: {}, check IO", genTC);
+            }
         }
-        logger.info("Generated {} test cases from quantifier pool, and stored in DB.", count);
+        return 0;
     }
 
     /**
@@ -309,6 +294,4 @@ public class CRCCore implements MRCore, MRCoreDB {
         binaryPool = null;
         quantifierPool = null;
     }
-
-
 }

@@ -16,36 +16,20 @@ public class TestOnlyExecutor extends AbstractExecutor {
 
     public TestOnlyExecutor(String workerType, Map<String, Object> arguments) {
         super(workerType, arguments);
-        logger.info("TestOnlyExecutor initialized. WorkerType: {}, Arguments: {}", workerType, arguments);
+    }
+
+    public TestOnlyExecutor(String workerType, Map<String, Object> arguments, int threadNum) {
+        super(workerType, arguments, threadNum);
     }
 
     @Override
-    protected void beforeTest(List<TestCase> tcs) {
-        super.beforeTest(tcs);
+    protected void beforeTest(List<Integer> ids) {
+        super.beforeTest(ids);
         startTime = System.currentTimeMillis();
     }
 
     @Override
-    protected void afterTest(List<TestCase> tcs) {
-        endTime = System.currentTimeMillis();
-        int checked = 0;
-        for (TestCase tc : tcs) {
-            if(tc.getChecked()) {
-                checked++;
-            }
-        }
-        logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
-                checked, tcs.size(), endTime - startTime);
-    }
-
-    @Override
-    protected void beforeTestDB(List<Integer> ids) {
-        super.beforeTestDB(ids);
-        startTime = System.currentTimeMillis();
-    }
-
-    @Override
-    protected void afterTestDB(List<Integer> ids) {
+    protected void afterTest(List<Integer> ids) {
         endTime = System.currentTimeMillis();
         // TODO: Implement this method
     }
@@ -84,6 +68,11 @@ public class TestOnlyExecutor extends AbstractExecutor {
                     currentProgress * 100 / totalTasks,
                     formattedETA);
         }
+    }
+
+    @Override
+    protected void uncheckTestCase(TestCase tc) {
+        // Do nothing
     }
 
     /**

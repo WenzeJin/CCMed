@@ -14,7 +14,6 @@ public class GzipCompress {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
             gzipOutputStream.write(str.getBytes());
         }
-
         // 使用 BASE64 编码压缩后的字节流，以便存储和传输
         return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
     }
@@ -30,7 +29,6 @@ public class GzipCompress {
             while ((bytesRead = gzipInputStream.read(buffer)) != -1) {
                 byteArrayOutputStream.write(buffer, 0, bytesRead);
             }
-
             return byteArrayOutputStream.toString();  // 返回解压缩后的字符串
         }
     }
@@ -57,17 +55,5 @@ public class GzipCompress {
             }
             return byteArrayOutputStream.toString();  // 返回解压后的字符串
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        String originalString = "This is a long string that will be compressed using GZIP! This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!This is a long string that will be compressed using GZIP!";
-
-        // 压缩字符串
-        String compressedString = compressString(originalString);
-        System.out.println("Compressed String: " + compressedString);
-
-        // 解压缩字符串
-        String decompressedString = decompressString(compressedString);
-        System.out.println("Decompressed String: " + decompressedString);
     }
 }

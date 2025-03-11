@@ -1,0 +1,35 @@
+mode:           "normal"
+
+# Limit
+sourceLimit:    1000
+followUpLimit:  2000
+
+# Acceleration options
+enableBatch:    true
+batchSize:      500
+enableBoost:    true
+threadLimit:    8
+
+# Database options
+databaseUrl:    ":memory:?cache=shared"
+
+# Worker options
+workerType:     "infuse"
+workspaceRoot:  "workspace"
+
+# Resource options
+targetPath:     "cc_utils/INFUSE_ORI/std.jar"
+rulesPath:      "rules/4_level_rule/rule_data"
+bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
+
+# Target arguments
+arguments:      ["-approach", "PCC+GEAS_ori", "-mg"]
+
+
+# Result output
+resultPath:     "./result.txt"
+
+
+id: 355518
+
+# memory 461s disk 479s

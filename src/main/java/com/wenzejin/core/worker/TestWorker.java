@@ -3,7 +3,6 @@ package com.wenzejin.core.worker;
 import com.wenzejin.core.util.TestCase;
 
 import java.io.IOException;
-import java.util.List;
 
 public interface TestWorker {
 
@@ -11,5 +10,5 @@ public interface TestWorker {
 
     void destroyWorkspace() throws IOException;
 
-    void singleRun(TestCase tc);
+    int singleRun(TestCase tc);
 }

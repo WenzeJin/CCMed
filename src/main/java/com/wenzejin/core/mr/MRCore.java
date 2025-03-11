@@ -1,10 +1,9 @@
 package com.wenzejin.core.mr;
 
-import com.wenzejin.core.util.TestCase;
-
+import java.sql.SQLException;
 import java.util.List;
 
 public interface MRCore {
-    List<TestCase> generateTestCases(List<TestCase> sourceTestCases);
+    void generateTestCases(List<Integer> ids, String newBatchName) throws SQLException;
 }
 

@@ -1,6 +1,5 @@
 package com.wenzejin.core.worker;
 
-import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 import com.wenzejin.core.result.VAPair;
@@ -14,13 +13,13 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.*;
-import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-public class InfuseWorker implements TestWorker{
+public class InfuseWorker implements TestWorker {
 
     // Configurable Arguments
     private final String workspaceRoot;
@@ -129,10 +128,14 @@ public class InfuseWorker implements TestWorker{
     }
 
     /**
-     * @param tc
+     * Run a single test case.
+     * @param tc TestCase to run
+     *           The result will be stored in the TestCase object.
+     * @return 0 if success, 1 if failed.
      */
     @Override
-    public void singleRun(TestCase tc) {
+    public int singleRun(TestCase tc) {
+        int error = 0;
         contextMap.clear();
         List<Rule> rules = List.of(tc.getRule());
         Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
@@ -142,16 +145,19 @@ public class InfuseWorker implements TestWorker{
             generateRuleInput(rules);
             generateBfuncInput(bfuncs);
             generatePatternAndContextInput(patterns);
+            int result = execute();
+            if (result != 0) {
+                return result;
+            }
+            analyzeSingleResult(tc);
         } catch (IOException e) {
-            logger.fatal("IOException occurred when trying to create files for running test: {}", tc.getId());
+            logger.warn("IOException occurred when running test case: {}", tc.getId());
+            error = 1;
         }
-
-        execute();
-
-        analyzeSingleResult(tc);
+        return error;
     }
 
-    private void execute() {
+    private int execute() {
         Path absoluteJar = copiedJar.toAbsolutePath();
         Path absoluteBfunc = copiedBfuncClass.toAbsolutePath();
         Path patternInput = Path.of(workspace.toString(), "pattern.xml").toAbsolutePath();
@@ -193,14 +199,24 @@ public class InfuseWorker implements TestWorker{
             // 启动进程
             Process process = builder.start();
 
-            // 等待进程完成并获取退出码
-            int exitCode = process.waitFor();
+            // 等待进程完成，最多 1 秒
+            if (!process.waitFor(2, TimeUnit.SECONDS)) {
+                logger.warn("Time limit exceeded.");
+                process.destroy();  // 终止进程
+                return 2;
+            }
+
+            // 获取退出码
+            int exitCode = process.exitValue();
             if (exitCode != 0) {
-                logger.warn("INFUSE exit with non-zero code: {}", exitCode);
+                logger.warn("Exited with non-zero code: {}", exitCode);
+                return 1;
             }
         } catch (Exception e) {
-            logger.fatal("Exception occurred when executing.");
+            logger.fatal("Exception occurred when executing.", e);
+            return 1;
         }
+        return 0;
     }
 
     private String getWorkspacePath() {
@@ -272,10 +288,7 @@ public class InfuseWorker implements TestWorker{
         }
     }
 
-    private void analyzeSingleResult(TestCase tc) {
-
-        // Inc example: {"rule_3_365_73":{"truth":true,"links":[{"vaSet":[{"var":"v2","value":{"ctx_id":"1","fields":{"data":"0"}}}],"type":"SATISFIED"},{"vaSet":[{"var":"v1","value":{"ctx_id":"7","fields":{"data":"0"}}}],"type":"SATISFIED"}]}}
-        // Parse the incs.json file to Result
+    private void analyzeSingleResult(TestCase tc) throws IOException {
 
         Path incsPath = Path.of(workspace.toString(), "incs.json");
 
@@ -298,12 +311,13 @@ public class InfuseWorker implements TestWorker{
                 result = new Result(rule.getBoolean("truth"));
 
                 // parse links
+                // modified 2025/03/05 for mutants
                 Set<Link> links = new HashSet<>();
                 for (Object linkObj: rule.getJSONArray("links")) {
-                    JSONObject link = (JSONObject) linkObj;
-                    Link.Type type = link.getString("type").equals("SATISFIED") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
+                    JSONArray link = (JSONArray) linkObj;
+                    Link.Type type = rule.getBoolean("truth") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
                     Set<VAPair> vaSet = new HashSet<>();
-                    for (Object vaObj: link.getJSONArray("vaSet")) {
+                    for (Object vaObj: link) {
                         JSONObject va = (JSONObject) vaObj;
                         vaSet.add(new VAPair(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
                     }
@@ -313,8 +327,6 @@ public class InfuseWorker implements TestWorker{
             }
             tc.setResult(result);
             tc.setChecked(true);
-        } catch (IOException e) {
-            logger.warn("IOException occurred when trying to read incs.json, maybe INFUSE failed to generate incs.json");
         }
     }
 }

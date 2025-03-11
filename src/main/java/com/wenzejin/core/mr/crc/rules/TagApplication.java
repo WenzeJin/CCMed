@@ -152,7 +152,6 @@ public class TagApplication {
         genTC.setPatterns(patterns);
         genTC.setBfuncs(bfuncs);
         genTC.setAssertions(assertions);
-        genTC.getSource().add(f.parentTestCase != null ? f.parentTestCase.getId() : -1);
 
         for (TestAssertion assertion : assertions) {
             genTC.getRuleUsed().add(assertion.getRule());
@@ -160,6 +159,10 @@ public class TagApplication {
         String[] rulesUsed = tag.ruleUsed.split(",");
         for (String rule : rulesUsed) {
             genTC.getRuleUsed().add(rule);
+        }
+        String[] parentIDs = tag.parentID.split(",");
+        for (String parentID : parentIDs) {
+            genTC.getSource().add(Integer.parseInt(parentID));
         }
 
         return genTC;
@@ -370,10 +373,6 @@ public class TagApplication {
             if (!both.isEmpty()) {
                 assertions.add(new TruthAssertion(false));
                 assertions.add(new LinksValueAssertion(tag.variable, false, both));
-                Set<Link> projection = CRCFunc.linksProjection(tag.linksFalse, tag.variable, both);
-                if (!projection.isEmpty()) {
-                    assertions.add(new LinksSubsetAssertion(projection));
-                }
                 usedRule = "TA-forall-2";
             }
         }
@@ -393,10 +392,6 @@ public class TagApplication {
             if (!both.isEmpty()) {
                 assertions.add(new TruthAssertion(true));
                 assertions.add(new LinksValueAssertion(tag.variable, true, both));
-                Set<Link> projection = CRCFunc.linksProjection(tag.linksTrue, tag.variable, both);
-                if (!projection.isEmpty()) {
-                    assertions.add(new LinksSubsetAssertion(projection));
-                }
                 usedRule = "TA-exists-1";
             }
         } else {

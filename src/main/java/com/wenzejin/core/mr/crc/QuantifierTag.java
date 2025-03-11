@@ -10,17 +10,15 @@ public class QuantifierTag implements Tag{
     public String variable;
     public Set<String> valueTrue;
     public Set<String> valueFalse;
-    public Set<Link> linksTrue;
-    public Set<Link> linksFalse;
     public String ruleUsed;
+    public String parentID;
 
     public QuantifierTag(String variable) {
         this.variable = variable;
         valueTrue = new HashSet<>();
         valueFalse = new HashSet<>();
-        linksTrue = new HashSet<>();
-        linksFalse = new HashSet<>();
         ruleUsed = "";
+        parentID = "";
     }
 
     @Override
@@ -29,8 +27,6 @@ public class QuantifierTag implements Tag{
                 "variable=" + variable +
                 ", valueTrue=" + valueTrue +
                 ", valueFalse=" + valueFalse +
-                ", linksTrue=" + linksTrue +
-                ", linksFalse=" + linksFalse +
                 ", according to rule: " + ruleUsed +
                 '}';
     }
@@ -44,7 +40,7 @@ public class QuantifierTag implements Tag{
             return false;
         }
         QuantifierTag that = (QuantifierTag) obj;
-        return variable.equals(that.variable) && valueTrue.equals(that.valueTrue) && valueFalse.equals(that.valueFalse) && linksTrue.equals(that.linksTrue) && linksFalse.equals(that.linksFalse);
+        return variable.equals(that.variable) && valueTrue.equals(that.valueTrue) && valueFalse.equals(that.valueFalse);
     }
 
     @Override
@@ -52,8 +48,6 @@ public class QuantifierTag implements Tag{
         int result = variable.hashCode();
         result = 31 * result + valueTrue.hashCode();
         result = 31 * result + valueFalse.hashCode();
-        result = 31 * result + linksTrue.hashCode();
-        result = 31 * result + linksFalse.hashCode();
         return result;
     }
 

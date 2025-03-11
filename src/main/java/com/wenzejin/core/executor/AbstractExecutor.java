@@ -7,11 +7,14 @@ import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,8 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class AbstractExecutor {
 
-    String workerType;
-    Map<String, Object> workerArguments;
+    final String workerType;
+    final Map<String, Object> workerArguments;
     int threadNum;
     ExecutorService executor;
     int checked;
@@ -48,112 +51,23 @@ public abstract class AbstractExecutor {
         return checked;
     }
 
-    public void executeTest(List<TestCase> tcs) {
-        // hook method
-        beforeTest(tcs);
-        // template method
-        runTest(tcs);
-        // hook method
-        afterTest(tcs);
+    public void executeTest(List<Integer> ids) {
+        beforeTest(ids);
+        runTest(ids);
+        afterTest(ids);
     }
 
-    public void executeTestDB(List<Integer> ids) {
-        beforeTestDB(ids);
-        runTestDB(ids);
-        afterTestDB(ids);
-    }
-
-
-    protected void beforeTest(List<TestCase> tcs) {
+    protected void beforeTest(List<Integer> ids) {
         // do nothing
         checked = 0;
     }
 
-    protected void beforeTestDB(List<Integer> ids) {
-        // do nothing
-        checked = 0;
-    }
-
-    protected void afterTest(List<TestCase> tcs) {
+    protected void afterTest(List<Integer> ids) {
         // do nothing
     }
 
-    protected void afterTestDB(List<Integer> ids) {
-        // do nothing
-    }
-
-    private void runTest(List<TestCase> tcs) {
-        int totalTasks = tcs.size();
-        int numThreads = Runtime.getRuntime().availableProcessors();
-        executor = Executors.newFixedThreadPool(numThreads); // 创建线程池
-
-        AtomicInteger progress = new AtomicInteger(0); // 用于跟踪进度
-        List<Integer> failedIds = Collections.synchronizedList(new ArrayList<>()); // 线程安全的失败列表
-
-        // 初始化线程本地 Worker，每个线程管理一个 Worker
-        ThreadLocal<TestWorker> threadLocalWorker = ThreadLocal.withInitial(() -> {
-            TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workerArguments);
-            try {
-                worker.initWorkspace(); // 每个线程的 Worker 只初始化一次工作区
-            } catch (IOException e) {
-                logger.fatal("Init Workspace Failed.");
-            }
-            return worker;
-        });
-
-
-        List<Callable<Object>> tasks = new ArrayList<>();
-        for (TestCase tc : tcs) {
-            tasks.add(() -> {
-                TestWorker worker = threadLocalWorker.get(); // 获取线程本地 Worker
-
-                try {
-                    worker.singleRun(tc); // 执行测试用例
-                } catch (Exception e) {
-                    synchronized (failedIds) {
-                        failedIds.add(tc.getId());
-                    }
-                }
-
-                boolean passed = checkResult(tc);
-
-                if (passed) {
-                    passTestCase(tc);
-                } else {
-                    failTestCase(tc);
-                }
-
-                int currentProgress = progress.incrementAndGet();
-                procedureCallback(currentProgress, totalTasks);
-                return null;
-            });
-        }
-
-        try {
-            executor.invokeAll(tasks); // 执行所有任务
-        } catch (InterruptedException e) {
-            logger.fatal("Execution interrupted.");
-        }
-
-        checked = tcs.size() - failedIds.size();
-
-        // 销毁线程本地 Worker 的工作区
-        for (int i = 0; i < numThreads; i++) {
-            executor.submit(() -> {
-                TestWorker worker = threadLocalWorker.get();
-                try {
-                    worker.destroyWorkspace(); // 每个线程的 Worker 只销毁一次工作区
-                } catch (IOException e) {
-                    logger.warn("Destroy Workspace Failed. Maybe there is no workspace to destroy.");
-                }
-                return null;
-            });
-        }
-
-        executor.shutdown();
-    }
-
-    private void runTestDB(List<Integer> ids) {
+    private void runTest(List<Integer> ids) {
+        Collections.shuffle(ids);
         int totalTasks = ids.size();
         int numThreads = Runtime.getRuntime().availableProcessors();
         executor = Executors.newFixedThreadPool(numThreads);
@@ -178,16 +92,33 @@ public abstract class AbstractExecutor {
                 TestWorker worker = threadLocalWorker.get();
                 try {
                     TestCase tc = TestCaseDB.getTestCaseById(id);
-                    worker.singleRun(tc);
-                    checkCount.incrementAndGet();
-                    TestCaseDB.setChecked(id, true);
-                    boolean passed = checkResult(tc);
-                    if (passed) {
-                        passTestCase(tc);
-                        TestCaseDB.setPassed(id, true);
+                    int retry = 0;
+                    boolean succeed = false;
+                    while (!succeed && retry <= 3) {
+                        int error = worker.singleRun(tc); // 执行测试用例
+                        if (error == 0) {
+                            succeed = true;
+                        } else {
+                            logger.warn("Test case {} failed. Retry {} / 3", tc.getId(), retry);
+                            retry++;
+                        }
+                    }
+                    if (succeed) {
+                        checkCount.incrementAndGet();
+                        TestCaseDB.setChecked(id, true);
+                        boolean passed = checkResult(tc);
+                        if (passed) {
+                            passTestCase(tc);
+                            TestCaseDB.setPassed(id, true);
+                        } else {
+                            failTestCase(tc);
+                            TestCaseDB.setPassed(id, false);
+                        }
                     } else {
-                        failTestCase(tc);
-                        TestCaseDB.setPassed(id, false);
+                        uncheckTestCase(tc);
+                        synchronized (failedIds) {
+                            failedIds.add(id);
+                        }
                     }
                     TestCaseDB.updateCompressedData(id, tc);
                 } catch (Exception e) {
@@ -222,6 +153,16 @@ public abstract class AbstractExecutor {
         }
 
         executor.shutdown();
+
+        // 删除 workspace 下的所有文件
+        String workspace = (String) workerArguments.get("workspace-root");
+        try {
+            if (workspace != null) {
+                deleteFolder(new File(workspace).toPath());
+            }
+        } catch (IOException e) {
+            logger.warn("Failed to clean workspace.");
+        }
     }
 
     protected void procedureCallback(int currentProgress, int totalTasks) {
@@ -236,5 +177,21 @@ public abstract class AbstractExecutor {
 
     protected abstract void failTestCase(TestCase tc);
 
-    // TODO: provide DB version of passTestCase and failTestCase
+    protected abstract void uncheckTestCase(TestCase tc);
+
+    private static void deleteFolder(Path folder) throws IOException {
+        Files.walkFileTree(folder, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file); // 删除文件
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir); // 删除空文件夹
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
 }

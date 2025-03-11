@@ -175,6 +175,4 @@ public class TestCase {
                 ", passed=" + passed +
                 '}';
     }
-
-
 }

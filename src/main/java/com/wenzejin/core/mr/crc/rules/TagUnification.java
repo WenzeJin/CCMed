@@ -47,6 +47,7 @@ public class TagUnification {
             default:
                 break;
         }
+        newTag.parentID = fTag.parentID + "," + gTag.parentID;
 
         String newVar = newTag.variable;
         Map<String, String> bindMap = new HashMap<>();
@@ -73,26 +74,12 @@ public class TagUnification {
     private static QuantifierTag and(QuantifierTag f, QuantifierTag g) {
         String newVar = "tu-gen-" + idCounter.getAndIncrement();
         QuantifierTag newTag = new QuantifierTag(newVar);
-        Map<String, String> bindMap = new HashMap<>();
-        bindMap.put(f.variable, newVar);
-        bindMap.put(g.variable, newVar);
-        Set<Link> fTrueLinks = new HashSet<>(f.linksTrue);
-        Set<Link> gTrueLinks = new HashSet<>(g.linksTrue);
-        Set<Link> fFalseLinks = new HashSet<>(f.linksFalse);
-        Set<Link> gFalseLinks = new HashSet<>(g.linksFalse);
-
-        CRCFunc.rebindLinks(fTrueLinks, bindMap);
-        CRCFunc.rebindLinks(gTrueLinks, bindMap);
-        CRCFunc.rebindLinks(fFalseLinks, bindMap);
-        CRCFunc.rebindLinks(gFalseLinks, bindMap);
 
         newTag.valueTrue = new HashSet<>(f.valueTrue);
         newTag.valueTrue.retainAll(g.valueTrue);
         newTag.valueFalse = new HashSet<>(f.valueFalse);
         newTag.valueFalse.addAll(g.valueFalse);
 
-        newTag.linksTrue = CRCFunc.syncCartesian(fTrueLinks, gTrueLinks, newVar, newTag.valueTrue);
-        newTag.linksFalse = CRCFunc.union(fFalseLinks, gFalseLinks);
 
         newTag.ruleUsed = f.ruleUsed + "," + g.ruleUsed + ",TU-and";
 
@@ -102,26 +89,11 @@ public class TagUnification {
     private static QuantifierTag or(QuantifierTag f, QuantifierTag g) {
         String newVar = "tu-gen-" + idCounter.getAndIncrement();
         QuantifierTag newTag = new QuantifierTag(newVar);
-        Map<String, String> bindMap = new HashMap<>();
-        bindMap.put(f.variable, newVar);
-        bindMap.put(g.variable, newVar);
-        Set<Link> fTrueLinks = new HashSet<>(f.linksTrue);
-        Set<Link> gTrueLinks = new HashSet<>(g.linksTrue);
-        Set<Link> fFalseLinks = new HashSet<>(f.linksFalse);
-        Set<Link> gFalseLinks = new HashSet<>(g.linksFalse);
-
-        CRCFunc.rebindLinks(fTrueLinks, bindMap);
-        CRCFunc.rebindLinks(gTrueLinks, bindMap);
-        CRCFunc.rebindLinks(fFalseLinks, bindMap);
-        CRCFunc.rebindLinks(gFalseLinks, bindMap);
 
         newTag.valueTrue = new HashSet<>(f.valueTrue);
         newTag.valueTrue.addAll(g.valueTrue);
         newTag.valueFalse = new HashSet<>(f.valueFalse);
         newTag.valueFalse.retainAll(g.valueFalse);
-
-        newTag.linksTrue = CRCFunc.union(fTrueLinks, gTrueLinks);
-        newTag.linksFalse = CRCFunc.syncCartesian(fFalseLinks, gFalseLinks, newVar, newTag.valueFalse);
 
         newTag.ruleUsed = f.ruleUsed + "," + g.ruleUsed + ",TU-or";
 
@@ -131,26 +103,11 @@ public class TagUnification {
     private static QuantifierTag implies(QuantifierTag f, QuantifierTag g) {
         String newVar = "tu-gen-" + idCounter.getAndIncrement();
         QuantifierTag newTag = new QuantifierTag(newVar);
-        Map<String, String> bindMap = new HashMap<>();
-        bindMap.put(f.variable, newVar);
-        bindMap.put(g.variable, newVar);
-        Set<Link> fTrueLinks = new HashSet<>(f.linksTrue);
-        Set<Link> gTrueLinks = new HashSet<>(g.linksTrue);
-        Set<Link> fFalseLinks = new HashSet<>(f.linksFalse);
-        Set<Link> gFalseLinks = new HashSet<>(g.linksFalse);
-
-        CRCFunc.rebindLinks(fTrueLinks, bindMap);
-        CRCFunc.rebindLinks(gTrueLinks, bindMap);
-        CRCFunc.rebindLinks(fFalseLinks, bindMap);
-        CRCFunc.rebindLinks(gFalseLinks, bindMap);
 
         newTag.valueTrue = new HashSet<>(f.valueFalse);
         newTag.valueTrue.addAll(g.valueTrue);
         newTag.valueFalse = new HashSet<>(f.valueTrue);
         newTag.valueFalse.retainAll(g.valueFalse);
-
-        newTag.linksTrue = CRCFunc.union(CRCFunc.flipSet(fFalseLinks), gTrueLinks);
-        newTag.linksFalse = CRCFunc.syncCartesian(CRCFunc.flipSet(fTrueLinks), gFalseLinks, newVar, newTag.valueFalse);
 
         newTag.ruleUsed = f.ruleUsed + "," + g.ruleUsed + ",TU-implies";
 
