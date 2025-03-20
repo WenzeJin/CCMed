@@ -23,31 +23,23 @@ public class TestOnlyExecutor extends AbstractExecutor {
     }
 
     @Override
-    protected void beforeTest(List<Integer> ids) {
-        super.beforeTest(ids);
+    protected void beforeTest(List<TestCase> tcs) {
+        super.beforeTest(tcs);
         startTime = System.currentTimeMillis();
     }
 
     @Override
-    protected void afterTest(List<Integer> ids) {
+    protected void afterTest(List<TestCase> tcs) {
+        super.beforeTest(tcs);
         endTime = System.currentTimeMillis();
-        // TODO: Implement this method
+        logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
+                checked, tcs.size(), endTime - startTime);
     }
 
     @Override
     protected boolean checkResult(TestCase tc) {
         // Do nothing
         return true;
-    }
-
-    @Override
-    protected void passTestCase(TestCase tc) {
-        // Do nothing
-    }
-
-    @Override
-    protected void failTestCase(TestCase tc) {
-        // Do nothing
     }
 
     @Override

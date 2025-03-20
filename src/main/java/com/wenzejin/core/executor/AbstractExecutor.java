@@ -33,7 +33,9 @@ public abstract class AbstractExecutor {
     ExecutorService executor;
     int checked;
 
-    private static final Logger logger = LogManager.getLogger("AbstractExecutor");
+    ThreadLocal<TestWorker> threadLocalWorker;
+
+    private static final Logger logger = LogManager.getLogger("Executor");
 
     public AbstractExecutor(String workerType, Map<String, Object> workerArguments) {
         this.workerType = workerType;
@@ -51,32 +53,10 @@ public abstract class AbstractExecutor {
         return checked;
     }
 
-    public void executeTest(List<Integer> ids) {
-        beforeTest(ids);
-        runTest(ids);
-        afterTest(ids);
-    }
+    public void init() {
+        executor = Executors.newFixedThreadPool(threadNum);
 
-    protected void beforeTest(List<Integer> ids) {
-        // do nothing
-        checked = 0;
-    }
-
-    protected void afterTest(List<Integer> ids) {
-        // do nothing
-    }
-
-    private void runTest(List<Integer> ids) {
-        Collections.shuffle(ids);
-        int totalTasks = ids.size();
-        int numThreads = Runtime.getRuntime().availableProcessors();
-        executor = Executors.newFixedThreadPool(numThreads);
-
-        AtomicInteger progress = new AtomicInteger(0);
-        AtomicInteger checkCount = new AtomicInteger(0);
-        List<Integer> failedIds = Collections.synchronizedList(new ArrayList<>());
-
-        ThreadLocal<TestWorker> threadLocalWorker = ThreadLocal.withInitial(() -> {
+        threadLocalWorker = ThreadLocal.withInitial(() -> {
             TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workerArguments);
             try {
                 worker.initWorkspace();
@@ -85,13 +65,18 @@ public abstract class AbstractExecutor {
             }
             return worker;
         });
+    }
 
+    public void execute(List<TestCase> tcs) {
+        beforeTest(tcs);
+        AtomicInteger checkCount = new AtomicInteger(0);
+        AtomicInteger progress = new AtomicInteger(0);
+        int totalTasks = tcs.size();
         List<Callable<Object>> tasks = new ArrayList<>();
-        for (int id : ids) {
+        for (TestCase tc : tcs) {
             tasks.add(() -> {
                 TestWorker worker = threadLocalWorker.get();
                 try {
-                    TestCase tc = TestCaseDB.getTestCaseById(id);
                     int retry = 0;
                     boolean succeed = false;
                     while (!succeed && retry <= 3) {
@@ -104,27 +89,14 @@ public abstract class AbstractExecutor {
                         }
                     }
                     if (succeed) {
+                        tc.setChecked(true);
                         checkCount.incrementAndGet();
-                        TestCaseDB.setChecked(id, true);
-                        boolean passed = checkResult(tc);
-                        if (passed) {
-                            passTestCase(tc);
-                            TestCaseDB.setPassed(id, true);
-                        } else {
-                            failTestCase(tc);
-                            TestCaseDB.setPassed(id, false);
-                        }
+                        checkResult(tc);
                     } else {
                         uncheckTestCase(tc);
-                        synchronized (failedIds) {
-                            failedIds.add(id);
-                        }
                     }
-                    TestCaseDB.updateCompressedData(id, tc);
                 } catch (Exception e) {
-                    synchronized (failedIds) {
-                        failedIds.add(id);
-                    }
+                    logger.warn("Test case {} failed.", tc.getId());
                 }
                 int currentProgress = progress.incrementAndGet();
                 procedureCallback(currentProgress, totalTasks);
@@ -132,15 +104,18 @@ public abstract class AbstractExecutor {
             });
         }
 
-        checked = checkCount.get();
-
         try {
             executor.invokeAll(tasks);
         } catch (InterruptedException e) {
             logger.fatal("Execution interrupted.");
         }
 
-        for (int i = 0; i < numThreads; i++) {
+        checked = checkCount.get();
+        afterTest(tcs);
+    }
+
+    public void close() {
+        for (int i = 0; i < threadNum; i++) {
             executor.submit(() -> {
                 TestWorker worker = threadLocalWorker.get();
                 try {
@@ -165,6 +140,14 @@ public abstract class AbstractExecutor {
         }
     }
 
+    protected void beforeTest(List<TestCase> tcs) {
+        checked = 0;
+    }
+
+    protected void afterTest(List<TestCase> tcs) {
+        // Do nothing
+    }
+
     protected void procedureCallback(int currentProgress, int totalTasks) {
         if (currentProgress % 50 == 0 || currentProgress == totalTasks) {
             logger.info("Test progress: {}/{}", currentProgress, totalTasks);
@@ -172,10 +155,6 @@ public abstract class AbstractExecutor {
     }
 
     protected abstract boolean checkResult(TestCase tc);
-
-    protected abstract void passTestCase(TestCase tc);
-
-    protected abstract void failTestCase(TestCase tc);
 
     protected abstract void uncheckTestCase(TestCase tc);
 

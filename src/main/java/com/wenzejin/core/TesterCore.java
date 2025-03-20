@@ -28,6 +28,7 @@ import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.executor.TestAndCheckExecutor;
 import com.wenzejin.core.executor.TestOnlyExecutor;
 import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.mr.crc.ARTCore;
 import com.wenzejin.core.mr.crc.CRCCore;
 import com.wenzejin.core.preprocess.Preprocessor;
 import com.wenzejin.core.util.TestCase;
@@ -97,7 +98,7 @@ public class TesterCore {
             // Declare executors
             TestOnlyExecutor preExecutor;
             TestAndCheckExecutor postExecutor;
-            CRCCore mrCore;
+            ARTCore artmr = new ARTCore();
 
             // Initialize timer
             long startTime = System.currentTimeMillis();
@@ -110,17 +111,8 @@ public class TesterCore {
             preprocessor.readRules();
             preprocessor.generateTestCases();
             preprocessor.reduceSize(sourceLimit);
-            preprocessor.saveTestCasesDB("source");
             logger.info("Source cases preparation done in {} ms.", System.currentTimeMillis() - checkPoint);
             checkPoint = System.currentTimeMillis();
-
-            // Split into batches
-            List<String> batches = null;
-            if (enableBatch) {
-                batches = TestCaseDB.splitAndUpdateBatchNames("source", batchSize);
-            } else {
-                batches = List.of("source");
-            }
 
             // Initialize statistics
             int count = 0;
@@ -141,42 +133,30 @@ public class TesterCore {
             }
             preExecutor = new TestOnlyExecutor(workerType, arguments, threadLimit);
             postExecutor = new TestAndCheckExecutor(workerType, arguments, threadLimit);
+            preExecutor.init();
+            postExecutor.init();
 
+            List<TestCase> tcs = preprocessor.getTestCases();
+            preExecutor.execute(tcs);
+
+            logger.info("Source cases testing done in {} ms.", System.currentTimeMillis() - checkPoint);
             checkPoint = System.currentTimeMillis();
-            // for every batch
-            for (String batchName: batches) {
-                count++;
-                logger.info("*** EXECUTING BATCH {} / {}: ***", count, batches.size());
-                // test source
-                preExecutor.executeTest(TestCaseDB.getBatchIds(batchName));
-                int unchecked = TestCaseDB.getSizeByCondition("batch_name = '" + batchName + "'" + " AND checked = false");
-                if (unchecked != 0) {
-                    logger.info("Source Failed!");
-                    source_failed = true;
-                    break;
-                }
+            artmr.initCandidates(tcs);
 
-                // generate follow-up
-                mrCore = new CRCCore(followUpLimit / batches.size(), enableBoost);
-                mrCore.generateTestCases(TestCaseDB.getBatchIds(batchName), batchName + "-f");
 
-                // test follow-up
-                postExecutor.executeTest(TestCaseDB.getBatchIds(batchName + "-f"));
-                checked += postExecutor.getChecked();
-                failedCases.putAll(postExecutor.getFailedCases());
-                TestCaseDB.updateBatchNameFromOld(batchName + "-f", "follow_up");
-                long timeDelta = System.currentTimeMillis() - checkPoint;
-                long eta = timeDelta * (batches.size() - count) / count;
-                logger.info("*** BATCH {} DONE! {} batches used {} s, eta {} s. ***",
-                        count, count, timeDelta / 1000, eta / 1000);
+            // TODO: change this, this is just for testing
+            for (int i = 0; i < 2; i++) {
+                logger.info("*** Round {} start. ***", i);
+                List<TestCase> batch = artmr.getNextBatch(batchSize);
+                postExecutor.execute(batch);
             }
 
-            logger.info("Summary: follow-up limit {}, {} checked, {} passed. Test passed? {}",
-                    followUpLimit, checked, checked - failedCases.size(), failedCases.isEmpty() && !source_failed);
+            preExecutor.close();
+            postExecutor.close();
 
-            if (source_failed) {
-                logger.info("Source test failed. No need to check more follow-up.");
-            }
+
+
+            // TODO
 
             JsonObject result = new JsonObject();
             result.addProperty("passed", failedCases.isEmpty() && !source_failed);

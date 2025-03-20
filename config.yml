@@ -1,17 +1,17 @@
 mode:           "normal"
 
 # Limit
-sourceLimit:    1000
-followUpLimit:  2000
+sourceLimit:    100
+followUpLimit:  200
 
 # Acceleration options
 enableBatch:    true
-batchSize:      500
+batchSize:      50
 enableBoost:    true
 threadLimit:    8
 
 # Database options
-databaseUrl:    ":memory:?cache=shared"
+databaseUrl:    "data/testcase.db"
 
 # Worker options
 workerType:     "infuse"
@@ -29,7 +29,3 @@ arguments:      ["-approach", "PCC+GEAS_ori", "-mg"]
 # Result output
 resultPath:     "./result.txt"
 
-
-id: 355518
-
-# memory 461s disk 479s

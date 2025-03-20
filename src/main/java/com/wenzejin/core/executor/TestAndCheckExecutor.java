@@ -23,7 +23,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
     private long startTime;
     private long endTime;
 
-    private Map<Integer, List<TestAssertion>> failedCases;
+    private Map<TestCase, List<TestAssertion>> failedCases;
 
     public TestAndCheckExecutor(String workerType, Map<String, Object> arguments) {
         super(workerType, arguments);
@@ -36,27 +36,23 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         failedCases = new HashMap<>();
     }
 
-    public Map<Integer, List<TestAssertion>> getFailedCases() {
+    public Map<TestCase, List<TestAssertion>> getFailedCases() {
         return failedCases;
     }
 
     @Override
-    protected void beforeTest(List<Integer> ids) {
-        super.beforeTest(ids);
+    protected void beforeTest(List<TestCase> tcs) {
+        super.beforeTest(tcs);
         startTime = System.currentTimeMillis();
         failedCases.clear();
     }
 
     @Override
-    protected void afterTest(List<Integer> ids) {
+    protected void afterTest(List<TestCase> tcs) {
         endTime = System.currentTimeMillis();
-        checked = 0;
-        for(int id : ids) {
-            checked += TestCaseDB.getSizeByCondition("id = " + id + " AND checked = TRUE");
-        }
 
         logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
-                checked, ids.size(), endTime - startTime);
+                checked, tcs.size(), endTime - startTime);
 
         int failed = failedCases.size();
 
@@ -66,7 +62,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
 
         for (var fc: failedCases.keySet()) {
             logger.info("Failed test case id:");
-            logger.info(fc.toString());
+            logger.info(fc.getId());
             logger.info("Failed assertions:");
             logger.info(failedCases.get(fc).toString());
         }
@@ -77,22 +73,14 @@ public class TestAndCheckExecutor extends AbstractExecutor{
         List<TestAssertion> failedAssertions = new ArrayList<>();
         boolean boolRes = tc.assertTest(failedAssertions);
         if (!boolRes) {
-            failedCases.put(tc.getId(), failedAssertions);
+            failedCases.put(tc, failedAssertions);
             logger.warn("Test case id {} failed.", tc.getId());
             return false;
         }
         return true;
     }
 
-    @Override
-    protected void passTestCase(TestCase tc) {
-        // Do nothing
-    }
 
-    @Override
-    protected void failTestCase(TestCase tc) {
-        // Do nothing
-    }
 
     @Override
     protected void procedureCallback(int currentProgress, int totalTasks) {
@@ -116,7 +104,7 @@ public class TestAndCheckExecutor extends AbstractExecutor{
 
     @Override
     protected synchronized void uncheckTestCase(TestCase tc) {
-        failedCases.put(tc.getId(), tc.getAssertions());
+        failedCases.put(tc, tc.getAssertions());
         logger.warn("Test case id {} TLE or RE.", tc.getId());
     }
 
