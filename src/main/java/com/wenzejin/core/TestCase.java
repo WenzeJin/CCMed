@@ -120,17 +120,6 @@ public class TestCase {
         this.source.addAll(source);
     }
 
-    public boolean assertTest() {
-        if (result == null) {
-            return false;
-        }
-        boolean res = true;
-        for (TestAssertion a : assertions) {
-            res = res && a.assertTest(result);
-        }
-        return res;
-    }
-
     public boolean assertTest(List<TestAssertion> failedAssertions) {
         if (result == null) {
             return false;
@@ -146,7 +135,6 @@ public class TestCase {
     }
 
     public boolean isValid() {
-        // TODO: Implement this method
         return true;
     }
 

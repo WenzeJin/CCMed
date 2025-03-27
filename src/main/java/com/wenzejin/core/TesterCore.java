@@ -23,9 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.wenzejin.core.exception.XmlParseException;
-import com.wenzejin.core.executor.TestAndCheckExecutor;
-import com.wenzejin.core.executor.TestOnlyExecutor;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.crc.ARTCore;
 import com.wenzejin.core.worker.TestWorker;
@@ -41,6 +38,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,11 +70,15 @@ public class TesterCore {
     }
 
     public boolean execute() {
-        return switch (mode) {
-            case "normal" -> executeNormal();
-            case "single" -> executeSingle();
-            case null, default -> false;
-        };
+        switch (mode) {
+            case "normal":
+                return executeNormal();
+            case "single":
+                return executeSingle();
+            default:
+                logger.error("Invalid mode: {}", mode);
+                return false;
+        }
     }
 
     private boolean executeNormal() {
@@ -87,8 +89,8 @@ public class TesterCore {
             TestCaseDB.initializeDB();
 
             // Declare executors
-            TestOnlyExecutor preExecutor;
-            TestAndCheckExecutor postExecutor;
+            TestExecutor preExecutor;
+            TestExecutor postExecutor;
             ARTCore artmr = new ARTCore(threadLimit);
 
             // Initialize timer
@@ -119,8 +121,8 @@ public class TesterCore {
             } else {
                 throw new IllegalArgumentException("Invalid worker type " + workerType + " . Please check configurations.");
             }
-            preExecutor = new TestOnlyExecutor(workerType, arguments, threadLimit);
-            postExecutor = new TestAndCheckExecutor(workerType, arguments, threadLimit);
+            preExecutor = new TestExecutor(TestExecutor.Mode.SOURCE, workerType, arguments, threadLimit);
+            postExecutor = new TestExecutor(TestExecutor.Mode.FOLLOW, workerType, arguments, threadLimit);
             preExecutor.init();
             postExecutor.init();
 
@@ -144,7 +146,7 @@ public class TesterCore {
                     while (artmr.hasMore() && count < eachBatchLimit) {
                         ++round;
                         logger.info("*** Batch {} : Round {} start. ***", batch, round);
-                        int thisBatchSize = stopMode.equals("limited") ? Math.min(eachBatchLimit - count, miniBatchSize) : miniBatchSize;
+                        int thisBatchSize = stopMode.contains("limited") ? Math.min(eachBatchLimit - count, miniBatchSize) : miniBatchSize;
                         List<TestCase> batchTC = artmr.getNextBatch(thisBatchSize);
 
                         postExecutor.execute(batchTC);
@@ -157,7 +159,7 @@ public class TesterCore {
                         TestCaseDB.storeTestCases(failedCasesInBatch.keySet(), "failed");
                         failed = failed || !failedCasesInBatch.isEmpty();
 
-                        if (failed && stopMode.equals("panic")) {
+                        if (failed && stopMode.contains("panic")) {
                             logger.info("Batch {} interrupted due to failed cases. Panic mode.", batch);
                             break;
                         }
@@ -167,7 +169,7 @@ public class TesterCore {
                     break;
                 }
 
-                if (failed && stopMode.equals("panic")) {
+                if (failed && stopMode.contains("panic")) {
                     logger.info("Test interrupted due to failed cases. Panic mode.");
                     break;
                 }
@@ -241,11 +243,16 @@ public class TesterCore {
                 }
             }
             if (succeed) {
-                passed = tc.assertTest();
+                List<TestAssertion> failedAssertions = new ArrayList<>();
+                passed = tc.assertTest(failedAssertions);
                 if (passed) {
                     logger.info("Test case {} passed.", tc.getId());
                 } else {
                     logger.warn("Test case {} failed.", tc.getId());
+                    System.out.println("Failed assertions:");
+                    for (TestAssertion a : failedAssertions) {
+                        System.out.println(a);
+                    }
                 }
             } else {
                 logger.error("Test case {} failed after 3 retries.", tc.getId());
@@ -303,8 +310,10 @@ public class TesterCore {
         bfuncPath = "cc_utils/INFUSE_ORI/Bfunction.class";
         rulesPath = "rules/4_level_rule/rule_data";
         arguments = List.of("-approach", "ECC+IMD", "-mg");
-        otherArgs.clear();
+        otherArgs = new HashMap<>(); // Ensure a fresh map is created
         resultPath = "./result.txt";
+
+        logger.info("Default settings loaded successfully.");
     }
 
     /**
