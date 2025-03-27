@@ -1,12 +1,12 @@
 package com.wenzejin.core.worker;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 import com.wenzejin.core.result.VAPair;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
-import com.wenzejin.core.util.TestCase;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +21,8 @@ import org.json.JSONArray;
 
 public class InfuseWorker implements TestWorker {
 
+    private static final Logger logger = LogManager.getLogger("InfuseWorker");
+
     // Configurable Arguments
     private final String workspaceRoot;
     private final String jarTargetPath;
@@ -30,31 +32,45 @@ public class InfuseWorker implements TestWorker {
     // UUID
     private final UUID uuid;
 
-    private static final Logger logger = LogManager.getLogger("InfuseWorker");
-
     private Path workspace;
     private Path copiedJar;
     private Path copiedBfuncClass;
 
-    // 匹配 context 的名字和它其中我们关心的 data 字段的值
-    private final Map<Integer, String> contextMap;
-
-    public InfuseWorker(String workspaceRoot, String jarTargetPath, String bfuncClassPath, List<String> args) {
-        this.workspaceRoot = workspaceRoot;
-        this.jarTargetPath = jarTargetPath;
-        this.bfuncClassPath = bfuncClassPath;
-        arguments = args;
-        uuid = UUID.randomUUID();
-        contextMap = new HashMap<>();
-    }
-
+    /**
+     * The InfuseWorker class is responsible for initializing and managing the workspace
+     * and configuration required for the infusion process. It extracts and validates
+     * parameters from the provided arguments map and assigns them to the appropriate
+     * fields. Additionally, it generates a unique identifier (UUID) for each instance.
+     *
+     * @param args A map containing the following keys:
+     *             - "infuse.workspace-root": The root directory of the workspace (String).
+     *             - "infuse.jar-target-path": The target path for the JAR file (String).
+     *             - "infuse.bfunc-class-path": The class path for the bfunc (String).
+     *             - "infuse.arguments": A list of arguments (List<String>).
+     *
+     * Fields initialized:
+     * - workspaceRoot: The root directory of the workspace.
+     * - jarTargetPath: The target path for the JAR file.
+     * - bfuncClassPath: The class path for the bfunc.
+     * - arguments: A list of arguments, filtered and cast to strings.
+     * - uuid: A unique identifier for the instance.
+     */
     public InfuseWorker(Map<String, Object> args) {
         workspaceRoot = (String) args.get("infuse.workspace-root");
         jarTargetPath = (String) args.get("infuse.jar-target-path");
         bfuncClassPath = (String) args.get("infuse.bfunc-class-path");
-        arguments = (List<String>) args.get("infuse.arguments");
+        Object argumentsObj = args.get("infuse.arguments");
+
+        if (argumentsObj instanceof List<?>) {
+            arguments = ((List<?>) argumentsObj).stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+        } else {
+            arguments = new ArrayList<>();
+        }
+
         uuid = UUID.randomUUID();
-        contextMap = new HashMap<>();
     }
 
 
@@ -66,35 +82,50 @@ public class InfuseWorker implements TestWorker {
     @Override
     public void initWorkspace() throws IOException {
         String workspacePath = getWorkspacePath();
-        File workspaceDir = new File(workspacePath);
-        if (!workspaceDir.exists()) {
-            if (!workspaceDir.mkdirs()) {
-                logger.fatal("Failed to create workspace directory: {}", workspacePath);
-                throw new IOException("Failed to create workspace directory: " + workspacePath);
-            }
-        }
-        workspace = workspaceDir.toPath();
+        workspace = Paths.get(workspacePath);
 
-        // 拷贝 jar 文件到工作目录
-        File sourceJar = new File(jarTargetPath);
-        if (!sourceJar.exists()) {
-            logger.fatal("Jar target file not found at: {}", jarTargetPath);
-            throw new FileNotFoundException("Jar target file not found at: " + jarTargetPath);
+        // Create workspace directory if it doesn't exist
+        try {
+            Files.createDirectories(workspace);
+        } catch (IOException e) {
+            logger.fatal("Failed to create workspace directory: {}", workspacePath, e);
+            throw new IOException("Failed to create workspace directory: " + workspacePath, e);
         }
-        File destJar = new File(workspacePath, sourceJar.getName());
-        Files.copy(sourceJar.toPath(), destJar.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        copiedJar = destJar.toPath();
 
-        // 拷贝 bfunc class 文件到工作目录
-        File sourceBfunc = new File(bfuncClassPath);
-        if (!sourceBfunc.exists()) {
-            logger.fatal("Bfunc class file not found at: {}", bfuncClassPath);
-            throw new FileNotFoundException("Bfunc class file not found at: " + bfuncClassPath);
+        // Copy jar file to workspace
+        copiedJar = copyFileToWorkspace(jarTargetPath, workspace, "Jar target file");
+
+        // Copy bfunc class file to workspace
+        copiedBfuncClass = copyFileToWorkspace(bfuncClassPath, workspace, "Bfunc class file");
+    }
+
+    /**
+     * Copies a file from the specified source path to the given workspace directory.
+     * If the file already exists in the workspace, it will be replaced.
+     *
+     * @param sourcePath      The path of the source file to be copied.
+     * @param workspace       The target workspace directory where the file will be copied.
+     * @param fileDescription A description of the file being copied, used for logging purposes.
+     * @return The path of the copied file in the workspace.
+     * @throws IOException           If an I/O error occurs during the file copy operation.
+     * @throws FileNotFoundException If the source file does not exist at the specified path.
+     */
+    private Path copyFileToWorkspace(String sourcePath, Path workspace, String fileDescription) throws IOException {
+        Path sourceFile = Paths.get(sourcePath);
+        if (!Files.exists(sourceFile)) {
+            logger.fatal("{} not found at: {}", fileDescription, sourcePath);
+            throw new FileNotFoundException(fileDescription + " not found at: " + sourcePath);
         }
-        File destBfunc = new File(workspacePath, sourceBfunc.getName());
-        Files.copy(sourceBfunc.toPath(), destBfunc.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        copiedBfuncClass = destBfunc.toPath();
 
+        Path destinationFile = workspace.resolve(sourceFile.getFileName());
+        try {
+            Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.fatal("Failed to copy {} to workspace: {}", fileDescription, destinationFile, e);
+            throw new IOException("Failed to copy " + fileDescription + " to workspace: " + destinationFile, e);
+        }
+
+        return destinationFile;
     }
 
     /**
@@ -109,20 +140,28 @@ public class InfuseWorker implements TestWorker {
         }
 
         if (Files.exists(workspace)) {
-            // 使用递归删除工作目录及其内容
-            Files.walk(workspace)
-                    .sorted(Comparator.reverseOrder()) // 确保目录在文件后删除
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            logger.fatal("Failed to delete: {} due to: {}", path, e.getMessage());
-                        }
-                    });
-
+            try {
+                // Recursively delete the workspace directory and its contents
+                Files.walk(workspace)
+                        .sorted(Comparator.reverseOrder()) // Ensure directories are deleted after their contents
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                                logger.debug("Deleted: {}", path);
+                            } catch (IOException e) {
+                                logger.error("Failed to delete: {} due to: {}", path, e.getMessage());
+                            }
+                        });
+            } catch (IOException e) {
+                logger.error("Failed to clean up workspace: {}", workspace, e);
+                throw new IOException("Failed to clean up workspace: " + workspace, e);
+            }
+        } else {
+            logger.info("Workspace does not exist: {}", workspace);
         }
 
         workspace = null;
+        logger.info("Workspace successfully destroyed.");
     }
 
     /**
@@ -134,7 +173,6 @@ public class InfuseWorker implements TestWorker {
     @Override
     public int singleRun(TestCase tc) {
         int error = 0;
-        contextMap.clear();
         List<Rule> rules = List.of(tc.getRule());
         Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
         List<Bfunc> bfuncs = tc.getBfuncs();
@@ -158,22 +196,18 @@ public class InfuseWorker implements TestWorker {
     private int execute() {
         Path absoluteJar = copiedJar.toAbsolutePath();
         Path absoluteBfunc = copiedBfuncClass.toAbsolutePath();
-        Path patternInput = Path.of(workspace.toString(), "pattern.xml").toAbsolutePath();
-        Path contextInput = Path.of(workspace.toString(), "data.txt").toAbsolutePath();
-        Path contextPool = Path.of(workspace.toString(), "context_pool.json").toAbsolutePath();
-        Path ruleInput = Path.of(workspace.toString(), "rule.xml").toAbsolutePath();
-        Path output = Path.of(workspace.toString(), "incs.txt").toAbsolutePath();
-        Path outputIncs = Path.of(workspace.toString(), "incs.json").toAbsolutePath();
-        Path outputCCT = Path.of(workspace.toString(), "cct.txt").toAbsolutePath();
-        Path logPath = Path.of(workspace.toString(), "infuse_log.txt").toAbsolutePath();
-        Path errPath = Path.of(workspace.toString(), "infuse_err.txt").toAbsolutePath();
+        Path contextPool = workspace.resolve("context_pool.json").toAbsolutePath();
+        Path ruleInput = workspace.resolve("rule.xml").toAbsolutePath();
+        Path outputIncs = workspace.resolve("incs.json").toAbsolutePath();
+        Path outputCCT = workspace.resolve("cct.txt").toAbsolutePath();
+        Path logPath = workspace.resolve("infuse_log.txt").toAbsolutePath();
+        Path errPath = workspace.resolve("infuse_err.txt").toAbsolutePath();
 
         try {
-            Files.delete(outputIncs);
-        } catch (NoSuchFileException _) {
-
+            Files.deleteIfExists(outputIncs);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.error("Failed to delete existing output file: {}", outputIncs, e);
+            return 1;
         }
 
         List<String> args = new ArrayList<>(List.of(
@@ -185,35 +219,34 @@ public class InfuseWorker implements TestWorker {
                 "-incs", outputIncs.toString(),
                 "-cct", outputCCT.toString()
         ));
-
         args.addAll(arguments);
 
-        ProcessBuilder builder = new ProcessBuilder(args);
-
-        builder.redirectOutput(new File(logPath.toString()));
-        builder.redirectError(new File(errPath.toString()));
+        ProcessBuilder builder = new ProcessBuilder(args)
+                .redirectOutput(logPath.toFile())
+                .redirectError(errPath.toFile());
 
         try {
-            // 启动进程
             Process process = builder.start();
 
-            // 等待进程完成，最多 5 秒
             if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                logger.warn("Time limit exceeded.");
-                process.destroy();  // 终止进程
+                logger.warn("Execution time limit exceeded. Terminating process.");
+                process.destroy();
                 return 2;
             }
 
-            // 获取退出码
             int exitCode = process.exitValue();
             if (exitCode != 0) {
-                logger.warn("Exited with non-zero code: {}", exitCode);
+                logger.warn("Process exited with non-zero code: {}", exitCode);
                 return 1;
             }
-        } catch (Exception e) {
-            logger.fatal("Exception occurred when executing.", e);
+        } catch (IOException e) {
+            logger.error("IOException occurred during process execution.", e);
+            return 1;
+        } catch (InterruptedException e) {
+            logger.error("Process execution was interrupted.", e);
             return 1;
         }
+
         return 0;
     }
 
@@ -246,7 +279,6 @@ public class InfuseWorker implements TestWorker {
         }
     }
 
-    // TODO: change List<Bfunc> to Set<Bfunc>
     private void generateBfuncInput(List<Bfunc> bfuncs) throws IOException {
         if (workspace == null || !Files.exists(workspace)) {
             return;
@@ -309,7 +341,6 @@ public class InfuseWorker implements TestWorker {
                 result = new Result(rule.getBoolean("truth"));
 
                 // parse links
-                // modified 2025/03/05 for mutants
                 Set<Link> links = new HashSet<>();
                 for (Object linkObj: rule.getJSONArray("links")) {
                     JSONArray link = (JSONArray) linkObj;

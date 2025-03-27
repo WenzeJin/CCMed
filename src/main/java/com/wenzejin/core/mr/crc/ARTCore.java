@@ -1,11 +1,12 @@
 package com.wenzejin.core.mr.crc;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
 import com.wenzejin.core.rule.OpQuantifier;
-import com.wenzejin.core.util.TestCase;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -56,7 +57,7 @@ public class ARTCore {
                 Formula child = ((OpQuantifier) formula).formula;
                 try {
                     tags = TagCreation.entry(tc);
-                    FormulaWithTag quantifier = new FormulaWithTag(child, tags.getFirst(), tc.getPatterns(), tc.getBfuncs(), tc);
+                    FormulaWithTag quantifier = new FormulaWithTag(child, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
                     quantifierPool.add(quantifier);
                 } catch (NoTestResultException e) {
                     logger.warn("No test result for test case: {}, ignore!", tc);
@@ -115,7 +116,7 @@ public class ARTCore {
             i++;
         }
         candidates.removeAll(selected);
-        logger.info("Mini batch generated. Dist Max: {}, Min: {}", selected.getFirst().getMinDistance(), selected.getLast().getMinDistance());
+        logger.info("Mini batch generated. Dist Max: {}, Min: {}", selected.get(0).getMinDistance(), selected.get(selected.size() - 1).getMinDistance());
 
         for (TestCaseCandidate candidate : candidates) {
             for (TestCaseCandidate testCandidate : tested) {

@@ -1,5 +1,6 @@
 package com.wenzejin.core.mr.crc.rules;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.crc.CRCFunc;
@@ -10,7 +11,6 @@ import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 import com.wenzejin.core.rule.OpQuantifier;
 import com.wenzejin.core.rule.Pattern;
-import com.wenzejin.core.util.TestCase;
 
 import java.util.HashSet;
 import java.util.List;

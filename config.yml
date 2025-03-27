@@ -1,0 +1,32 @@
+mode:           "normal"
+
+stopMode:       "limited"
+
+# Limit
+sourceLimit:    100
+followUpLimit:  100
+
+# Batch Options
+batchSize:      100
+miniBatchSize:  50
+threadLimit:    8
+
+# Database options
+databaseUrl:    "data/testcase.db"
+
+# Worker options
+workerType:     "infuse"
+workspaceRoot:  "workspace"
+
+# Resource options
+targetPath:     "cc_utils/INFUSE_ORI/std.jar"
+rulesPath:      "rules/4_level_rule/rule_data"
+bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
+
+# Target arguments
+arguments:      ["-approach", "PCC+GEAS_ori", "-mg"]
+
+
+# Result output
+resultPath:     "./result.txt"
+

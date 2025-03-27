@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr.crc;
 
-import com.wenzejin.core.util.TestCase;
+import com.wenzejin.core.TestCase;
 
 public interface TestCaseCandidate extends Comparable<TestCaseCandidate> {
 

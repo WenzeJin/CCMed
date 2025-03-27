@@ -1,7 +1,7 @@
 package com.wenzejin.core.executor;
 
-import com.wenzejin.core.db.TestCaseDB;
-import com.wenzejin.core.util.TestCase;
+import com.wenzejin.core.TestCase;
+import com.wenzejin.core.TestCaseDB;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;

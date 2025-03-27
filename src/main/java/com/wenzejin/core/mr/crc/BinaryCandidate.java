@@ -1,7 +1,7 @@
 package com.wenzejin.core.mr.crc;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.mr.crc.rules.TagApplication;
-import com.wenzejin.core.util.TestCase;
 
 public class BinaryCandidate implements TestCaseCandidate {
     final FormulaWithTag left;

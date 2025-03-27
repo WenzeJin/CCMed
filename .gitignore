@@ -40,3 +40,12 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+
+rules/
+cc_utils/
+data/
+.idea/
+*.jar
+result.txt
+workspace/

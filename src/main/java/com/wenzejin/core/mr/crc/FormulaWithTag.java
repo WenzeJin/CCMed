@@ -1,10 +1,10 @@
 package com.wenzejin.core.mr.crc;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
-import com.wenzejin.core.util.TestCase;
 
 import java.util.List;
 

@@ -23,14 +23,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.executor.TestAndCheckExecutor;
 import com.wenzejin.core.executor.TestOnlyExecutor;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.crc.ARTCore;
-import com.wenzejin.core.preprocess.Preprocessor;
-import com.wenzejin.core.util.TestCase;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +44,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class TesterCore {
 
@@ -103,7 +99,6 @@ public class TesterCore {
             Map<String, Object> arguments = new HashMap<>();
             arguments.put("preprocessor.rules-input-directory", rulesPath);
             Preprocessor preprocessor = new Preprocessor(arguments);
-            preprocessor.readRules();
             preprocessor.generateTestCases();
             preprocessor.reduceSize(sourceLimit);
             logger.info("Source cases preparation done in {} ms.", System.currentTimeMillis() - checkPoint);
@@ -129,7 +124,7 @@ public class TesterCore {
             preExecutor.init();
             postExecutor.init();
 
-            int totalBatch = preprocessor.getTestCases().size() / batchSize;
+            int totalBatch = preprocessor.getSize() / batchSize;
             int eachBatchLimit = followUpLimit / totalBatch;
 
 
@@ -190,10 +185,8 @@ public class TesterCore {
         } catch (SQLException e) {
             logger.error("SQL Exception Occurred: {}", e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
-            logger.error("IO Exception Occurred: {}", e.getMessage());
-        } catch (XmlParseException e) {
-            logger.error("XML Parse Exception Occurred: {}", e.getMessage());
+        // } catch (IOException e) {
+        //     logger.error("IO Exception Occurred: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Occurred: {}", e.getMessage());
         } catch (Exception e) {
@@ -373,6 +366,7 @@ public class TesterCore {
             case "sourceLimit" -> this.sourceLimit = Integer.parseInt(value.toString());
             case "followUpLimit" -> this.followUpLimit = Integer.parseInt(value.toString());
             case "batchSize" -> this.batchSize = Integer.parseInt(value.toString());
+            case "miniBatchSize" -> this.miniBatchSize = Integer.parseInt(value.toString());
             case "databaseUrl" -> this.databaseUrl = value.toString();
             case "workerType" -> this.workerType = value.toString();
             case "workspaceRoot" -> this.workspaceRoot = value.toString();

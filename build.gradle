@@ -11,6 +11,9 @@ repositories {
     mavenCentral()
 }
 
+sourceCompatibility = JavaVersion.VERSION_21  // 源码兼容性为 Java 21
+targetCompatibility = JavaVersion.VERSION_21  // 目标编译版本为 Java 21
+
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE // 忽略重复的文件
 

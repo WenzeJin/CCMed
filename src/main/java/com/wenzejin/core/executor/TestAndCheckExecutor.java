@@ -1,8 +1,9 @@
 package com.wenzejin.core.executor;
 
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.mr.assertion.TestAssertion;
-import com.wenzejin.core.util.TestCase;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

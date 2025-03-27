@@ -1,8 +1,9 @@
 package com.wenzejin.core.executor;
 
-import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.wenzejin.core.TestCase;
 
 import java.util.List;
 import java.util.Map;

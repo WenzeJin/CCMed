@@ -1,8 +1,8 @@
 package com.wenzejin.core.worker;
 
-import com.wenzejin.core.util.TestCase;
-
 import java.io.IOException;
+
+import com.wenzejin.core.TestCase;
 
 public interface TestWorker {
 

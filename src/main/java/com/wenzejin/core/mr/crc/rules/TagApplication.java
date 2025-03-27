@@ -1,5 +1,6 @@
 package com.wenzejin.core.mr.crc.rules;
 
+import com.wenzejin.core.TestCase;
 import com.wenzejin.core.mr.assertion.*;
 import com.wenzejin.core.mr.crc.BinaryTag;
 import com.wenzejin.core.mr.crc.CRCFunc;
@@ -8,7 +9,6 @@ import com.wenzejin.core.mr.crc.QuantifierTag;
 import com.wenzejin.core.mr.crc.assertion.LinksValueAssertion;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
-import com.wenzejin.core.util.TestCase;
 
 import java.util.ArrayList;
 import java.util.HashSet;

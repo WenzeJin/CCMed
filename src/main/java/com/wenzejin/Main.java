@@ -1,7 +1,7 @@
 package com.wenzejin;
 
+import com.wenzejin.core.TestCaseDB;
 import com.wenzejin.core.TesterCore;
-import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
