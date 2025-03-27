@@ -16,12 +16,15 @@ import java.util.List;
 public class ARTCore {
     private static final Logger logger = LogManager.getLogger("ARTCore");
 
-    final List<TestCaseCandidate> candidates;
-    final List<TestCaseCandidate> tested;
+    List<TestCaseCandidate> candidates;
+    List<TestCaseCandidate> tested;
 
-    public ARTCore() {
+    final int threadNum;
+
+    public ARTCore(int threadNum) {
         candidates = new ArrayList<>();
         tested = new ArrayList<>();
+        this.threadNum = threadNum;
     }
 
     public void initCandidates(List<TestCase> tcs) {
@@ -93,13 +96,11 @@ public class ARTCore {
         }
     }
 
-    public void shuffleCandidates() {
-        Collections.shuffle(candidates);
-    }
-
     public List<TestCase> getNextBatch(int size) {
         List<TestCase> thisBatch = new ArrayList<>();
         List<TestCaseCandidate> selected = new ArrayList<>();
+        candidates.sort(Collections.reverseOrder());
+
         int i = 0;
         while (thisBatch.size() < size) {
             if (i > candidates.size() - 1) {
@@ -114,9 +115,18 @@ public class ARTCore {
             i++;
         }
         candidates.removeAll(selected);
+        logger.info("Mini batch generated. Dist Max: {}, Min: {}", selected.getFirst().getMinDistance(), selected.getLast().getMinDistance());
 
-        // TODO: refresh candidates
+        for (TestCaseCandidate candidate : candidates) {
+            for (TestCaseCandidate testCandidate : tested) {
+                candidate.updateMinDistance(testCandidate);
+            }
+        }
 
         return thisBatch;
+    }
+
+    public boolean hasMore() {
+        return !candidates.isEmpty();
     }
 }

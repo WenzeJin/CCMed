@@ -11,12 +11,15 @@ public class QuantifierCandidate implements TestCaseCandidate {
     final String newQuant;
     final boolean expectTruth;
 
+    double minDistance = 0.0;
+
     public QuantifierCandidate(FormulaWithTag left, FormulaWithTag right, String newConn, String newQuant, boolean expectTruth) {
         this.left = left;
         this.right = right;
         this.newConn = newConn;
         this.newQuant = newQuant;
         this.expectTruth = expectTruth;
+        minDistance = Math.random() * 1000 + 1000;
     }
 
     public FormulaWithTag getLeft() {
@@ -39,6 +42,11 @@ public class QuantifierCandidate implements TestCaseCandidate {
         return expectTruth;
     }
 
+    public double getMinDistance() {
+        return minDistance;
+    }
+
+
     @Override
     public TestCase genTestCase() {
         FormulaWithTag unified = TagUnification.unify(left, right, newConn);
@@ -47,5 +55,23 @@ public class QuantifierCandidate implements TestCaseCandidate {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public int compareTo(TestCaseCandidate o) {
+        // reverse order
+        return Double.compare(getMinDistance(), o.getMinDistance());
+    }
+
+    @Override
+    public void updateMinDistance(TestCaseCandidate another) {
+        double dist = distance(another);
+        if (dist < minDistance) {
+            minDistance = dist;
+        }
+    }
+
+    private double distance(TestCaseCandidate another) {
+        return Math.random() * 1000;
     }
 }

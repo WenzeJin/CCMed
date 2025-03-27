@@ -95,7 +95,6 @@ public class InfuseWorker implements TestWorker {
         Files.copy(sourceBfunc.toPath(), destBfunc.toPath(), StandardCopyOption.REPLACE_EXISTING);
         copiedBfuncClass = destBfunc.toPath();
 
-        logger.info("Workspace created at: {}", workspace);
     }
 
     /**
@@ -121,7 +120,6 @@ public class InfuseWorker implements TestWorker {
                         }
                     });
 
-            logger.info("Workspace destroyed at: {}", workspace);
         }
 
         workspace = null;
@@ -199,8 +197,8 @@ public class InfuseWorker implements TestWorker {
             // 启动进程
             Process process = builder.start();
 
-            // 等待进程完成，最多 1 秒
-            if (!process.waitFor(2, TimeUnit.SECONDS)) {
+            // 等待进程完成，最多 5 秒
+            if (!process.waitFor(5, TimeUnit.SECONDS)) {
                 logger.warn("Time limit exceeded.");
                 process.destroy();  // 终止进程
                 return 2;

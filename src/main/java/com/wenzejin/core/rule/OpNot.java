@@ -17,6 +17,21 @@ public class OpNot implements Formula {
     }
 
     @Override
+    public double distance(Formula formula) {
+        return switch (formula.getNodeType()) {
+            case "and", "or", "implies", "bfunc", "forall", "exists" ->
+                // This layer of two formulas are different, but we can still compare the inner formula.
+                // The formula with NOT operator will go deeper in the recursion.
+                // And the other formula will stay in the same layer.
+                    50 + formula.distance(this.formula) * 0.5;
+            case "not" ->
+                // This layer of two formulas are the same, so we compare the inner formulae.
+                    formula.distance(((OpNot) formula).formula) * 0.5;
+            default -> 100;
+        };
+    }
+
+    @Override
     public boolean isValid() {
         if (formula == null) return false;
         return formula.isValid();

@@ -29,7 +29,6 @@ import com.wenzejin.core.executor.TestAndCheckExecutor;
 import com.wenzejin.core.executor.TestOnlyExecutor;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.crc.ARTCore;
-import com.wenzejin.core.mr.crc.CRCCore;
 import com.wenzejin.core.preprocess.Preprocessor;
 import com.wenzejin.core.util.TestCase;
 import com.wenzejin.core.worker.TestWorker;
@@ -48,6 +47,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class TesterCore {
 
@@ -55,12 +55,12 @@ public class TesterCore {
     private static final Logger logger = LogManager.getLogger("TesterCore");
 
     String      mode;
+    String      stopMode;
     int         sourceLimit;
     int         followUpLimit;
     int         threadLimit;
-    boolean     enableBatch;
-    boolean     enableBoost;
     int         batchSize;
+    int         miniBatchSize;
     String      databaseUrl;
     String      workerType;
     String      targetPath;
@@ -70,7 +70,6 @@ public class TesterCore {
     List<String> arguments;
     Map<String, Object> otherArgs;
     String      resultPath;
-    double      process;
 
     public TesterCore() {
         this.otherArgs = new HashMap<>();
@@ -84,10 +83,6 @@ public class TesterCore {
         };
     }
 
-    public double getProcess() {
-        return process;
-    }
-
     private boolean executeNormal() {
         try {
             // Initialize database
@@ -98,7 +93,7 @@ public class TesterCore {
             // Declare executors
             TestOnlyExecutor preExecutor;
             TestAndCheckExecutor postExecutor;
-            ARTCore artmr = new ARTCore();
+            ARTCore artmr = new ARTCore(threadLimit);
 
             // Initialize timer
             long startTime = System.currentTimeMillis();
@@ -115,10 +110,8 @@ public class TesterCore {
             checkPoint = System.currentTimeMillis();
 
             // Initialize statistics
-            int count = 0;
-            int checked = 0;
-            int failed = 0;
-            boolean source_failed = false;
+            boolean failed = false;
+            boolean sourceFailed = false;
             Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
             // prepare executors
@@ -136,47 +129,62 @@ public class TesterCore {
             preExecutor.init();
             postExecutor.init();
 
-            List<TestCase> tcs = preprocessor.getTestCases();
-            preExecutor.execute(tcs);
-
-            logger.info("Source cases testing done in {} ms.", System.currentTimeMillis() - checkPoint);
-            checkPoint = System.currentTimeMillis();
-            artmr.initCandidates(tcs);
+            int totalBatch = preprocessor.getTestCases().size() / batchSize;
+            int eachBatchLimit = followUpLimit / totalBatch;
 
 
-            // TODO: change this, this is just for testing
-            for (int i = 0; i < 2; i++) {
-                logger.info("*** Round {} start. ***", i);
-                List<TestCase> batch = artmr.getNextBatch(batchSize);
-                postExecutor.execute(batch);
+            for (int batch = 1; batch <= totalBatch; batch++) {
+                // Testing source cases
+                logger.info("*** Batch {} start ***", batch);
+                logger.info("Testing source test cases...");
+                List<TestCase> tcs = preprocessor.getBatch(batchSize);
+                preExecutor.execute(tcs);
+                sourceFailed = preExecutor.getChecked() != tcs.size();
+                logger.info("Source cases testing done.");
+
+                if (!sourceFailed) {
+                    artmr.initCandidates(tcs);
+                    int round = 0;
+                    int count = 0;
+                    while (artmr.hasMore() && count < eachBatchLimit) {
+                        ++round;
+                        logger.info("*** Batch {} : Round {} start. ***", batch, round);
+                        int thisBatchSize = stopMode.equals("limited") ? Math.min(eachBatchLimit - count, miniBatchSize) : miniBatchSize;
+                        List<TestCase> batchTC = artmr.getNextBatch(thisBatchSize);
+
+                        postExecutor.execute(batchTC);
+                        count += batchTC.size();
+
+                        var failedCasesInBatch = postExecutor.getFailedCases();
+                        failedCasesInBatch.forEach((k, v) -> {
+                            failedCases.put(k.getId(), v);
+                        });
+                        TestCaseDB.storeTestCases(failedCasesInBatch.keySet(), "failed");
+                        failed = failed || !failedCasesInBatch.isEmpty();
+
+                        if (failed && stopMode.equals("panic")) {
+                            logger.info("Batch {} interrupted due to failed cases. Panic mode.", batch);
+                            break;
+                        }
+                    }
+                } else {
+                    logger.info("Test interrupted due to failed source cases. No more follow-up test will be performed.");
+                    break;
+                }
+
+                if (failed && stopMode.equals("panic")) {
+                    logger.info("Test interrupted due to failed cases. Panic mode.");
+                    break;
+                }
             }
 
             preExecutor.close();
             postExecutor.close();
 
+            // dump result
+            dumpJsonResult(failed, sourceFailed, failedCases);
 
-
-            // TODO
-
-            JsonObject result = new JsonObject();
-            result.addProperty("passed", failedCases.isEmpty() && !source_failed);
-            result.addProperty("source-failed", source_failed);
-            JsonArray failedArray = new JsonArray();
-            for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
-                JsonObject failedCase = new JsonObject();
-                failedCase.addProperty("case-id", entry.getKey());
-                failedCase.addProperty("failed-assertions", entry.getValue().toString());
-                failedArray.add(failedCase);
-            }
-            result.add("failed-cases", failedArray);
-
-
-            try (FileOutputStream fos = new FileOutputStream(resultPath)){
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                fos.write(gson.toJson(result).getBytes());
-            }
-
-            logger.info("Test ended successfully!");
+            logger.info("Test ended successfully! Failed cases have been stored in database.");
 
             return failedCases.isEmpty();
         } catch (SQLException e) {
@@ -200,7 +208,6 @@ public class TesterCore {
             logger.error("Single mode requires a case id.");
             return false;
         }
-
 
         int caseId = -1;
         boolean passed = false;
@@ -262,25 +269,57 @@ public class TesterCore {
         return passed;
     }
 
-    public void loadDefaultSettings() {
-        this.mode = "normal";
-        this.sourceLimit = 500;
-        this.followUpLimit = 2000;
-        this.enableBatch = true;
-        this.enableBoost = true;
-        this.batchSize = 250;
-        this.threadLimit = 8;
-        this.databaseUrl = "data/testcase.db";
-        this.workerType = "infuse";
-        this.workspaceRoot = "workspace";
-        this.targetPath = "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified-withbug2.jar";
-        this.bfuncPath = "cc_utils/INFUSE_ORI/Bfunction.class";
-        this.rulesPath = "rules/4_level_rule/rule_data";
-        this.arguments = List.of("-approach", "ECC+IMD", "-mg");
-        this.otherArgs.clear();
-        this.resultPath = "./result.txt";
+    private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases) {
+        JsonObject result = new JsonObject();
+        result.addProperty("passed", !failed && !sourceFailed);
+        result.addProperty("source-failed", sourceFailed);
+        JsonArray failedArray = new JsonArray();
+        for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
+            JsonObject failedCase = new JsonObject();
+            failedCase.addProperty("case-id", entry.getKey());
+            failedCase.addProperty("failed-assertions", entry.getValue().toString());
+            failedArray.add(failedCase);
+        }
+        result.add("failed-cases", failedArray);
+
+        try (FileOutputStream fos = new FileOutputStream(resultPath)){
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            fos.write(gson.toJson(result).getBytes());
+        } catch (IOException e) {
+            logger.error("Failed to dump result to file: {}", e.getMessage());
+        }
     }
 
+    /* Tool functions for loading configurations */
+
+    /**
+     * Load default settings.
+     */
+    public void loadDefaultSettings() {
+        mode = "normal";
+        stopMode = "panic";
+        sourceLimit = 500;
+        followUpLimit = 2000;
+        batchSize = 500;
+        miniBatchSize = 200;
+        threadLimit = 8;
+        databaseUrl = "data/testcase.db";
+        workerType = "infuse";
+        workspaceRoot = "workspace";
+        targetPath = "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified-withbug2.jar";
+        bfuncPath = "cc_utils/INFUSE_ORI/Bfunction.class";
+        rulesPath = "rules/4_level_rule/rule_data";
+        arguments = List.of("-approach", "ECC+IMD", "-mg");
+        otherArgs.clear();
+        resultPath = "./result.txt";
+    }
+
+    /**
+     * Load settings from a YAML file.
+     *
+     * @param yamlPath Path to the YAML file.
+     * @throws IOException If the file does not exist.
+     */
     public void loadSettingsFromYaml(String yamlPath) throws IOException {
         loadDefaultSettings(); // 先加载默认配置
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions())); // 使用安全构造器
@@ -298,6 +337,12 @@ public class TesterCore {
         }
     }
 
+    /**
+     * Parse a YAML map.
+     *
+     * @param yamlMap The YAML map.
+     * @param prefix The prefix of the current key.
+     */
     private void parseYaml(Map<?, ?> yamlMap, String prefix) {
         for (Map.Entry<?, ?> entry : yamlMap.entrySet()) {
             if (!(entry.getKey() instanceof String key)) {
@@ -315,12 +360,18 @@ public class TesterCore {
         }
     }
 
+    /**
+     * Assign a setting to the corresponding field.
+     *
+     * @param key The key of the setting.
+     * @param value The value of the setting.
+     */
     private void assignSetting(String key, Object value) {
         switch (key) {
             case "mode" -> this.mode = value.toString();
+            case "stopMode" -> this.stopMode = value.toString();
             case "sourceLimit" -> this.sourceLimit = Integer.parseInt(value.toString());
             case "followUpLimit" -> this.followUpLimit = Integer.parseInt(value.toString());
-            case "enableBatch" -> this.enableBatch = Boolean.parseBoolean(value.toString());
             case "batchSize" -> this.batchSize = Integer.parseInt(value.toString());
             case "databaseUrl" -> this.databaseUrl = value.toString();
             case "workerType" -> this.workerType = value.toString();
@@ -331,7 +382,6 @@ public class TesterCore {
             case "arguments" -> this.arguments = (value instanceof List<?> list) ?
                     list.stream().map(Object::toString).toList() : List.of();
             case "resultPath" -> this.resultPath = value.toString();
-            case "enableBoost" -> this.enableBoost = Boolean.parseBoolean(value.toString());
             default -> this.otherArgs.put(key, value); // 未匹配的参数存入 otherArgs
         }
     }

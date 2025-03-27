@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -127,16 +128,12 @@ public abstract class AbstractExecutor {
             });
         }
 
-        executor.shutdown();
 
-        // 删除 workspace 下的所有文件
-        String workspace = (String) workerArguments.get("workspace-root");
         try {
-            if (workspace != null) {
-                deleteFolder(new File(workspace).toPath());
-            }
-        } catch (IOException e) {
-            logger.warn("Failed to clean workspace.");
+            executor.shutdown();
+            executor.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.warn("Execution interrupted.");
         }
     }
 
@@ -157,20 +154,4 @@ public abstract class AbstractExecutor {
     protected abstract boolean checkResult(TestCase tc);
 
     protected abstract void uncheckTestCase(TestCase tc);
-
-    private static void deleteFolder(Path folder) throws IOException {
-        Files.walkFileTree(folder, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.delete(file); // 删除文件
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                Files.delete(dir); // 删除空文件夹
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    }
 }

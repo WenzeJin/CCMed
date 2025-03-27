@@ -27,4 +27,13 @@ public interface Formula extends Cloneable {
 
     String toString();
 
+    /**
+     * Calculate the distance between two formulas. <br>
+     * The distance is in the range of [0, 100]. <br>
+     * The smaller the distance, the more similar the two formulas are.
+     * The similarity comes from the structure of the formulas.
+     * @param formula the formula to compare with
+     * @return the distance between the two formulas
+     */
+    double distance(Formula formula);
 }

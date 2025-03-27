@@ -30,7 +30,7 @@ public class TestOnlyExecutor extends AbstractExecutor {
 
     @Override
     protected void afterTest(List<TestCase> tcs) {
-        super.beforeTest(tcs);
+        super.afterTest(tcs);
         endTime = System.currentTimeMillis();
         logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
                 checked, tcs.size(), endTime - startTime);
@@ -44,7 +44,7 @@ public class TestOnlyExecutor extends AbstractExecutor {
 
     @Override
     protected void procedureCallback(int currentProgress, int totalTasks) {
-        int onePercent = totalTasks / 100;
+        int onePercent = totalTasks / 20;
         if (onePercent == 0) {
             onePercent = 1;
         }

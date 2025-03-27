@@ -7,7 +7,7 @@ import java.util.Collections;
 public class RandomSubset {
     public static <E> List<E> getRandom(List<E> list, int maxSize) {
         if (list.size() <= maxSize) {
-            return list;
+            return new ArrayList<>(list);
         }
         List<E> copy = new ArrayList<>(list);
         Collections.shuffle(copy);

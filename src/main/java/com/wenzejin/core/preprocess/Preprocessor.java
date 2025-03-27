@@ -204,26 +204,25 @@ public class Preprocessor {
         }
     }
 
-    /* Getters and Setters */
-
-    public String getRulesInputDirectory() {
-        return rulesInputDirectory;
-    }
-
-    public void setRulesInputDirectory(String rulesInputDirectory) {
-        this.rulesInputDirectory = rulesInputDirectory;
-    }
 
     public List<TestCase> getTestCases() {
         return testCases;
     }
 
     public void reduceSize(int size) {
+        logger.info("We will use {} / {} testCases.", size, testCases.size());
         testCases = RandomSubset.getRandom(testCases, size);
-        logger.info("We will use {} / {} testCases.", testCases.size(), size);
     }
 
-    public void saveTestCasesDB(String batchName) throws SQLException, IOException {
-        TestCaseDB.storeTestCases(testCases, batchName);
+    public List<TestCase> getBatch(int size) {
+        var batch = RandomSubset.getRandom(testCases, size);
+        testCases.removeAll(batch);
+        return batch;
+    }
+
+    public void hasMore() {
+        if (testCases.isEmpty()) {
+            logger.info("No more testcases.");
+        }
     }
 }

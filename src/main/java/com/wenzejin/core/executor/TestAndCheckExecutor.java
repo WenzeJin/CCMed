@@ -1,6 +1,6 @@
 package com.wenzejin.core.executor;
 
-import com.wenzejin.core.db.TestCaseDB;
+
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.util.TestCase;
 import org.apache.logging.log4j.LogManager;
@@ -13,23 +13,11 @@ import java.util.Map;
 
 public class TestAndCheckExecutor extends AbstractExecutor{
 
-    public enum FailureMode {
-        CONTINUE,
-        EXIT,
-    }
-
     private static final Logger logger = LogManager.getLogger("Executor (Test&Check)");
 
-    private long startTime;
-    private long endTime;
+    long startTime;
 
-    private Map<TestCase, List<TestAssertion>> failedCases;
-
-    public TestAndCheckExecutor(String workerType, Map<String, Object> arguments) {
-        super(workerType, arguments);
-        logger.info("TestAndCheckExecutor initialized. WorkerType: {}, Arguments: {}", workerType, arguments);
-        failedCases = new HashMap<>();
-    }
+    final Map<TestCase, List<TestAssertion>> failedCases;
 
     public TestAndCheckExecutor(String workerType, Map<String, Object> arguments, int threadNum) {
         super(workerType, arguments, threadNum);
@@ -49,23 +37,14 @@ public class TestAndCheckExecutor extends AbstractExecutor{
 
     @Override
     protected void afterTest(List<TestCase> tcs) {
-        endTime = System.currentTimeMillis();
-
+        super.afterTest(tcs);
+        long endTime = System.currentTimeMillis();
         logger.info("Execution finished. Test cases: {}(checked) / {} , Time elapsed: {} ms",
                 checked, tcs.size(), endTime - startTime);
 
         int failed = failedCases.size();
-
         int passed = checked - failed;
-
         logger.info("Report: {} cases passed, {} cases failed, pass rate: {}%.", passed, failed, (float)passed * 100 / checked);
-
-        for (var fc: failedCases.keySet()) {
-            logger.info("Failed test case id:");
-            logger.info(fc.getId());
-            logger.info("Failed assertions:");
-            logger.info(failedCases.get(fc).toString());
-        }
     }
 
     @Override
@@ -81,10 +60,9 @@ public class TestAndCheckExecutor extends AbstractExecutor{
     }
 
 
-
     @Override
     protected void procedureCallback(int currentProgress, int totalTasks) {
-        int onePercent = totalTasks / 100;
+        int onePercent = totalTasks / 20;
         if (onePercent == 0) {
             onePercent = 1;
         }

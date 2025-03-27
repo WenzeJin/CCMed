@@ -80,6 +80,20 @@ public class LiteralBfunc implements Formula{
     }
 
     @Override
+    public double distance(Formula formula) {
+        if (formula instanceof LiteralBfunc other) {
+            if (name.equals(other.name)) {
+                return 0;
+            }
+
+            int thisParamSize = params.size();
+            int thatParamSize = other.params.size();
+            return 25 + 75 * ((double)Math.abs(thisParamSize - thatParamSize)) / (thisParamSize + thatParamSize);
+        }
+        return 100;
+    }
+
+    @Override
     public boolean isValid() {
         return name != null && !name.isEmpty() && !params.isEmpty();
     }

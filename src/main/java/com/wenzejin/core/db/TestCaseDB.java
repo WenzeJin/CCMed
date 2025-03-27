@@ -98,7 +98,7 @@ public class TestCaseDB {
             }
     }
 
-    public static void storeTestCases(List<TestCase> testCases, String batchName) throws SQLException, IOException {
+    public static void storeTestCases(Iterable<TestCase> testCases, String batchName) throws SQLException, IOException {
         String batch = batchName == null ? "default" : batchName;
 
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL)) {
