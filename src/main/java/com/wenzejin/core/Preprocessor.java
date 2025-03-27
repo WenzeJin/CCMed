@@ -1,25 +1,21 @@
 package com.wenzejin.core.preprocess;
 
-import com.wenzejin.core.db.TestCaseDB;
 import com.wenzejin.core.exception.XmlParseException;
-import com.wenzejin.core.rule.Bfunc;
-import com.wenzejin.core.rule.LiteralBfunc;
-import com.wenzejin.core.rule.Pattern;
-import com.wenzejin.core.rule.Rule;
-import com.wenzejin.core.util.RandomSubset;
-import com.wenzejin.core.util.XmlToRuleParser;
-import com.wenzejin.core.util.TestCase;
+import com.wenzejin.core.rule.*;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.wenzejin.core.util.RandomSubset;
+import com.wenzejin.core.util.TestCase;
+import com.wenzejin.core.util.XmlToRuleParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /**
  * Preprocessor class.
@@ -52,7 +48,7 @@ public class Preprocessor {
      */
     public Preprocessor(Map<String, Object> args) {
         rulesInputDirectory = (String) args.get("preprocessor.rules-input-directory");
-        if (rulesInputDirectory == null) {
+        if (rulesInputDirectory == null || rulesInputDirectory.isEmpty()) {
             logger.fatal("No directory specified for rules input");
             throw new IllegalArgumentException("No directory specified for rules input.");
         }
@@ -91,7 +87,7 @@ public class Preprocessor {
         ExecutorService executorService = Executors.newFixedThreadPool(threadMax);
 
         for (Rule rule : rulesInput) {
-            executorService.submit(() -> generateTestCases(rule));
+            executorService.submit(() -> generateTestCasesForRule(rule));
         }
 
         executorService.shutdown();
@@ -100,7 +96,8 @@ public class Preprocessor {
                 logger.fatal("Timeout: Some tasks did not finish within the time limit.");
             }
         } catch (InterruptedException e) {
-            logger.fatal("Task execution interrupted.");
+            logger.fatal("Task execution interrupted.", e);
+            Thread.currentThread().interrupt();
         }
 
         logger.info("Generated {} test cases.", testCases.size());
@@ -109,32 +106,30 @@ public class Preprocessor {
     /**
      * Prepare testcase.
      */
-    private void generateTestCases(Rule rule) {
-        String rule_id = rule.getId();
+    private void generateTestCasesForRule(Rule rule) {
+        String ruleId = rule.getId();
 
         // Rebind variables to make sure they are unique
         var variables = rule.collectVariables();
-        Map<String, String> varMap = new HashMap<>();
-        for (var var: variables) {
-            String newVar = rule_id + "_" + var;
-            varMap.put(var, newVar);
+        Map<String, String> variableMap = new HashMap<>();
+        for (var variable : variables) {
+            String newVariable = ruleId + "_" + variable;
+            variableMap.put(variable, newVariable);
         }
-        rule.rebindVariables(varMap);
-
+        rule.rebindVariables(variableMap);
 
         // Generate random data for each pattern and bind them
         var patterns = rule.collectPatterns();
-
-        Map<String, String> patMap = new HashMap<>();
+        Map<String, String> patternMap = new HashMap<>();
         List<Pattern> newPatterns = new ArrayList<>();
-        for (var pat: patterns) {
-            String newPat = rule_id + "_" + pat;
-            patMap.put(pat, newPat);
-            Pattern newPattern = new Pattern(newPat);
-            newPattern.setBinaryData();
-            newPatterns.add(newPattern);
+        for (var pattern : patterns) {
+            String newPattern = ruleId + "_" + pattern;
+            patternMap.put(pattern, newPattern);
+            Pattern patternObj = new Pattern(newPattern);
+            patternObj.setBinaryData();
+            newPatterns.add(patternObj);
         }
-        rule.rebindPatterns(patMap);
+        rule.rebindPatterns(patternMap);
 
         // Enumerate bfuncs for rules and bind them
         var bfuncs = rule.collectBfuncs();
@@ -142,19 +137,18 @@ public class Preprocessor {
         List<String> bfuncNames = new ArrayList<>();
         for (LiteralBfunc bfunc : bfuncs) {
             int paramNum = bfunc.params.size();
-
             bfuncNames.add(bfunc.name);
-            String newNamePrefix = rule_id + "_" + bfunc.name;
+            String newNamePrefix = ruleId + "_" + bfunc.name;
             var bfuncList = Bfunc.enumerateBinaryBfunc(newNamePrefix, paramNum);
 
             // get param list and add
-            List<LiteralBfunc.Param> paramListOri = new ArrayList<>(bfunc.params);
-            paramListOri.sort(LiteralBfunc.Param::compareTo);
+            List<LiteralBfunc.Param> originalParamList = new ArrayList<>(bfunc.params);
+            originalParamList.sort(LiteralBfunc.Param::compareTo);
             List<String> paramList = new ArrayList<>();
-            for (var param: paramListOri) {
+            for (var param : originalParamList) {
                 paramList.add(param.var);
             }
-            for (Bfunc bf: bfuncList) {
+            for (Bfunc bf : bfuncList) {
                 bf.setParamList(paramList);
             }
 
@@ -168,42 +162,41 @@ public class Preprocessor {
         combinations = RandomSubset.getRandom(combinations, enumMax);
 
         // Generate testcases
-        int cnt = 0;
-        for (var combination: combinations) {
+        int count = 0;
+        for (var combination : combinations) {
             Map<String, String> bfuncMap = new HashMap<>();
             for (int i = 0; i < bfuncNames.size(); i++) {
                 bfuncMap.put(bfuncNames.get(i), combination.get(i).getName());
             }
 
             Rule newRule = rule.clone();
-            newRule.id = newRule.id + "_" + cnt;
+            newRule.id = newRule.id + "_" + count;
             newRule.rebindBfuncs(bfuncMap);
 
-            TestCase tc = new TestCase(newRule);
-            tc.setPatterns(newPatterns);
-            tc.setBfuncs(combination);
+            TestCase testCase = new TestCase(newRule);
+            testCase.setPatterns(newPatterns);
+            testCase.setBfuncs(combination);
             synchronized (testCases) {
-                testCases.add(tc);
+                testCases.add(testCase);
             }
-            cnt++;
+            count++;
         }
     }
 
-    static private void enumerateBfuncs(int index, List<String> bfuncName,
-                                 Map<String, List<Bfunc>> bfuncPool,
-                                 List<Bfunc> current, List<List<Bfunc>> result) {
-        if (index == bfuncName.size()) {
+    static private void enumerateBfuncs(int index, List<String> bfuncNames,
+                                        Map<String, List<Bfunc>> bfuncPool,
+                                        List<Bfunc> current, List<List<Bfunc>> result) {
+        if (index == bfuncNames.size()) {
             result.add(new ArrayList<>(current));
         } else {
-            var bfuncs = bfuncPool.get(bfuncName.get(index));
-            for (Bfunc bfunc: bfuncs) {
+            var bfuncs = bfuncPool.get(bfuncNames.get(index));
+            for (Bfunc bfunc : bfuncs) {
                 current.add(bfunc);
-                enumerateBfuncs(index + 1, bfuncName, bfuncPool, current, result);
+                enumerateBfuncs(index + 1, bfuncNames, bfuncPool, current, result);
                 current.remove(bfunc);
             }
         }
     }
-
 
     public List<TestCase> getTestCases() {
         return testCases;
