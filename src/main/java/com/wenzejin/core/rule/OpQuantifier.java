@@ -105,7 +105,7 @@ public class OpQuantifier implements Formula {
     }
 
     @Override
-    public Set<LiteralBfunc> collectBfuncs() {
+    public Set<BfuncLiteral> collectBfuncs() {
         if (formula != null) {
             return formula.collectBfuncs();
         }
@@ -165,6 +165,6 @@ public class OpQuantifier implements Formula {
 
     @Override
     public String toString() {
-        return getNodeType() + " " + var + " in " + pattern + " (" + formula + ")";
+        return "(" + getNodeType() + " " + var + " in " + pattern + " " + formula + ")";
     }
 }

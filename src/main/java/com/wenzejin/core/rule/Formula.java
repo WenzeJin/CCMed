@@ -7,26 +7,6 @@ public interface Formula extends Cloneable {
 
     boolean isValid();
 
-    String getNodeType();
-
-    String toXmlString();
-
-    void rebindPatterns(Map<String, String> patternMap);
-
-    Set<String> collectPatterns();
-
-    void rebindBfuncs(Map<String, String> bfuncMap);
-
-    Set<LiteralBfunc> collectBfuncs();
-
-    void rebindVariables(Map<String, String> variableMap);
-
-    Set<String> collectVariables();
-
-    Formula clone();
-
-    String toString();
-
     /**
      * Calculate the distance between two formulas. <br>
      * The distance is in the range of [0, 100]. <br>
@@ -36,4 +16,30 @@ public interface Formula extends Cloneable {
      * @return the distance between the two formulas
      */
     double distance(Formula formula);
+
+    String getNodeType();
+
+    String toXmlString();
+
+    /* Pattern operations */
+
+    void rebindPatterns(Map<String, String> patternMap);
+
+    Set<String> collectPatterns();
+
+    /* Bfunc operations */
+
+    void rebindBfuncs(Map<String, String> bfuncMap);
+
+    Set<BfuncLiteral> collectBfuncs();
+
+    /* Variable operations */
+
+    void rebindVariables(Map<String, String> variableMap);
+
+    Set<String> collectVariables();
+
+    Formula clone();
+
+    
 }

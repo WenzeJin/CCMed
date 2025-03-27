@@ -2,7 +2,7 @@ package com.wenzejin.core.rule;
 
 import java.util.*;
 
-public class LiteralBfunc implements Formula{
+public class BfuncLiteral implements Formula{
     public static class Param implements Cloneable, Comparable<Param> {
         public String pos;
         public String var;
@@ -60,17 +60,17 @@ public class LiteralBfunc implements Formula{
 
     public String name;
 
-    public LiteralBfunc(String name, List<Param> params) {
+    public BfuncLiteral(String name, List<Param> params) {
         this.params = params;
         this.name = name;
     }
 
-    public LiteralBfunc(String name) {
+    public BfuncLiteral(String name) {
         this.name = name;
         this.params = new ArrayList<>();
     }
 
-    public LiteralBfunc() {
+    public BfuncLiteral() {
         this.name = null;
         this.params = new ArrayList<>();
     }
@@ -81,7 +81,7 @@ public class LiteralBfunc implements Formula{
 
     @Override
     public double distance(Formula formula) {
-        if (formula instanceof LiteralBfunc other) {
+        if (formula instanceof BfuncLiteral other) {
             if (name.equals(other.name)) {
                 return 0;
             }
@@ -134,8 +134,8 @@ public class LiteralBfunc implements Formula{
     }
 
     @Override
-    public Set<LiteralBfunc> collectBfuncs() {
-        Set<LiteralBfunc> bfuncs = new HashSet<>();
+    public Set<BfuncLiteral> collectBfuncs() {
+        Set<BfuncLiteral> bfuncs = new HashSet<>();
         bfuncs.add(this);
         return bfuncs;
     }
@@ -162,7 +162,7 @@ public class LiteralBfunc implements Formula{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        LiteralBfunc that = (LiteralBfunc) o;
+        BfuncLiteral that = (BfuncLiteral) o;
         // We do not care the order of the params, because every param has a pos attribute.
         Set<Param> thisParam = new HashSet<>(params);
         Set<Param> thatParam = new HashSet<>(that.params);
@@ -175,9 +175,9 @@ public class LiteralBfunc implements Formula{
     }
 
     @Override
-    public LiteralBfunc clone() {
+    public BfuncLiteral clone() {
         try {
-            LiteralBfunc clonedOp = (LiteralBfunc) super.clone();
+            BfuncLiteral clonedOp = (BfuncLiteral) super.clone();
 
             if (params != null) {
                 List<Param> copiedList = new ArrayList<>();
@@ -199,12 +199,11 @@ public class LiteralBfunc implements Formula{
         tempParams.sort(Param::compareTo);
 
         StringBuilder sb = new StringBuilder();
-        sb.append(name).append("(");
-        for (Param param: tempParams) {
+        sb.append("(").append(name);
+        for (Param param : tempParams) {
+            sb.append(" ");
             sb.append(param.var);
-            sb.append(",");
         }
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
 
         return sb.toString();

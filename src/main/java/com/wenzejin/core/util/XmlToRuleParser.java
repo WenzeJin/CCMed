@@ -156,10 +156,10 @@ public class XmlToRuleParser {
         return new OpNot(formula);
     }
 
-    private LiteralBfunc parseLiteralBfunc(Node bfuncNode) {
+    private BfuncLiteral parseLiteralBfunc(Node bfuncNode) {
         String name = ((Element) bfuncNode).getAttribute("name");
         NodeList paramNodes = ((Element) bfuncNode).getElementsByTagName("param");
-        LiteralBfunc bfunc = new LiteralBfunc(name, new ArrayList<>());
+        BfuncLiteral bfunc = new BfuncLiteral(name, new ArrayList<>());
 
         for (int i = 0; i < paramNodes.getLength(); i++) {
             Element paramElement = (Element) paramNodes.item(i);

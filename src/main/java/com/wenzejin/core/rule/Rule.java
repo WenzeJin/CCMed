@@ -64,7 +64,7 @@ public class Rule implements Cloneable {
         return Set.of();
     }
 
-    public Set<LiteralBfunc> collectBfuncs() {
+    public Set<BfuncLiteral> collectBfuncs() {
         if (formula != null) {
             return formula.collectBfuncs();
         }

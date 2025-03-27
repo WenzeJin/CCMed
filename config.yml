@@ -1,6 +1,6 @@
 mode:           "normal"
 
-stopMode:       "limited"
+stopMode:       "limited + panic"
 
 # Limit
 sourceLimit:    100
@@ -28,5 +28,5 @@ arguments:      ["-approach", "PCC+GEAS_ori", "-mg"]
 
 
 # Result output
-resultPath:     "./result.txt"
+resultPath:     "./result.json"
 

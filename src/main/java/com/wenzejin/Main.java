@@ -4,8 +4,6 @@ import com.wenzejin.core.TestCaseDB;
 import com.wenzejin.core.TesterCore;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import org.apache.commons.cli.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -13,16 +11,12 @@ import java.sql.SQLException;
 
 public class Main {
 
-    private static final Logger logger = LogManager.getLogger(Main.class);
-
-
     public static void main(String[] args) {
         TestAssertionRegistry.register();
 
         Options options = new Options();
         options.addOption("g", "gui", false, "Run in GUI mode");
         options.addOption("c","config",true,"Specify the configuration file");
-        options.addOption("s", "single", true, "Test specified case.");
         options.addOption("l", "look", true, "Show specified case.");
         // Parse the command line arguments
 
@@ -34,7 +28,6 @@ public class Main {
         Boolean gui = false;
         Boolean fullTest = true;
         Boolean look = false;
-        Boolean singleTest = false;
 
         try {
             cmd = parser.parse(options, args);

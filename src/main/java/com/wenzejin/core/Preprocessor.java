@@ -295,14 +295,14 @@ public class Preprocessor {
     private static Map<String, List<Bfunc>> generateBfuncPool(Rule rule) {
         var bfuncs = rule.collectBfuncs();
         Map<String, List<Bfunc>> bfuncPool = new HashMap<>();
-        for (LiteralBfunc bfunc : bfuncs) {
+        for (BfuncLiteral bfunc : bfuncs) {
             int paramNum = bfunc.params.size();
             String newNamePrefix = rule.getId() + "_" + bfunc.name;
             var bfuncList = Bfunc.enumerateBinaryBfunc(newNamePrefix, paramNum);
 
             // get param list and add
-            List<LiteralBfunc.Param> originalParamList = new ArrayList<>(bfunc.params);
-            originalParamList.sort(LiteralBfunc.Param::compareTo);
+            List<BfuncLiteral.Param> originalParamList = new ArrayList<>(bfunc.params);
+            originalParamList.sort(BfuncLiteral.Param::compareTo);
             List<String> paramList = new ArrayList<>();
             for (var param : originalParamList) {
                 paramList.add(param.var);

@@ -49,3 +49,4 @@ data/
 *.jar
 result.txt
 workspace/
+result.json

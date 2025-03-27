@@ -112,8 +112,8 @@ public class OpConnector implements Formula {
     }
 
     @Override
-    public Set<LiteralBfunc> collectBfuncs(){
-        Set<LiteralBfunc> bfuncSet = new HashSet<>();
+    public Set<BfuncLiteral> collectBfuncs(){
+        Set<BfuncLiteral> bfuncSet = new HashSet<>();
         if (left != null) {
             bfuncSet.addAll(left.collectBfuncs());
         }
@@ -179,6 +179,6 @@ public class OpConnector implements Formula {
 
     @Override
     public String toString() {
-        return "(" + left + ") " + getNodeType() + " (" + right + ")";
+        return "(" + getNodeType() + " " + left + " " + right + ")";
     }
 }

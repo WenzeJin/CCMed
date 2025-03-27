@@ -72,7 +72,7 @@ public class OpNot implements Formula {
     }
 
     @Override
-    public Set<LiteralBfunc> collectBfuncs() {
+    public Set<BfuncLiteral> collectBfuncs() {
         if (formula != null) {
             return formula.collectBfuncs();
         }
@@ -124,7 +124,7 @@ public class OpNot implements Formula {
 
     @Override
     public String toString() {
-        return "not (" + formula + ")";
+        return "(not " + formula + ")";
     }
 
 
