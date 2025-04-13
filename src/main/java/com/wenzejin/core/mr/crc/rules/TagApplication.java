@@ -408,4 +408,88 @@ public class TagApplication {
         return assertions;
     }
 
+
+    /**
+     * Determines the rule code based on the specified binary tags and the logical operation. <br>
+     * The rule code may be different with the number in TA-rules, for example, TA-implies-1 is 2 in the rule code. <br>
+     * The rule code indicates the 'kernel' difference between the rules. For example, TA-implies-1 can be derived from TA-and-2, so the rule code is 2. <br>
+     * The rule code is set for TA-and-1 to TA-and-6, while the rule code of other situations depends on which TA-and-1 to TA-and-6 can be derived from. <br>
+     *
+     * @param left  The left operand represented as a {@link BinaryTag}.
+     * @param right The right operand represented as a {@link BinaryTag}.
+     * @param newOp The logical operation to be applied. Supported operations are:
+     *              <ul>
+     *                  <li>"and" - Logical AND operation.</li>
+     *                  <li>"or" - Logical OR operation.</li>
+     *                  <li>"implies" - Logical implication operation.</li>
+     *              </ul>
+     * @return A byte representing the rule code for the specified operation and operands.
+     *         Returns 0 if the operation is not recognized.
+     */
+    public static byte getRuleCode(BinaryTag left, BinaryTag right, String newOp) {
+        return switch (newOp) {
+            case "and" -> getAndRuleCode(left, right);
+            case "or" -> getOrRuleCode(left, right);
+            case "implies" -> getImpliesRuleCode(left, right);
+            default -> 0;
+        };
+    }
+    
+    private static byte getAndRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getAndRuleCode(right, left);
+        }
+    }
+
+    private static byte getOrRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getOrRuleCode(right, left);
+        }
+    }
+
+    private static byte getImpliesRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            return 4;
+        } else {
+            return 6;
+        }
+    }
 }

@@ -161,7 +161,6 @@ public class InfuseWorker implements TestWorker {
         }
 
         workspace = null;
-        logger.info("Workspace successfully destroyed.");
     }
 
     /**

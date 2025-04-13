@@ -1,7 +1,9 @@
 package com.wenzejin.core.rule;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Pattern {
@@ -66,11 +68,9 @@ public class Pattern {
     }
 
     public void randomReduceByGate() {
-        if (Math.random() > randomGate) {
-            int randomCount = (int) (Math.random() * 2) + 1;
-            for (int i = 0; i < randomCount && data.size() > 1; i++) {
-                data.remove(data.iterator().next());
-            }
+        if (Math.random() > randomGate && data.size() > 1) {
+            String toRemove = new ArrayList<>(data).get((int) (Math.random() * data.size()));
+            data.remove(toRemove);
         }
     }
 

@@ -1,14 +1,14 @@
 mode:           "normal"
 
-stopMode:       "limited + panic"
+stopMode:       "panic + limited"
 
 # Limit
 sourceLimit:    100
-followUpLimit:  100
+followUpLimit:  1500
 
 # Batch Options
 batchSize:      100
-miniBatchSize:  50
+miniBatchSize:  100
 threadLimit:    8
 
 # Database options
@@ -24,7 +24,7 @@ rulesPath:      "rules/4_level_rule/rule_data"
 bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
 
 # Target arguments
-arguments:      ["-approach", "PCC+GEAS_ori", "-mg"]
+arguments:      ["-approach", "PCC+IMD", "-mg"]
 
 
 # Result output

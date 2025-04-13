@@ -23,6 +23,7 @@ public class TestCase {
 
     // Constraint
     private Rule rule;
+    private String oriRule;
     private List<Pattern> patterns;
     private List<Bfunc> bfuncs;
     private List<TestAssertion> assertions;    // Assertion
@@ -36,6 +37,7 @@ public class TestCase {
 
     public TestCase() {
         id = idCounter.getAndIncrement();
+        oriRule = null;
         result = null;
         assertions = null;
         checked = false;
@@ -57,6 +59,10 @@ public class TestCase {
     }
 
     public void setRule(Rule rule) { this.rule = rule; }
+
+    public String getOriRule() { return oriRule; }
+
+    public void setOriRule(String oriRule) { this.oriRule = oriRule; }
 
     public List<Pattern> getPatterns() {
         return patterns;

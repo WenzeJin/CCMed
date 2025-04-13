@@ -1,10 +1,8 @@
 package com.wenzejin.core.mr.crc.rules;
 
-import com.wenzejin.core.mr.crc.BinaryTag;
 import com.wenzejin.core.mr.crc.CRCFunc;
 import com.wenzejin.core.mr.crc.FormulaWithTag;
 import com.wenzejin.core.mr.crc.QuantifierTag;
-import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -17,6 +15,25 @@ public class TagUnification {
 
     private static final AtomicInteger idCounter = new AtomicInteger();
 
+    /**
+     * Unifies two formulas with their respective tags into a new formula with a combined tag.
+     * <p>
+     * The method performs the following steps:
+     * 1. Clones the formulas from the input objects to avoid modifying the originals.
+     * 2. Validates that both input tags are instances of {@code QuantifierTag}.
+     * 3. Creates a new formula by applying the specified logical operator to the input formulas.
+     * 4. Combines the tags of the input formulas using the appropriate tag unification logic.
+     * 5. Updates the parent ID of the new tag by concatenating the parent IDs of the input tags.
+     * 6. Rebinds variables in the formulas and boolean functions using a mapping derived from the input tags.
+     * 7. Combines the patterns and boolean functions from the input formulas into the resulting formula.
+     * </p>
+     *
+     * @param f       The first formula with its associated tag and metadata.
+     * @param g       The second formula with its associated tag and metadata.
+     * @param newOp   The logical operator to unify the formulas. Supported values are "and", "or", and "implies".
+     * @return        A new {@code FormulaWithTag} object representing the unified formula and tag,
+     *                or {@code null} if the tags of the input formulas are invalid.
+     */
     public static FormulaWithTag unify(FormulaWithTag f, FormulaWithTag g, String newOp) {
         Formula leftFormula = f.formula.clone();
         Formula rightFormula = g.formula.clone();
@@ -65,9 +82,7 @@ public class TagUnification {
             bfuncs.add(bfunc.clone());
         }
         CRCFunc.rebindBfuncs(bfuncs, bindMap);
-        gen.rebindVariables(bindMap);
-
-        // TODO: 解决 parent testcase 跟踪问题
+        gen.rebindVariables(bindMap); 
         return new FormulaWithTag(gen, newTag, patterns, bfuncs);
     }
 

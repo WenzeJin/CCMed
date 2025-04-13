@@ -217,7 +217,7 @@ public class Preprocessor {
         // Generate random data for each pattern and bind them
         var newPatterns = createPatterns(rule);
 
-        // Create variants of each befunc.
+        // Create variants of each bfunc.
         var bfuncPool = generateBfuncPool(rule);
         var bfuncNames = bfuncPool.keySet().stream().toList();
 
@@ -228,7 +228,7 @@ public class Preprocessor {
         bfuncCombinations = RandomSubset.getRandom(bfuncCombinations, enumMax);
 
         // Generate testcases
-        emitRules(rule, newPatterns, bfuncNames, bfuncCombinations);
+        emitTestCases(rule, newPatterns, bfuncNames, bfuncCombinations);
     }
 
     /**
@@ -328,7 +328,7 @@ public class Preprocessor {
      * @param combinations A list of bfunc combinations, where each combination 
      *                     is a list of Bfunc objects to be mapped to the bfunc names.
      */
-    private void emitRules(Rule rule, List<Pattern> newPatterns, List<String> bfuncNames, List<List<Bfunc>> combinations) {
+    private void emitTestCases(Rule rule, List<Pattern> newPatterns, List<String> bfuncNames, List<List<Bfunc>> combinations) {
         int count = 0;
         for (var combination : combinations) {
             Map<String, String> bfuncMap = new HashMap<>();
@@ -339,6 +339,7 @@ public class Preprocessor {
             newRule.id = newRule.id + "_" + count;
             newRule.rebindBfuncs(bfuncMap);
             TestCase testCase = new TestCase(newRule);
+            testCase.setOriRule(rule.getId());
             testCase.setPatterns(newPatterns);
             testCase.setBfuncs(combination);
             synchronized (testCases) {

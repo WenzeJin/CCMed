@@ -73,85 +73,83 @@ public class TesterCore {
             // Declare executors
             TestExecutor preExecutor;
             TestExecutor postExecutor;
-            ARTCore artmr = new ARTCore(threadLimit);
 
             // Initialize timer
-            long checkPoint = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
+
+            // Prepare arguments
+            Map<String, Object> arguments = prepareArguments();
 
             // Prepare test cases
-            Map<String, Object> arguments = new HashMap<>();
-            arguments.put("preprocessor.rules-input-directory", rulesPath);
             Preprocessor preprocessor = new Preprocessor(arguments);
             preprocessor.generateTestCases();
             preprocessor.reduceSize(sourceLimit);
-            logger.info("Source cases preparation done in {} ms.", System.currentTimeMillis() - checkPoint);
-            checkPoint = System.currentTimeMillis();
+            logger.info("Source cases preparation completed in {} ms.", System.currentTimeMillis() - startTime);
+            startTime = System.currentTimeMillis();
 
             // Initialize statistics
-            boolean failed = false;
-            boolean sourceFailed = false;
+            boolean hasFailures = false;
+            boolean sourceCaseFailures = false;
             Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
-            // prepare executors
-            arguments.put("workspace-root", workspaceRoot);
-            if (workerType.equalsIgnoreCase("infuse")) {
-                arguments.put("infuse.workspace-root", workspaceRoot);
-                arguments.put("infuse.jar-target-path", targetPath);
-                arguments.put("infuse.bfunc-class-path", bfuncPath);
-                arguments.put("infuse.arguments", this.arguments);
-            } else {
-                throw new IllegalArgumentException("Invalid worker type " + workerType + " . Please check configurations.");
-            }
+            // Prepare executors
             preExecutor = new TestExecutor(TestExecutor.Mode.SOURCE, workerType, arguments, threadLimit);
             postExecutor = new TestExecutor(TestExecutor.Mode.FOLLOW, workerType, arguments, threadLimit);
             preExecutor.init();
             postExecutor.init();
 
-            int totalBatch = preprocessor.getSize() / batchSize;
-            int eachBatchLimit = followUpLimit / totalBatch;
+            int totalBatches = preprocessor.getSize() / batchSize;
+            int batchFollowUpLimit = followUpLimit / totalBatches;
+            int totalFollowUp = 0;
 
+            for (int batch = 1; batch <= totalBatches; batch++) {
+                logger.info("*** Starting Batch {} ***", batch);
 
-            for (int batch = 1; batch <= totalBatch; batch++) {
-                // Testing source cases
-                logger.info("*** Batch {} start ***", batch);
+                // Test source cases
                 logger.info("Testing source test cases...");
-                List<TestCase> tcs = preprocessor.getBatch(batchSize);
-                preExecutor.execute(tcs);
-                sourceFailed = preExecutor.getChecked() != tcs.size();
-                logger.info("Source cases testing done.");
+                List<TestCase> sourceCases = preprocessor.getBatch(batchSize);
+                preExecutor.execute(sourceCases);
+                sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
+                logger.info("Source cases testing completed.");
 
-                if (!sourceFailed) {
-                    artmr.initCandidates(tcs);
+                if (!sourceCaseFailures) {
+                    ARTCore artmr = new ARTCore(threadLimit);
+                    artmr.initCandidates(sourceCases);
                     int round = 0;
-                    int count = 0;
-                    while (artmr.hasMore() && count < eachBatchLimit) {
-                        ++round;
-                        logger.info("*** Batch {} : Round {} start. ***", batch, round);
-                        int thisBatchSize = stopMode.contains("limited") ? Math.min(eachBatchLimit - count, miniBatchSize) : miniBatchSize;
-                        List<TestCase> batchTC = artmr.getNextBatch(thisBatchSize);
+                    int processedCount = 0;
 
-                        postExecutor.execute(batchTC);
-                        count += batchTC.size();
+                    while (artmr.hasMore() && (processedCount < batchFollowUpLimit || !stopMode.contains("limited"))) {
+                        round++;
+                        logger.info("*** Batch {} : Round {} ***", batch, round);
 
-                        var failedCasesInBatch = postExecutor.getFailedCases();
-                        failedCasesInBatch.forEach((k, v) -> {
-                            failedCases.put(k.getId(), v);
-                        });
-                        TestCaseDB.storeTestCases(failedCasesInBatch.keySet(), "failed");
-                        failed = failed || !failedCasesInBatch.isEmpty();
+                        int currentBatchSize = stopMode.contains("limited") 
+                                ? Math.min(batchFollowUpLimit - processedCount, miniBatchSize) 
+                                : miniBatchSize;
+                        List<TestCase> followUpCases = artmr.getNextBatch(currentBatchSize);
 
-                        if (failed && stopMode.contains("panic")) {
-                            logger.info("Batch {} interrupted due to failed cases. Panic mode.", batch);
+                        postExecutor.execute(followUpCases);
+                        processedCount += followUpCases.size();
+
+                        Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
+                        batchFailures.forEach((testCase, assertions) -> 
+                            failedCases.put(testCase.getId(), assertions)
+                        );
+                        TestCaseDB.storeTestCases(batchFailures.keySet(), "failed");
+                        hasFailures = hasFailures || !batchFailures.isEmpty();
+                        totalFollowUp += followUpCases.size();
+
+                        if (hasFailures && stopMode.contains("panic")) {
+                            logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", batch);
                             break;
                         }
                     }
                 } else {
-                    logger.info("Test interrupted due to failed source cases. No more follow-up test will be performed.");
+                    logger.warn("Testing interrupted due to failed source cases. No follow-up tests will be performed.");
                     break;
                 }
 
-                if (failed && stopMode.contains("panic")) {
-                    logger.info("Test interrupted due to failed cases. Panic mode.");
+                if (hasFailures && stopMode.contains("panic")) {
+                    logger.warn("Testing interrupted due to failed cases. Panic mode activated.");
                     break;
                 }
             }
@@ -159,22 +157,20 @@ public class TesterCore {
             preExecutor.close();
             postExecutor.close();
 
-            // dump result
-            dumpJsonResult(failed, sourceFailed, failedCases);
+            // Dump results
+            dumpJsonResult(hasFailures, sourceCaseFailures, failedCases);
 
-            logger.info("Test ended successfully! Failed cases have been stored in database.");
+            logger.info("Testing completed successfully! Failed cases have been stored in the database.");
+            logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
+                    System.currentTimeMillis() - startTime, totalBatches * batchSize, totalFollowUp, failedCases.size());
 
             return failedCases.isEmpty();
         } catch (SQLException e) {
-            logger.error("SQL Exception Occurred: {}", e.getMessage());
-            e.printStackTrace();
-        // } catch (IOException e) {
-        //     logger.error("IO Exception Occurred: {}", e.getMessage());
+            logger.error("SQL Exception occurred: {}", e.getMessage(), e);
         } catch (IllegalArgumentException e) {
-            logger.error("Illegal Argument Occurred: {}", e.getMessage());
+            logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Exception: {}", e.getMessage());
-            e.printStackTrace();
+            logger.error("Unexpected Exception occurred: {}", e.getMessage(), e);
         }
         return false;
     }
@@ -196,17 +192,8 @@ public class TesterCore {
         }
 
         TestCaseDB.setDatabaseUrl(databaseUrl);
-        Map<String, Object> arguments = new HashMap<>();
-        // prepare executors
+        Map<String, Object> arguments = prepareArguments();
 
-        if (workerType.equalsIgnoreCase("infuse")) {
-            arguments.put("infuse.workspace-root", workspaceRoot);
-            arguments.put("infuse.jar-target-path", targetPath);
-            arguments.put("infuse.bfunc-class-path", bfuncPath);
-            arguments.put("infuse.arguments", this.arguments);
-        } else {
-            throw new IllegalArgumentException("Invalid worker type " + workerType + " . Please check configurations.");
-        }
         TestWorker worker = TestWorkerFactory.getTestWorker(workerType, arguments);
 
         try {
@@ -246,10 +233,55 @@ public class TesterCore {
         } catch (IOException e) {
             logger.error("IO Exception Occurred: {}.", e.getMessage());
         }
-
         return passed;
     }
 
+    /**
+     * Prepares a map of arguments based on the current configuration.
+     * 
+     * <p>This method initializes a map with key-value pairs required for processing.
+     * The arguments include paths and configurations specific to the worker type.
+     * If the worker type is "infuse", additional infuse-specific arguments are added.
+     * For any other worker type, an exception is thrown.
+     * 
+     * @return a map containing the prepared arguments.
+     * @throws IllegalArgumentException if the worker type is invalid.
+     */
+    private Map<String, Object> prepareArguments() {
+        Map<String, Object> arguments = new HashMap<>();
+        arguments.put("preprocessor.rules-input-directory", rulesPath);
+        arguments.put("workspace-root", workspaceRoot);
+        if (workerType.equalsIgnoreCase("infuse")) {
+            arguments.put("infuse.workspace-root", workspaceRoot);
+            arguments.put("infuse.jar-target-path", targetPath);
+            arguments.put("infuse.bfunc-class-path", bfuncPath);
+            arguments.put("infuse.arguments", this.arguments);
+        } else {
+            throw new IllegalArgumentException("Invalid worker type: " + workerType + ". Please check configurations.");
+        }
+        return arguments;
+    }
+
+
+    /**
+     * Dumps the test result as a JSON object to a file. <br>
+     * 
+     * The JSON output includes:
+     * - "passed": A boolean indicating if the test passed (true if neither `failed` nor `sourceFailed` is true).
+     * - "source-failed": A boolean indicating if the source code failed.
+     * - "failed-cases": An array of objects, each containing:
+     *   - "case-id": The ID of the failed test case.
+     *   - "failed-assertions": A string representation of the failed assertions.
+     *
+     * The JSON is written to the file specified by the `resultPath` variable.
+     * If an error occurs during file writing, it logs an error message.
+     *
+     * @param failed        Indicates whether the test has failed.
+     * @param sourceFailed  Indicates whether the source code has failed.
+     * @param failedCases   A map containing failed test cases, where the key is the case ID
+     *                      and the value is a list of failed assertions.
+     *
+     */
     private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases) {
         JsonObject result = new JsonObject();
         result.addProperty("passed", !failed && !sourceFailed);
@@ -353,6 +385,7 @@ public class TesterCore {
         switch (key) {
             case "mode" -> this.mode = value.toString();
             case "stopMode" -> this.stopMode = value.toString();
+            case "threadLimit" -> this.threadLimit = Integer.parseInt(value.toString());
             case "sourceLimit" -> this.sourceLimit = Integer.parseInt(value.toString());
             case "followUpLimit" -> this.followUpLimit = Integer.parseInt(value.toString());
             case "batchSize" -> this.batchSize = Integer.parseInt(value.toString());

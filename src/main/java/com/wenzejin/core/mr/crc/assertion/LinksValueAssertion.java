@@ -1,10 +1,9 @@
 package com.wenzejin.core.mr.crc.assertion;
 
-import com.wenzejin.core.mr.assertion.LinksEqualsAssertion;
+
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import com.wenzejin.core.mr.crc.CRCFunc;
-import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 
 import java.util.Set;

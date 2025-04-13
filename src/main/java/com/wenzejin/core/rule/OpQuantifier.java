@@ -33,9 +33,14 @@ public class OpQuantifier implements Formula {
     @Override
     public double distance(Formula formula) {
         switch(formula.getNodeType()) {
-            case "and": case "or": case "implies": case "bfunc":
-                // We cannot compare the rest of the formulae, so we return the maximum distance.
-                return 100;
+            // case "bfunc":
+            //     // We cannot compare the rest of the formulae, so we return the maximum distance.
+            //     return 100;
+            // case "and": case "or": case "implies":
+            //     // This layer of two formulas are different, but we can still compare the inner formulae.
+            //     Formula left = ((OpConnector) formula).left;
+            //     Formula right = ((OpConnector) formula).right;
+            //     return 50 + Math.max(formula.distance(left), formula.distance(right)) * 0.5;
             case "not":
                 // This layer of two formulas are different, but we can still compare the inner formula.
                 // The formula with NOT operator will go deeper in the recursion.
@@ -44,11 +49,11 @@ public class OpQuantifier implements Formula {
             case "forall": case "exists":
                 if (getNodeType().equals(formula.getNodeType())) {
                     // This layer of two formulas are the same, so we compare the inner formulae.
-                    return distance(((OpQuantifier) formula).formula) * 0.5;
+                    return formula.distance(((OpQuantifier) formula).formula) * 0.5;
                 } else {
                     // This layer of two formulas are different, but the structure is similar.
                     // So we return a medium distance, and compare the inner formulae.
-                    return 25 + distance(((OpQuantifier) formula).formula) * 0.5;
+                    return 25 + formula.distance(((OpQuantifier) formula).formula) * 0.5;
                 }
             default:
                 return 100;

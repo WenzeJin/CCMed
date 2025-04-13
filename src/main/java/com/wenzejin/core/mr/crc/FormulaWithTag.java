@@ -4,13 +4,13 @@ import com.wenzejin.core.TestCase;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.Pattern;
-import com.wenzejin.core.rule.Rule;
 
 import java.util.List;
 
 public class FormulaWithTag {
 
     public Formula formula;
+    public String oriRule;
     public Tag tag;
     public List<Pattern> patterns;
     public List<Bfunc> bfuncs;

@@ -1,6 +1,7 @@
 package com.wenzejin.core.mr.crc;
 
 import com.wenzejin.core.TestCase;
+import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.rule.Formula;
@@ -36,38 +37,45 @@ public class ARTCore {
 
         for (TestCase tc : tcs) {
             Formula formula = tc.getRule().formula;
-            if (formula instanceof OpConnector) {
-                // binary formula
-                Formula leftFormula = ((OpConnector) formula).left;
-                Formula rightFormula = ((OpConnector) formula).right;
-                List<Tag> tags;
-                try {
-                    tags = TagCreation.entry(tc);
+            try {
+//                BinaryTag wholeTag = new BinaryTag(tc.getResult().truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, tc.getResult().links);
+//                FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
+//                whole.oriRule = tc.getOriRule();
+//                binaryPool.add(whole);
+                List<Tag> tags = TagCreation.entry(tc);
+                if (formula instanceof OpConnector) {
+                    // binary formula
+                    Formula leftFormula = ((OpConnector) formula).left;
+                    Formula rightFormula = ((OpConnector) formula).right;
                     FormulaWithTag left = new FormulaWithTag(leftFormula, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
                     FormulaWithTag right = new FormulaWithTag(rightFormula, tags.get(1), tc.getPatterns(), tc.getBfuncs(), tc);
+                    left.oriRule = tc.getOriRule();
+                    right.oriRule = tc.getOriRule();
                     binaryPool.add(left);
                     binaryPool.add(right);
-                } catch (NoTestResultException e) {
-                    logger.warn("No test result for test case: {}, ignore!", tc);
-                }
-
-            } else if (formula instanceof OpQuantifier) {
-                // quantifier formula
-                List<Tag> tags;
-                Formula child = ((OpQuantifier) formula).formula;
-                try {
-                    tags = TagCreation.entry(tc);
+                } else if (formula instanceof OpQuantifier) {
+                    // quantifier formula
+                    Formula child = ((OpQuantifier) formula).formula;
                     FormulaWithTag quantifier = new FormulaWithTag(child, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
+                    quantifier.oriRule = tc.getOriRule();
                     quantifierPool.add(quantifier);
-                } catch (NoTestResultException e) {
-                    logger.warn("No test result for test case: {}, ignore!", tc);
                 }
+            } catch (NoTestResultException e) {
+                logger.warn("No test result for test case: {}, ignoring!", tc);
+            } catch (NoRuleException e) {
+                logger.info("We cannot use rule {} to generate complex test cases!", tc.getRule().getId());
             }
         }
 
+        generateBinaryCandidates(binaryPool, binaryOps);
+        generateQuantifierCandidates(quantifierPool, binaryOps, quantifierOps);
+        logger.info("Total {} candidates generated.", candidates.size());
+    }
+
+    private void generateBinaryCandidates(List<FormulaWithTag> binaryPool, String[] binaryOps) {
         for (FormulaWithTag left : binaryPool) {
             for (FormulaWithTag right : binaryPool) {
-                if (left == right) {
+                if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
                 BinaryTag lt = (BinaryTag) left.tag;
@@ -80,10 +88,12 @@ public class ARTCore {
                 }
             }
         }
+    }
 
+    private void generateQuantifierCandidates(List<FormulaWithTag> quantifierPool, String[] binaryOps, String[] quantifierOps) {
         for (FormulaWithTag left : quantifierPool) {
             for (FormulaWithTag right : quantifierPool) {
-                if (left == right) {
+                if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
                 for (String op : binaryOps) {
@@ -93,13 +103,13 @@ public class ARTCore {
                     }
                 }
             }
-
         }
     }
 
     public List<TestCase> getNextBatch(int size) {
         List<TestCase> thisBatch = new ArrayList<>();
         List<TestCaseCandidate> selected = new ArrayList<>();
+        List<TestCaseCandidate> used = new ArrayList<>();
         candidates.sort(Collections.reverseOrder());
 
         int i = 0;
@@ -111,23 +121,32 @@ public class ARTCore {
             TestCase tc = candidates.get(i).genTestCase();
             if (tc != null) {
                 thisBatch.add(tc);
+                used.add(candidates.get(i));
                 tested.add(candidates.get(i));
             }
             i++;
         }
         candidates.removeAll(selected);
-        logger.info("Mini batch generated. Dist Max: {}, Min: {}", selected.get(0).getMinDistance(), selected.get(selected.size() - 1).getMinDistance());
-
-        for (TestCaseCandidate candidate : candidates) {
-            for (TestCaseCandidate testCandidate : tested) {
-                candidate.updateMinDistance(testCandidate);
+        logger.info("Mini batch generated. Dist Max: {}, Min: {}", used.get(0).getMinDistance(),
+                used.get(used.size() - 1).getMinDistance());
+        int binaryCount = 0;
+        for (TestCaseCandidate candidate : used) {
+            if (candidate instanceof BinaryCandidate) {
+                binaryCount++;
             }
         }
+        logger.info("Binary cases: {}, Quantifier cases: {}", binaryCount, used.size() - binaryCount);
 
+        parallelUpdateMinDistance(used);
         return thisBatch;
     }
 
     public boolean hasMore() {
         return !candidates.isEmpty();
+    }
+
+
+    private void parallelUpdateMinDistance(List<TestCaseCandidate> selected) {
+        candidates.parallelStream().forEach(candidate -> selected.forEach(candidate::updateMinDistance));
     }
 }

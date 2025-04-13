@@ -1,6 +1,5 @@
 package com.wenzejin.core.mr.crc;
 
-import com.wenzejin.core.result.Link;
 
 import java.util.HashSet;
 import java.util.Set;
