@@ -33,6 +33,7 @@ public class TestExecutor {
     
     int checked;
     final Map<TestCase, List<TestAssertion>> failedCases;
+    int firstFailure;
 
     private long startTime;
 
@@ -56,6 +57,7 @@ public class TestExecutor {
         this.workerType = workerType;
         this.workerArguments = workerArguments;
         this.threadNum = threadNum;
+        this.firstFailure = -1;
         failedCases = new HashMap<>();
     }
 
@@ -165,8 +167,9 @@ public class TestExecutor {
         for (TestCase tc : tcs) {
             tasks.add(() -> {
                 TestWorker worker = threadLocalWorker.get();
+                boolean succeed = false;
+                boolean passed = false;
                 try {
-                    boolean succeed = false;
                     for (int retry = 0; retry <= 3 && !succeed; retry++) {
                         if (worker.singleRun(tc) == 0) {
                             succeed = true;
@@ -178,7 +181,7 @@ public class TestExecutor {
                     if (succeed) {
                         tc.setChecked(true);
                         checkCount.incrementAndGet();
-                        checkResult(tc);
+                        passed = checkResult(tc);
                     } else {
                         handleUncheckTestCase(tc);
                     }
@@ -186,6 +189,11 @@ public class TestExecutor {
                     logger.error("Unexpected error while executing test case {}: {}", tc.getId(), e.getMessage(), e);
                 } finally {
                     int currentProgress = progress.incrementAndGet();
+                    if (!succeed || !passed) {
+                        synchronized (this) {
+                            firstFailure = Math.min(firstFailure, currentProgress);
+                        }
+                    }
                     procedureCallback(currentProgress, totalTasks);
                 }
                 return null;
@@ -247,8 +255,13 @@ public class TestExecutor {
         }
     }
 
+    public int getFirstFailure() {
+        return firstFailure;
+    }
+
     private void beforeTest(List<TestCase> tcs) {
         checked = 0;
+        firstFailure = tcs.size() + 1;
         failedCases.clear();
         startTime = System.currentTimeMillis();
     }

@@ -38,10 +38,10 @@ public class ARTCore {
         for (TestCase tc : tcs) {
             Formula formula = tc.getRule().formula;
             try {
-//                BinaryTag wholeTag = new BinaryTag(tc.getResult().truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, tc.getResult().links);
-//                FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
-//                whole.oriRule = tc.getOriRule();
-//                binaryPool.add(whole);
+                BinaryTag wholeTag = new BinaryTag(tc.getResult().truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, tc.getResult().links);
+                FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
+                whole.oriRule = tc.getOriRule();
+                binaryPool.add(whole);
                 List<Tag> tags = TagCreation.entry(tc);
                 if (formula instanceof OpConnector) {
                     // binary formula

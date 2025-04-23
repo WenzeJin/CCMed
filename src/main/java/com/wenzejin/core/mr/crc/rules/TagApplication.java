@@ -178,14 +178,14 @@ public class TagApplication {
             assertions.add(new TruthAssertion(true));
             Set<Link> cartesian = CRCFunc.cartesian(left.links, right.links);
             if (!cartesian.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(cartesian));
+                assertions.add(new LinksEqualsAssertion(cartesian));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-and-2-a
             usedRule = "TA-and-2";
             assertions.add(new TruthAssertion(false));
             if (!right.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(right.links));
+                assertions.add(new LinksEqualsAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-and-3
@@ -193,7 +193,7 @@ public class TagApplication {
             assertions.add(new TruthAssertion(false));
             Set<Link> union = CRCFunc.union(left.links, right.links);
             if (!union.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(union));
+                assertions.add(new LinksEqualsAssertion(union));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-and-4-a
@@ -234,14 +234,14 @@ public class TagApplication {
             assertions.add(new TruthAssertion(true));
             Set<Link> union = CRCFunc.union(left.links, right.links);
             if (!union.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(union));
+                assertions.add(new LinksEqualsAssertion(union));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-or-2-a
             usedRule = "TA-or-2";
             assertions.add(new TruthAssertion(true));
             if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(left.links));
+                assertions.add(new LinksEqualsAssertion(left.links));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-or-3
@@ -249,7 +249,7 @@ public class TagApplication {
             assertions.add(new TruthAssertion(false));
             Set<Link> cartesian = CRCFunc.cartesian(left.links, right.links);
             if (!cartesian.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(cartesian));
+                assertions.add(new LinksEqualsAssertion(cartesian));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-or-4-a
@@ -289,7 +289,7 @@ public class TagApplication {
             usedRule = "TA-implies-1";
             assertions.add(new TruthAssertion(true));
             if (!right.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(right.links));
+                assertions.add(new LinksEqualsAssertion(right.links));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-implies-2
@@ -297,7 +297,7 @@ public class TagApplication {
             assertions.add(new TruthAssertion(false));
             Set<Link> cartesian = CRCFunc.cartesian(CRCFunc.flipSet(left.links), right.links);
             if (!cartesian.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(cartesian));
+                assertions.add(new LinksEqualsAssertion(cartesian));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
             // TA-implies-3
@@ -305,14 +305,14 @@ public class TagApplication {
             assertions.add(new TruthAssertion(true));
             Set<Link> union = CRCFunc.union(CRCFunc.flipSet(left.links), right.links);
             if (!union.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(union));
+                assertions.add(new LinksEqualsAssertion(union));
             }
         } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
             // TA-implies-4
             usedRule = "TA-implies-4";
             assertions.add(new TruthAssertion(true));
             if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(CRCFunc.flipSet(left.links)));
+                assertions.add(new LinksEqualsAssertion(CRCFunc.flipSet(left.links)));
             }
         } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
             // TA-implies-5

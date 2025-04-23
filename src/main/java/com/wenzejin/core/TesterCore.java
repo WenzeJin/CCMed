@@ -101,6 +101,7 @@ public class TesterCore {
             int totalBatches = preprocessor.getSize() / batchSize;
             int batchFollowUpLimit = followUpLimit / totalBatches;
             int totalFollowUp = 0;
+            int firstFailure = -1;
 
             for (int batch = 1; batch <= totalBatches; batch++) {
                 logger.info("*** Starting Batch {} ***", batch);
@@ -111,6 +112,8 @@ public class TesterCore {
                 preExecutor.execute(sourceCases);
                 sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
                 logger.info("Source cases testing completed.");
+
+                TestCaseDB.storeTestCases(sourceCases, "source");
 
                 if (!sourceCaseFailures) {
                     ARTCore artmr = new ARTCore(threadLimit);
@@ -136,6 +139,9 @@ public class TesterCore {
                         );
                         TestCaseDB.storeTestCases(batchFailures.keySet(), "failed");
                         hasFailures = hasFailures || !batchFailures.isEmpty();
+                        if (!batchFailures.isEmpty() && firstFailure == -1) {
+                            firstFailure = totalFollowUp + postExecutor.getFirstFailure();
+                        }
                         totalFollowUp += followUpCases.size();
 
                         if (hasFailures && stopMode.contains("panic")) {
@@ -158,7 +164,7 @@ public class TesterCore {
             postExecutor.close();
 
             // Dump results
-            dumpJsonResult(hasFailures, sourceCaseFailures, failedCases);
+            dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
 
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
@@ -282,10 +288,11 @@ public class TesterCore {
      *                      and the value is a list of failed assertions.
      *
      */
-    private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases) {
+    private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases, int firstFailure) {
         JsonObject result = new JsonObject();
         result.addProperty("passed", !failed && !sourceFailed);
         result.addProperty("source-failed", sourceFailed);
+        result.addProperty("first-failure", firstFailure);
         JsonArray failedArray = new JsonArray();
         for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
             JsonObject failedCase = new JsonObject();
