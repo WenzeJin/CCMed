@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.crc.ARTCore;
+import com.wenzejin.core.mr.crc.RandomCore;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
 
@@ -46,6 +48,8 @@ public class TesterCore {
     List<String> arguments;
     Map<String, Object> otherArgs;
     String      resultPath;
+    boolean     ART;
+    boolean     enableUndetermined;
 
     public TesterCore() {
         this.otherArgs = new HashMap<>();
@@ -116,27 +120,33 @@ public class TesterCore {
                 TestCaseDB.storeTestCases(sourceCases, "source");
 
                 if (!sourceCaseFailures) {
-                    ARTCore artmr = new ARTCore(threadLimit);
-                    artmr.initCandidates(sourceCases);
+
+                    MTCore mtCore;
+
+                    if (ART) {
+                        mtCore = new ARTCore(threadLimit, enableUndetermined);
+                    } else {
+                        mtCore = new RandomCore(threadLimit, enableUndetermined);
+                    }
+
+                    mtCore.initCandidates(sourceCases);
                     int round = 0;
                     int processedCount = 0;
 
-                    while (artmr.hasMore() && (processedCount < batchFollowUpLimit || !stopMode.contains("limited"))) {
+                    while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !stopMode.contains("limited"))) {
                         round++;
                         logger.info("*** Batch {} : Round {} ***", batch, round);
 
-                        int currentBatchSize = stopMode.contains("limited") 
-                                ? Math.min(batchFollowUpLimit - processedCount, miniBatchSize) 
+                        int currentBatchSize = stopMode.contains("limited")
+                                ? Math.min(batchFollowUpLimit - processedCount, miniBatchSize)
                                 : miniBatchSize;
-                        List<TestCase> followUpCases = artmr.getNextBatch(currentBatchSize);
+                        List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
 
                         postExecutor.execute(followUpCases);
                         processedCount += followUpCases.size();
 
                         Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
-                        batchFailures.forEach((testCase, assertions) -> 
-                            failedCases.put(testCase.getId(), assertions)
-                        );
+                        batchFailures.forEach((testCase, assertions) -> failedCases.put(testCase.getId(), assertions));
                         TestCaseDB.storeTestCases(batchFailures.keySet(), "failed");
                         hasFailures = hasFailures || !batchFailures.isEmpty();
                         if (!batchFailures.isEmpty() && firstFailure == -1) {
@@ -149,6 +159,9 @@ public class TesterCore {
                             break;
                         }
                     }
+                    
+                    logger.info("Batch {} completed. Processed {} follow-up cases.", batch, processedCount);
+                    mtCore.logStats();
                 } else {
                     logger.warn("Testing interrupted due to failed source cases. No follow-up tests will be performed.");
                     break;
@@ -158,6 +171,8 @@ public class TesterCore {
                     logger.warn("Testing interrupted due to failed cases. Panic mode activated.");
                     break;
                 }
+
+                
             }
 
             preExecutor.close();
@@ -169,7 +184,7 @@ public class TesterCore {
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * batchSize, totalFollowUp, failedCases.size());
-
+            
             return failedCases.isEmpty();
         } catch (SQLException e) {
             logger.error("SQL Exception occurred: {}", e.getMessage(), e);
@@ -332,6 +347,8 @@ public class TesterCore {
         arguments = List.of("-approach", "ECC+IMD", "-mg");
         otherArgs = new HashMap<>(); // Ensure a fresh map is created
         resultPath = "./result.txt";
+        ART = true;
+        enableUndetermined = true;
 
         logger.info("Default settings loaded successfully.");
     }
@@ -406,6 +423,8 @@ public class TesterCore {
             case "arguments" -> this.arguments = (value instanceof List<?> list) ?
                     list.stream().map(Object::toString).toList() : List.of();
             case "resultPath" -> this.resultPath = value.toString();
+            case "ART" -> this.ART = Boolean.parseBoolean(value.toString());
+            case "enableUndetermined" -> this.enableUndetermined = Boolean.parseBoolean(value.toString());
             default -> this.otherArgs.put(key, value); // 未匹配的参数存入 otherArgs
         }
     }

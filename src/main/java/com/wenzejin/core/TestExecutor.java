@@ -301,7 +301,7 @@ public class TestExecutor {
     }
 
     private void procedureCallback(int currentProgress, int totalTasks) {
-        int onePercent = totalTasks / 20;
+        int onePercent = totalTasks / 10;
         if (onePercent == 0) {
             onePercent = 1;
         }

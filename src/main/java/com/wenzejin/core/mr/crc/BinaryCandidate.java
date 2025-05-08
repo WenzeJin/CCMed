@@ -14,7 +14,7 @@ public class BinaryCandidate implements TestCaseCandidate {
         this.left = left;
         this.right = right;
         this.newOp = newOp;
-        this.taRule = TagApplication.getRuleCode((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
+        this.taRule = TagApplication.getRealRuleCode((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
         // generate a random double above 1000
         minDistance = Math.random() * 1000 + 1000;
     }
@@ -33,6 +33,10 @@ public class BinaryCandidate implements TestCaseCandidate {
 
     public double getMinDistance() {
         return minDistance;
+    }
+
+    public boolean isUndetermined() {
+        return TagApplication.isUndetermined((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
     }
 
     @Override
@@ -54,7 +58,7 @@ public class BinaryCandidate implements TestCaseCandidate {
     }
 
     private double distance(TestCaseCandidate another) {
-        return syntaxDistance(another) * 0.5 + semanticDistance(another) * 0.5;
+        return Math.min(syntaxDistance(another) + semanticDistance(another), 100);
     }
 
     private double syntaxDistance(TestCaseCandidate another) {
@@ -68,10 +72,15 @@ public class BinaryCandidate implements TestCaseCandidate {
         }
     }
 
+    /**
+     * If two candidates are in the same category, the distance is 0. Else 100.
+     * @param another another candidate
+     * @return the distance
+     */
     private double semanticDistance(TestCaseCandidate another) {
         if (another instanceof BinaryCandidate) {
             BinaryCandidate anotherBinary = (BinaryCandidate) another;
-            return (newOp.equals(anotherBinary.newOp) ? 0 : 50) + (taRule == anotherBinary.taRule ? 0 : 50);
+            return (newOp.equals(anotherBinary.newOp) && taRule == anotherBinary.taRule) ? 0 : 100;
         } else {
             return 100;
         }

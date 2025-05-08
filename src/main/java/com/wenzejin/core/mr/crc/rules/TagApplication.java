@@ -107,7 +107,7 @@ public class TagApplication {
                         // Invalid context
                         return null;
                     }
-                    newPattern.randomExtendByGate();
+                    newPattern.randomExtend();
                 }
                 gen = new OpQuantifier(OpQuantifier.Op.FORALL, tag.variable, newPatName, ori);
                 assertions = forall(tag, newPattern.getData(), expectTruth);
@@ -119,7 +119,7 @@ public class TagApplication {
                         // Invalid context
                         return null;
                     }
-                    newPattern.randomExtendByGate();
+                    newPattern.randomExtend();
                 } else {
                     newPattern = new Pattern(newPatName, tag.valueFalse);
                     if (newPattern.getData().isEmpty()) {
@@ -491,5 +491,87 @@ public class TagApplication {
         } else {
             return 6;
         }
+    }
+
+    public static byte getRealRuleCode(BinaryTag left, BinaryTag right, String newOp) {
+        return switch (newOp) {
+            case "and" -> getRealAndRuleCode(left, right);
+            case "or" -> getRealOrRuleCode(left, right);
+            case "implies" -> getRealImpliesRuleCode(left, right);
+            default -> 0;
+        };
+    }
+    
+    private static byte getRealAndRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getRealAndRuleCode(right, left);
+        }
+    }
+
+    private static byte getRealOrRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getRealOrRuleCode(right, left);
+        }
+    }
+
+    private static byte getRealImpliesRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            return 6;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 7;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            return 8;
+        } else {
+            return 8;
+        }
+    }
+
+    public static String getRuleName(BinaryTag left, BinaryTag right, String newOp) {
+        byte ruleCode = getRealRuleCode(left, right, newOp);
+        return switch (newOp) {
+            case "and" -> "TA-and-" + ruleCode;
+            case "or" -> "TA-or-" + ruleCode;
+            case "implies" -> "TA-implies-" + ruleCode;
+            default -> "";
+        };
+    }
+
+    public static boolean isUndetermined(BinaryTag left, BinaryTag right, String newOp) {
+        byte ruleCode = getRuleCode(left, right, newOp);
+        return ruleCode > 3;
     }
 }

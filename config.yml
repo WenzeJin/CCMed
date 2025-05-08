@@ -1,32 +1,40 @@
-mode:           "normal"
+mode:           "normal"  # normal, single
 
-stopMode:       "panic + limited"
+stopMode:       "panic + limited" # panic, limited, panic + limited
+# panic: stop when a crash is found
+# limited: stop when the number of crashes reaches the limit
+
+# Enable ART or not
+ART:            true
+
+# Enable rules using UNKNOWN tag
+enableUndetermined: false
 
 # Limit
-sourceLimit:    300
+sourceLimit:    344
 followUpLimit:  3000
 
-# Batch Options
-batchSize:      300
-miniBatchSize:  100
+# Batch Options (A big batch includes: source -> follow-up, while a mini batch is a small batch of follow-up)
+batchSize:      344
+miniBatchSize:  50
 threadLimit:    8
 
-# Database options
+# Database options (for failed test cases)
 databaseUrl:    "data/testcase.db"
 
-# Worker options
+# Worker options (which worker to use and where to work)
 workerType:     "infuse"
 workspaceRoot:  "workspace"
 
 # Resource options
-targetPath:     "cc_utils/INFUSE_ORI/std.jar"
-rulesPath:      "rules/4_level_rule/rule_data"
+targetPath:     "cc_utils/INFUSE_ORI/531.jar"
+rulesPath:      "rules/level3all"
 bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
 
-# Target arguments
-arguments:      ["-approach", "PCC+IMD", "-mg"]
-
+# Test arguments
+arguments:      ["-approach", "INFUSE", "-mg"]
 
 # Result output
 resultPath:     "./result.json"
 
+# id: xxx , if you want to run single test case

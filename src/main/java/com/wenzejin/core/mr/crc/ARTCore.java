@@ -3,6 +3,8 @@ package com.wenzejin.core.mr.crc;
 import com.wenzejin.core.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
+import com.wenzejin.core.mr.MTCore;
+import com.wenzejin.core.mr.crc.rules.TagApplication;
 import com.wenzejin.core.mr.crc.rules.TagCreation;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -14,19 +16,35 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ARTCore {
+public class ARTCore implements MTCore {
     private static final Logger logger = LogManager.getLogger("ARTCore");
+    private static final double binaryRate = 0.8;
 
-    List<TestCaseCandidate> candidates;
     List<TestCaseCandidate> tested;
 
+    List<TestCaseCandidate> binaryCandidates;
+    List<TestCaseCandidate> quantifierCandidates;
+
     final int threadNum;
+    boolean enableUndetermined;
 
     public ARTCore(int threadNum) {
-        candidates = new ArrayList<>();
         tested = new ArrayList<>();
+        binaryCandidates = new ArrayList<>();
+        quantifierCandidates = new ArrayList<>();
         this.threadNum = threadNum;
+        this.enableUndetermined = false;
+    }
+
+    public ARTCore(int threadNum, boolean enableUndetermined) {
+        tested = new ArrayList<>();
+        binaryCandidates = new ArrayList<>();
+        quantifierCandidates = new ArrayList<>();
+        this.threadNum = threadNum;
+        this.enableUndetermined = enableUndetermined;
     }
 
     public void initCandidates(List<TestCase> tcs) {
@@ -69,7 +87,7 @@ public class ARTCore {
 
         generateBinaryCandidates(binaryPool, binaryOps);
         generateQuantifierCandidates(quantifierPool, binaryOps, quantifierOps);
-        logger.info("Total {} candidates generated.", candidates.size());
+        logger.info("Total {} candidates generated.", binaryCandidates.size(), quantifierCandidates.size());
     }
 
     private void generateBinaryCandidates(List<FormulaWithTag> binaryPool, String[] binaryOps) {
@@ -84,7 +102,11 @@ public class ARTCore {
                     continue;
                 }
                 for (String op : binaryOps) {
-                    candidates.add(new BinaryCandidate(left, right, op));
+                    var candidate = new BinaryCandidate(left, right, op);
+                    if (!enableUndetermined && candidate.isUndetermined()) {
+                        continue;
+                    }
+                    binaryCandidates.add(candidate);
                 }
             }
         }
@@ -98,8 +120,8 @@ public class ARTCore {
                 }
                 for (String op : binaryOps) {
                     for (String quantifierOp : quantifierOps) {
-                        candidates.add(new QuantifierCandidate(left, right, op, quantifierOp, true));
-                        candidates.add(new QuantifierCandidate(left, right, op, quantifierOp, false));
+                        quantifierCandidates.add(new QuantifierCandidate(left, right, op, quantifierOp, true));
+                        quantifierCandidates.add(new QuantifierCandidate(left, right, op, quantifierOp, false));
                     }
                 }
             }
@@ -108,45 +130,130 @@ public class ARTCore {
 
     public List<TestCase> getNextBatch(int size) {
         List<TestCase> thisBatch = new ArrayList<>();
-        List<TestCaseCandidate> selected = new ArrayList<>();
         List<TestCaseCandidate> used = new ArrayList<>();
-        candidates.sort(Collections.reverseOrder());
+        Collections.shuffle(binaryCandidates);
+        binaryCandidates.sort(Collections.reverseOrder());
+        Collections.shuffle(quantifierCandidates);
+        quantifierCandidates.sort(Collections.reverseOrder());
 
-        int i = 0;
-        while (thisBatch.size() < size) {
-            if (i > candidates.size() - 1) {
+        List<TestCase> bin = new ArrayList<>();
+        List<TestCaseCandidate> binUsed = new ArrayList<>();
+        List<TestCase> quant = new ArrayList<>();
+        List<TestCaseCandidate> quantUsed = new ArrayList<>();
+
+        int binaryBudget = (int) (size * binaryRate);
+        int quantifierBudget = size - binaryBudget;
+        while (bin.size() < binaryBudget) {
+            if (binaryCandidates.isEmpty()) {
                 break;
             }
-            selected.add(candidates.get(i));
-            TestCase tc = candidates.get(i).genTestCase();
+            TestCaseCandidate candidate = binaryCandidates.remove(0);
+            TestCase tc = candidate.genTestCase();
             if (tc != null) {
-                thisBatch.add(tc);
-                used.add(candidates.get(i));
-                tested.add(candidates.get(i));
-            }
-            i++;
-        }
-        candidates.removeAll(selected);
-        logger.info("Mini batch generated. Dist Max: {}, Min: {}", used.get(0).getMinDistance(),
-                used.get(used.size() - 1).getMinDistance());
-        int binaryCount = 0;
-        for (TestCaseCandidate candidate : used) {
-            if (candidate instanceof BinaryCandidate) {
-                binaryCount++;
+                bin.add(tc);
+                binUsed.add(candidate);
             }
         }
-        logger.info("Binary cases: {}, Quantifier cases: {}", binaryCount, used.size() - binaryCount);
+        while (quant.size() < quantifierBudget) {
+            if (quantifierCandidates.isEmpty()) {
+                break;
+            }
+            TestCaseCandidate candidate = quantifierCandidates.remove(0);
+            TestCase tc = candidate.genTestCase();
+            if (tc != null) {
+                quant.add(tc);
+                quantUsed.add(candidate);
+            }
+        }
+        int remaining = size - bin.size() - quant.size();
+        if (remaining > 0) {
+            if (!binaryCandidates.isEmpty()) {
+                for (int i = 0; i < remaining; i++) {
+                    if (binaryCandidates.isEmpty()) {
+                        break;
+                    }
+                    TestCaseCandidate candidate = binaryCandidates.remove(0);
+                    TestCase tc = candidate.genTestCase();
+                    if (tc != null) {
+                        bin.add(tc);
+                        binUsed.add(candidate);
+                    }
+                }
+            } else {
+                for (int i = 0; i < remaining; i++) {
+                    if (quantifierCandidates.isEmpty()) {
+                        break;
+                    }
+                    TestCaseCandidate candidate = quantifierCandidates.remove(0);
+                    TestCase tc = candidate.genTestCase();
+                    if (tc != null) {
+                        quant.add(tc);
+                        quantUsed.add(candidate);
+                    }
+                }
+            }
+        }
+
+        logger.info("Mini batch generated. Binary dist Max: {}, Min: {}. Quantifier dist Max: {}, Min: {}",
+                binUsed.get(0).getMinDistance(),
+                binUsed.get(bin.size() - 1).getMinDistance(),
+                quantUsed.get(0).getMinDistance(),
+                quantUsed.get(quant.size() - 1).getMinDistance());
+                        
+        thisBatch.addAll(bin);
+        thisBatch.addAll(quant);
+        used.addAll(binUsed);
+        used.addAll(quantUsed);
+        tested.addAll(used);
+
+        logger.info("Binary cases: {}, Quantifier cases: {}", binUsed.size(), quantUsed.size());
 
         parallelUpdateMinDistance(used);
         return thisBatch;
     }
 
     public boolean hasMore() {
-        return !candidates.isEmpty();
+        return binaryCandidates.size() + quantifierCandidates.size() > 0;
     }
 
 
     private void parallelUpdateMinDistance(List<TestCaseCandidate> selected) {
-        candidates.parallelStream().forEach(candidate -> selected.forEach(candidate::updateMinDistance));
+        List<TestCaseCandidate> binary = new ArrayList<>();
+        List<TestCaseCandidate> quantifier = new ArrayList<>();
+        for (TestCaseCandidate candidate : selected) {
+            if (candidate instanceof BinaryCandidate) {
+                binary.add(candidate);
+            } else if (candidate instanceof QuantifierCandidate) {
+                quantifier.add(candidate);
+            }
+        }
+        binaryCandidates.parallelStream().forEach(candidate -> binary.forEach(candidate::updateMinDistance));
+        quantifierCandidates.parallelStream().forEach(candidate -> quantifier.forEach(candidate::updateMinDistance));
+    }
+
+    public void logStats() {
+        Map<String, Integer> stats = new HashMap<>();
+        for (TestCaseCandidate candidate : tested) {
+            if (candidate instanceof BinaryCandidate) {
+                BinaryCandidate binaryCandidate = (BinaryCandidate) candidate;
+                String ruleName = TagApplication.getRuleName((BinaryTag) binaryCandidate.getLeft().tag,
+                        (BinaryTag) binaryCandidate.getRight().tag, binaryCandidate.getNewOp());
+                stats.put(ruleName, stats.getOrDefault(ruleName, 0) + 1);
+            } else if (candidate instanceof QuantifierCandidate) {
+                QuantifierCandidate quantifierCandidate = (QuantifierCandidate) candidate;
+                String ruleName = "";
+                if (quantifierCandidate.getNewQuant().equals("forall")) {
+                    ruleName = quantifierCandidate.getExpectTruth() ? "TA-forall-1" : "TA-forall-2";
+                } else {
+                    ruleName = quantifierCandidate.getExpectTruth() ? "TA-exists-1" : "TA-exists-2";
+                }
+                stats.put(ruleName, stats.getOrDefault(ruleName, 0) + 1);
+            }
+        }
+        logger.info("Tested candidates: {}", tested.size());
+        // sort and output
+        stats.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByKey())
+                .forEach(entry -> logger.info("Rule {}: {}", entry.getKey(), entry.getValue()));
     }
 }

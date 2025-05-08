@@ -41,29 +41,10 @@ public class Pattern {
         data.add("1");
     }
 
-    /**
-     * Generate random data in [dataMin, dataMax]
-     * @param patternSize size of data
-     * @param dataMin min
-     * @param dataMax max
-     */
-    public void setRandomData(int patternSize, int dataMin, int dataMax) {
-        data.clear();
-        while (data.size() < patternSize) {
-            data.add(String.valueOf((int) (Math.random() * (dataMax - dataMin + 1) + dataMin)));
-        }
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void randomExtendByGate() {
-        if (Math.random() > randomGate) {
-            int randomCount = (int) (Math.random() * 3) + 1;
-            for (int i = 0; i < randomCount; i++) {
-                data.add(String.valueOf((int) (Math.random() * 10)));
-            }
+    public void randomExtend() {
+        int randomCount = (int) (Math.random() * 5) + 1;
+        for (int i = 0; i < randomCount; i++) {
+            data.add(String.valueOf((int) (Math.random() * 20)));
         }
     }
 

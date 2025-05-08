@@ -72,7 +72,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
     }
 
     private double distance(TestCaseCandidate another) {
-        return syntaxDistance(another) * 0.5 + semanticDistance(another) * 0.5;
+        return Math.min(syntaxDistance(another) + semanticDistance(another), 100);
     }
 
     /**
@@ -95,34 +95,24 @@ public class QuantifierCandidate implements TestCaseCandidate {
             QuantifierCandidate anotherQuant = (QuantifierCandidate) another;
             double childDist = left.formula.distance(anotherQuant.left.formula) * 0.5
                     + right.formula.distance(anotherQuant.right.formula) * 0.5;
-            return childDist;
+            double connDist = newConn.equals(anotherQuant.newConn) ? 0 : 100;
+            return connDist * 0.5 + childDist * 0.5;
         } else {
             return 100;
         }
     }
 
     /**
-     * Calculates the semantic distance between this QuantifierCandidate and another TestCaseCandidate.
-     * The semantic distance is determined based on the equality of specific attributes:
-     * - `newQuant` (quantifier)
-     * - `newConn` (connector)
-     * - `expectTruth` (expected truth value)
-     * 
-     * If the other TestCaseCandidate is not an instance of QuantifierCandidate, a default distance of 100 is returned.
-     * Otherwise, the distance is calculated as follows:
-     * - 0.0 if the attributes are equal
-     * - 20.0 for each attribute that is not equal
-     * 
-     * @param another The TestCaseCandidate to compare against.
-     * @return The semantic distance as a double value. A lower value indicates higher similarity.
+     * If two candidates are in the same category, the distance is 0. Else 100.
+     * @param another another candidate
+     * @return the distance
      */
     private double semanticDistance(TestCaseCandidate another) {
         if (another instanceof QuantifierCandidate) {
             QuantifierCandidate anotherQuant = (QuantifierCandidate) another;
             boolean qEqual = newQuant.equals(anotherQuant.newQuant);
-            boolean cEqual = newConn.equals(anotherQuant.newConn);
             boolean eEqual = expectTruth == anotherQuant.expectTruth;
-            return (qEqual ? 0.0 : 50.0) + (cEqual ? 0.0 : 25.0) + (eEqual ? 0.0 : 25.0);
+            return (qEqual && eEqual) ? 0 : 100;
         } else {
             return 100;
         }
