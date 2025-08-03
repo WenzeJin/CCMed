@@ -3,12 +3,11 @@ package com.wenzejin.core.rule;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Pattern {
 
-    private static double randomGate = 0.5;
+    private static final double randomGate = 0.5;
 
     String name;
 

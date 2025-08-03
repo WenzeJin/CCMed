@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr.assertion;
 
-import com.wenzejin.core.mr.crc.assertion.LinksValueAssertion;
+import com.wenzejin.core.mr.jin.assertion.LinksValueAssertion;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +13,8 @@ public class TestAssertionRegistry {
         LinksExceptAssertion.class,
         LinksSubsetAssertion.class,
         LinksValueAssertion.class,
-        TruthAssertion.class
+        TruthAssertion.class,
+        LinksExtendAssertion.class
     );
 
     private static final Map<String, Class<? extends TestAssertion>> registry = new HashMap<>();

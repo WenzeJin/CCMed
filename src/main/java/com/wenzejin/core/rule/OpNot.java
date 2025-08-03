@@ -1,9 +1,6 @@
 package com.wenzejin.core.rule;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class OpNot implements Formula {
     public Formula formula;
@@ -92,6 +89,14 @@ public class OpNot implements Formula {
             return formula.collectVariables();
         }
         return new HashSet<>();
+    }
+
+    @Override
+    public Map<String, String> collectVariablePatternPairs() {
+        if (formula != null) {
+            return formula.collectVariablePatternPairs();
+        }
+        return new HashMap<>();
     }
 
     @Override

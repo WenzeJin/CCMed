@@ -56,6 +56,14 @@ public class Link implements Cloneable {
         vaSet = newVaSet;
     }
 
+    public Set<String> collectVariables() {
+        Set<String> variables = new HashSet<>();
+        for (VAPair entry : vaSet) {
+            variables.add(entry.getKey());
+        }
+        return variables;
+    }
+
     @Override
     public int hashCode() {
         return (type.hashCode() << 1) ^ vaSet.hashCode();

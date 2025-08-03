@@ -159,6 +159,11 @@ public class BfuncLiteral implements Formula{
     }
 
     @Override
+    public Map<String, String> collectVariablePatternPairs() {
+        return new HashMap<>();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

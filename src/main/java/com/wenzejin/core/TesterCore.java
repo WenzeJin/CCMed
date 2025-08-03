@@ -6,8 +6,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.assertion.TestAssertion;
-import com.wenzejin.core.mr.crc.ARTCore;
-import com.wenzejin.core.mr.crc.RandomCore;
+import com.wenzejin.core.mr.jin.ARTCore;
+import com.wenzejin.core.mr.jin.RandomCore;
+import com.wenzejin.core.mr.jin.rules.TagApplication;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
 
@@ -50,29 +51,29 @@ public class TesterCore {
     String      resultPath;
     boolean     ART;
     boolean     enableUndetermined;
+    boolean     simpleMode;
 
     public TesterCore() {
         this.otherArgs = new HashMap<>();
     }
 
     public boolean execute() {
-        switch (mode) {
-            case "normal":
-                return executeNormal();
-            case "single":
-                return executeSingle();
-            default:
+        return switch (mode) {
+            case "normal" -> executeNormal();
+            case "single" -> executeSingle();
+            default -> {
                 logger.error("Invalid mode: {}", mode);
-                return false;
-        }
+                yield false;
+            }
+        };
     }
 
     private boolean executeNormal() {
         try {
             // Initialize database
-            TestCaseDB.setDatabaseUrl(databaseUrl);
-            TestCaseDB.clearDB();
-            TestCaseDB.initializeDB();
+            TestCaseDataBaseDriver.setDatabaseUrl(databaseUrl);
+            TestCaseDataBaseDriver.clearDB();
+            TestCaseDataBaseDriver.initializeDB();
 
             // Declare executors
             TestExecutor preExecutor;
@@ -102,6 +103,9 @@ public class TesterCore {
             preExecutor.init();
             postExecutor.init();
 
+            // set rules configurations
+            TagApplication.simpleMode = simpleMode;
+
             int totalBatches = preprocessor.getSize() / batchSize;
             int batchFollowUpLimit = followUpLimit / totalBatches;
             int totalFollowUp = 0;
@@ -117,7 +121,7 @@ public class TesterCore {
                 sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
                 logger.info("Source cases testing completed.");
 
-                TestCaseDB.storeTestCases(sourceCases, "source");
+                TestCaseDataBaseDriver.storeTestCases(sourceCases, "source");
 
                 if (!sourceCaseFailures) {
 
@@ -147,7 +151,7 @@ public class TesterCore {
 
                         Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
                         batchFailures.forEach((testCase, assertions) -> failedCases.put(testCase.getId(), assertions));
-                        TestCaseDB.storeTestCases(batchFailures.keySet(), "failed");
+                        TestCaseDataBaseDriver.storeTestCases(batchFailures.keySet(), "failed");
                         hasFailures = hasFailures || !batchFailures.isEmpty();
                         if (!batchFailures.isEmpty() && firstFailure == -1) {
                             firstFailure = totalFollowUp + postExecutor.getFirstFailure();
@@ -212,13 +216,13 @@ public class TesterCore {
             return false;
         }
 
-        TestCaseDB.setDatabaseUrl(databaseUrl);
+        TestCaseDataBaseDriver.setDatabaseUrl(databaseUrl);
         Map<String, Object> arguments = prepareArguments();
 
         TestWorker worker = TestWorkerFactory.getTestWorker(workerType, arguments);
 
         try {
-            TestCase tc = TestCaseDB.getTestCaseById(caseId);
+            TestCase tc = TestCaseDataBaseDriver.getTestCaseById(caseId);
             worker.initWorkspace();
             int retry = 0;
             boolean succeed = false;
@@ -348,7 +352,8 @@ public class TesterCore {
         otherArgs = new HashMap<>(); // Ensure a fresh map is created
         resultPath = "./result.txt";
         ART = true;
-        enableUndetermined = true;
+        enableUndetermined = false;
+        simpleMode = false;
 
         logger.info("Default settings loaded successfully.");
     }
@@ -425,6 +430,7 @@ public class TesterCore {
             case "resultPath" -> this.resultPath = value.toString();
             case "ART" -> this.ART = Boolean.parseBoolean(value.toString());
             case "enableUndetermined" -> this.enableUndetermined = Boolean.parseBoolean(value.toString());
+            case "simpleMode" -> this.simpleMode = Boolean.parseBoolean(value.toString());
             default -> this.otherArgs.put(key, value); // 未匹配的参数存入 otherArgs
         }
     }

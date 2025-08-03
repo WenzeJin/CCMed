@@ -45,18 +45,13 @@ public class CombinedAssertion implements TestAssertion {
      */
     @Override
     public boolean assertTest(Result testResult) {
-        switch (type) {
-            case AND:
-                return left.assertTest(testResult) && right.assertTest(testResult);
-            case OR:
-                return left.assertTest(testResult) || right.assertTest(testResult);
-            case IMPLIES:
-                return !left.assertTest(testResult) || right.assertTest(testResult);
-            case NOT:
-                return !left.assertTest(testResult);
-            default:
-                throw new IllegalStateException("Unexpected value: " + type);
-        }
+        return switch (type) {
+            case AND -> left.assertTest(testResult) && right.assertTest(testResult);
+            case OR -> left.assertTest(testResult) || right.assertTest(testResult);
+            case IMPLIES -> !left.assertTest(testResult) || right.assertTest(testResult);
+            case NOT -> !left.assertTest(testResult);
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
     }
 
     private String rule;

@@ -1,14 +1,15 @@
-package com.wenzejin.core.mr.crc;
+package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.TestCase;
-import com.wenzejin.core.mr.crc.rules.TagApplication;
+import com.wenzejin.core.mr.jin.rules.TagApplication;
+import com.wenzejin.core.mr.jin.rules.TagUnification;
 
 public class BinaryCandidate implements TestCaseCandidate {
     final FormulaWithTag left;
     final FormulaWithTag right;
     final String newOp;
     final byte taRule;
-    double minDistance = 0.0;
+    double minDistance;
 
     public BinaryCandidate(FormulaWithTag left, FormulaWithTag right, String newOp) {
         this.left = left;
@@ -16,7 +17,7 @@ public class BinaryCandidate implements TestCaseCandidate {
         this.newOp = newOp;
         this.taRule = TagApplication.getRealRuleCode((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
         // generate a random double above 1000
-        minDistance = Math.random() * 1000 + 1000;
+        minDistance = 100;
     }
 
     public FormulaWithTag getLeft() {
@@ -41,7 +42,16 @@ public class BinaryCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        return TagApplication.binaryEntry(left, right, newOp);
+        // TODO: Implement TU
+        if (!isUndetermined()) {
+            var gen = TagUnification.unifyForBin(left, right, newOp);
+            if (gen != null) {
+                return TagApplication.binaryFinalize(gen);
+            }
+        } else {
+            return TagApplication.binaryEntry(left, right, newOp);
+        }
+        return null;
     }
 
     @Override
@@ -62,11 +72,9 @@ public class BinaryCandidate implements TestCaseCandidate {
     }
 
     private double syntaxDistance(TestCaseCandidate another) {
-        if (another instanceof BinaryCandidate) {
-            BinaryCandidate anotherBinary = (BinaryCandidate) another;
-            double childDist = left.formula.distance(anotherBinary.left.formula) * 0.5
+        if (another instanceof BinaryCandidate anotherBinary) {
+            return left.formula.distance(anotherBinary.left.formula) * 0.5
                     + right.formula.distance(anotherBinary.right.formula) * 0.5;
-            return childDist;
         } else {
             return 100;
         }
@@ -78,8 +86,7 @@ public class BinaryCandidate implements TestCaseCandidate {
      * @return the distance
      */
     private double semanticDistance(TestCaseCandidate another) {
-        if (another instanceof BinaryCandidate) {
-            BinaryCandidate anotherBinary = (BinaryCandidate) another;
+        if (another instanceof BinaryCandidate anotherBinary) {
             return (newOp.equals(anotherBinary.newOp) && taRule == anotherBinary.taRule) ? 0 : 100;
         } else {
             return 100;

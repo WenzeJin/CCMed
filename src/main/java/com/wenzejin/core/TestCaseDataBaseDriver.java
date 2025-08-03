@@ -14,9 +14,9 @@ import java.sql.*;
 
 /**
  * Database driver for test cases.
- * Notice: checked and passed fields in TestCase will not be used. they will be substituted by fields in DB.
+ * Notice: checked and passed fields in TestCase will not be used. They will be substituted by fields in DB.
  */
-public class TestCaseDB {
+public class TestCaseDataBaseDriver {
     private static String DATABASE_URL = "./data/testcase.db";  // 设置数据库路径为 ./data/testcase.db
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(Formula.class, new FormulaTypeAdapter())
@@ -29,7 +29,7 @@ public class TestCaseDB {
 
     /**
      * Initializes the database by creating the testcases table if it does not exist.
-     * @throws SQLException
+     * @throws SQLException If a database access error occurs or the table cannot be created.
      */
     public static void initializeDB() throws SQLException {
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_URL);
@@ -46,7 +46,7 @@ public class TestCaseDB {
 
     /**
      * Clears the database by deleting the database file.
-     * @throws SQLException
+     * @throws SQLException If the database file cannot be deleted.
      */
     public static void clearDB() throws SQLException {
         File databaseFile = new File(DATABASE_URL);

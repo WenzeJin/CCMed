@@ -1,4 +1,4 @@
-package com.wenzejin.core.mr.crc;
+package com.wenzejin.core.mr.jin;
 
 
 import java.util.HashSet;

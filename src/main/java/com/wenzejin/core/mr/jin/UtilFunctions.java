@@ -1,4 +1,4 @@
-package com.wenzejin.core.mr.crc;
+package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.TestCase;
 import com.wenzejin.core.result.Link;
@@ -9,7 +9,7 @@ import com.wenzejin.core.rule.OpConnector;
 
 import java.util.*;
 
-public class CRCFunc {
+public class UtilFunctions {
 
     public static List<Set<Link>> attribution(TestCase tc) {
         Result result = tc.getResult();

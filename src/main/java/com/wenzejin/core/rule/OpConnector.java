@@ -32,15 +32,8 @@ public class OpConnector implements Formula {
     @Override
     public double distance(Formula formula) {
         switch(formula.getNodeType()) {
-            // case "bfunc":
-            //     // We cannot compare the rest of the formulae, so we return the maximum distance.
-            //     return 100;
-            // case "forall": case "exists":
-            //     // This layer of two formulas are different, but we can still compare the inner formula.
-            //     Formula innerFormula = ((OpQuantifier) formula).formula;
-            //     return 50 + Math.max(innerFormula.distance(left),innerFormula.distance(right)) * 0.5;
             case "not":
-                // This layer of two formulas are different, but we can still compare the inner formula.
+                // This layer of two formulas is different, but we can still compare the inner formula.
                 // The formula with NOT operator will go deeper in the recursion.
                 // And this formula will stay in the same layer.
                 return 50 + distance(((OpNot) formula).formula) * 0.5;
@@ -151,6 +144,13 @@ public class OpConnector implements Formula {
             variableSet.addAll(right.collectVariables());
         }
         return variableSet;
+    }
+
+    @Override
+    public Map<String, String> collectVariablePatternPairs() {
+        Map<String, String> variablePatternPairs = left.collectVariablePatternPairs();
+        variablePatternPairs.putAll(right.collectVariablePatternPairs());
+        return variablePatternPairs;
     }
 
     @Override

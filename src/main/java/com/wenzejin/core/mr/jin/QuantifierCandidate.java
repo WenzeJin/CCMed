@@ -1,8 +1,8 @@
-package com.wenzejin.core.mr.crc;
+package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.TestCase;
-import com.wenzejin.core.mr.crc.rules.TagApplication;
-import com.wenzejin.core.mr.crc.rules.TagUnification;
+import com.wenzejin.core.mr.jin.rules.TagApplication;
+import com.wenzejin.core.mr.jin.rules.TagUnification;
 
 public class QuantifierCandidate implements TestCaseCandidate {
     final FormulaWithTag left;
@@ -11,7 +11,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
     final String newQuant;
     final boolean expectTruth;
 
-    double minDistance = 0.0;
+    double minDistance;
 
     public QuantifierCandidate(FormulaWithTag left, FormulaWithTag right, String newConn, String newQuant, boolean expectTruth) {
         this.left = left;
@@ -19,19 +19,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
         this.newConn = newConn;
         this.newQuant = newQuant;
         this.expectTruth = expectTruth;
-        minDistance = Math.random() * 1000 + 1000;
-    }
-
-    public FormulaWithTag getLeft() {
-        return left;
-    }
-
-    public FormulaWithTag getRight() {
-        return right;
-    }
-
-    public String getNewConn() {
-        return newConn;
+        minDistance = 100;
     }
 
     public String getNewQuant() {
@@ -49,7 +37,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        FormulaWithTag unified = TagUnification.unify(left, right, newConn);
+        FormulaWithTag unified = TagUnification.unifyForQuant(left, right, newConn);
         if (unified != null) {
             return TagApplication.quantifierEntry(unified, newQuant, expectTruth);
         } else {
@@ -91,12 +79,9 @@ public class QuantifierCandidate implements TestCaseCandidate {
      * @return The calculated syntax distance. A lower value indicates greater similarity, while a higher value indicates greater difference.
      */
     private double syntaxDistance(TestCaseCandidate another) {
-        if (another instanceof QuantifierCandidate) {
-            QuantifierCandidate anotherQuant = (QuantifierCandidate) another;
-            double childDist = left.formula.distance(anotherQuant.left.formula) * 0.5
+        if (another instanceof QuantifierCandidate anotherQuant) {
+            return left.formula.distance(anotherQuant.left.formula) * 0.5
                     + right.formula.distance(anotherQuant.right.formula) * 0.5;
-            double connDist = newConn.equals(anotherQuant.newConn) ? 0 : 100;
-            return connDist * 0.5 + childDist * 0.5;
         } else {
             return 100;
         }
@@ -108,11 +93,11 @@ public class QuantifierCandidate implements TestCaseCandidate {
      * @return the distance
      */
     private double semanticDistance(TestCaseCandidate another) {
-        if (another instanceof QuantifierCandidate) {
-            QuantifierCandidate anotherQuant = (QuantifierCandidate) another;
+        if (another instanceof QuantifierCandidate anotherQuant) {
             boolean qEqual = newQuant.equals(anotherQuant.newQuant);
             boolean eEqual = expectTruth == anotherQuant.expectTruth;
-            return (qEqual && eEqual) ? 0 : 100;
+            boolean cEqual = newConn.equals(anotherQuant.newConn);
+            return (qEqual && eEqual) ? (cEqual ? 0 : 50) : 100;
         } else {
             return 100;
         }

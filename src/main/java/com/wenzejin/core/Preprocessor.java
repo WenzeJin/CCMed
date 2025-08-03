@@ -18,9 +18,9 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Preprocessor class.
- * Read rules from all xml files under rulesInputDirectory.
+ * Read rules from all XML files under rulesInputDirectory.
  * Generate random data for each rule.
- * Enumerate bfuncs for rules and bind them.
+ * List bfuncs for rules and bind them.
  */
 public class Preprocessor {
 
@@ -142,7 +142,6 @@ public class Preprocessor {
      * <p>Note: If the thread pool is interrupted during execution, the current thread's interrupt
      * status is restored.
      *
-     * @throws InterruptedException if the thread waiting for task completion is interrupted.
      */
     public void generateTestCases() {
         var rulesInput = readRules();
@@ -204,7 +203,7 @@ public class Preprocessor {
      * 2. Creates new patterns with random data and binds them to the rule.
      * 3. Generates a pool of variants for each boolean function (bfunc) in the rule.
      * 4. Enumerates all possible combinations of the bfunc variants.
-     * 5. Selects a random subset of the bfunc combinations based on a predefined limit.
+     * 5. Select a random subset of the bfunc combinations based on a predefined limit.
      * 6. Emits the final test cases using the rule, new patterns, bfunc names, and combinations.
      *
      * @param rule The rule for which test cases are to be generated.
@@ -300,7 +299,7 @@ public class Preprocessor {
             String newNamePrefix = rule.getId() + "_" + bfunc.name;
             var bfuncList = Bfunc.enumerateBinaryBfunc(newNamePrefix, paramNum);
 
-            // get param list and add
+            // get a param list and add
             List<BfuncLiteral.Param> originalParamList = new ArrayList<>(bfunc.params);
             originalParamList.sort(BfuncLiteral.Param::compareTo);
             List<String> paramList = new ArrayList<>();

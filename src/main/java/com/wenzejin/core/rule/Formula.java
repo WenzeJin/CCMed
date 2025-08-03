@@ -39,6 +39,10 @@ public interface Formula extends Cloneable {
 
     Set<String> collectVariables();
 
+    /* For TA */
+
+    Map<String, String> collectVariablePatternPairs();
+
     Formula clone();
 
     

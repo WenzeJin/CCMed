@@ -1,9 +1,9 @@
-package com.wenzejin.core.mr.crc.assertion;
+package com.wenzejin.core.mr.jin.assertion;
 
 
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
-import com.wenzejin.core.mr.crc.CRCFunc;
+import com.wenzejin.core.mr.jin.UtilFunctions;
 import com.wenzejin.core.result.Result;
 
 import java.util.Set;
@@ -28,7 +28,7 @@ public class LinksValueAssertion implements TestAssertion {
 
     @Override
     public boolean assertTest(Result result) {
-        Set<String> valueExtract = CRCFunc.val(result.links, truth, variable);
+        Set<String> valueExtract = UtilFunctions.val(result.links, truth, variable);
         return valueExtract.containsAll(valueSet);
     }
 

@@ -1,6 +1,6 @@
 package com.wenzejin;
 
-import com.wenzejin.core.TestCaseDB;
+import com.wenzejin.core.TestCaseDataBaseDriver;
 import com.wenzejin.core.TesterCore;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import org.apache.commons.cli.*;
@@ -25,9 +25,9 @@ public class Main {
 
         String configPath = "./config.yml";
         int caseId = -1;
-        Boolean gui = false;
-        Boolean fullTest = true;
-        Boolean look = false;
+        boolean gui = false;
+        boolean fullTest = true;
+        boolean look = false;
 
         try {
             cmd = parser.parse(options, args);
@@ -59,7 +59,7 @@ public class Main {
 
         if (look) {
             try {
-                System.out.println(TestCaseDB.getTestCaseById(caseId));
+                System.out.println(TestCaseDataBaseDriver.getTestCaseById(caseId));
             } catch (SQLException e) {
                 System.out.println("SQL Exception Occurred");
             } catch (IOException e) {

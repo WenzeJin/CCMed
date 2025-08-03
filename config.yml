@@ -7,16 +7,16 @@ stopMode:       "panic + limited" # panic, limited, panic + limited
 # Enable ART or not
 ART:            true
 
-# Enable rules using UNKNOWN tag
-enableUndetermined: false
+# Simple mode (disable data changes)
+simpleMode:     true
 
 # Limit
 sourceLimit:    344
-followUpLimit:  3000
+followUpLimit:  1000
 
 # Batch Options (A big batch includes: source -> follow-up, while a mini batch is a small batch of follow-up)
 batchSize:      344
-miniBatchSize:  50
+miniBatchSize:  100
 threadLimit:    8
 
 # Database options (for failed test cases)
@@ -27,7 +27,7 @@ workerType:     "infuse"
 workspaceRoot:  "workspace"
 
 # Resource options
-targetPath:     "cc_utils/INFUSE_ORI/531.jar"
+targetPath:     "cc_utils/INFUSE_ORI/std.jar"
 rulesPath:      "rules/level3all"
 bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
 
@@ -37,4 +37,4 @@ arguments:      ["-approach", "INFUSE", "-mg"]
 # Result output
 resultPath:     "./result.json"
 
-# id: xxx , if you want to run single test case
+# id: xxx (if you want to run a single test case)

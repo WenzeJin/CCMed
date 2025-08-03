@@ -82,7 +82,7 @@ public class TestExecutor {
     }
 
     /**
-     * Initializes the TestExecutor by setting up the workers registry, thread pool executor, 
+     * Initializes the TestExecutor by setting up the worker's registry, thread pool executor,
      * and thread-local worker instances. Each worker is initialized with a workspace, and 
      * any errors during initialization are logged and result in an IllegalStateException.
      *
@@ -107,6 +107,9 @@ public class TestExecutor {
             } catch (IOException e) {
                 logger.error("Failed to initialize workspace for worker of type {}. Error: {}", workerType, e.getMessage(), e);
                 throw new IllegalStateException("Worker initialization failed", e);
+            } catch (NullPointerException e) {
+                logger.error("Worker type {} not found. Error: {}", workerType, e.getMessage(), e);
+                throw new IllegalStateException("Worker type not found", e);
             }
             return worker;
         });
@@ -221,12 +224,10 @@ public class TestExecutor {
      *   <li>Handles interruptions during the shutdown process by forcing a shutdown and restoring the interrupted status.</li>
      *   <li>Invokes the {@code destroyWorkspace} method on all registered workers to clean up their workspaces.</li>
      *   <li>Logs warnings or errors if any issues occur during the shutdown or workspace cleanup process.</li>
-     *   <li>Clears the workers registry, executor, and thread-local worker references to release resources.</li>
+     *   <li>Clears the worker's registry, executor, and thread-local worker references to release resources.</li>
      * </ul>
      * <p>
      * Note: This method ensures that all resources are properly released, but it may log errors if workspace cleanup fails.
-     *
-     * @throws IOException if an I/O error occurs during workspace cleanup for any worker.
      */
     public void close() {
         if (executor != null && threadLocalWorker != null) {
