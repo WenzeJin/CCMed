@@ -167,6 +167,7 @@ public class TestCase {
                 ", result=" + result +
                 ", checked=" + checked +
                 ", passed=" + passed +
+                ", source=" + source +
                 '}';
     }
 }

@@ -54,8 +54,6 @@ public class TestCaseDataBaseDriver {
             if (!databaseFile.delete()) {
                 throw new SQLException("Failed to delete the database file: " + DATABASE_URL);
             }
-        } else {
-            throw new SQLException("Database file does not exist: " + DATABASE_URL);
         }
     }
 

@@ -1,7 +1,9 @@
 package com.wenzejin.core.mr.jin;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class QuantifierTag implements Tag{
@@ -11,6 +13,7 @@ public class QuantifierTag implements Tag{
     public Set<String> valueFalse;
     public String ruleUsed;
     public String parentID;
+    public List<Integer> source;
 
     public QuantifierTag(String variable) {
         this.variable = variable;
@@ -18,6 +21,28 @@ public class QuantifierTag implements Tag{
         valueFalse = new HashSet<>();
         ruleUsed = "";
         parentID = "";
+        source = new ArrayList<>();
+    }
+
+    @Override
+    public void addSource(int sourceId) {
+        if (!source.contains(sourceId)) {
+            source.add(sourceId);
+        }
+    }
+
+    @Override
+    public List<Integer> getSource() {
+        return source;
+    }
+
+    @Override
+    public void addAllSources(List<Integer> sourceIds) {
+        for (Integer sourceId : sourceIds) {
+            if (!source.contains(sourceId)) {
+                source.add(sourceId);
+            }
+        }
     }
 
     @Override

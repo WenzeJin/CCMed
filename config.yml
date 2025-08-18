@@ -1,5 +1,7 @@
 mode:           "normal"  # normal, single
 
+id: 460
+
 stopMode:       "panic + limited" # panic, limited, panic + limited
 # panic: stop when a crash is found
 # limited: stop when the number of crashes reaches the limit
@@ -8,7 +10,7 @@ stopMode:       "panic + limited" # panic, limited, panic + limited
 ART:            true
 
 # Simple mode (disable data changes)
-simpleMode:     true
+simpleMode:     false
 
 # Limit
 sourceLimit:    344
@@ -23,16 +25,16 @@ threadLimit:    8
 databaseUrl:    "data/testcase.db"
 
 # Worker options (which worker to use and where to work)
-workerType:     "infuse"
+workerType:     "infuse-old"
 workspaceRoot:  "workspace"
 
 # Resource options
-targetPath:     "cc_utils/INFUSE_ORI/std.jar"
+targetPath:     "cc_utils/INFUSE_ORI/INFUSE_v9_old.jar"
 rulesPath:      "rules/level3all"
 bfuncPath:      "cc_utils/INFUSE_ORI/Bfunction.class"
 
 # Test arguments
-arguments:      ["-approach", "INFUSE", "-mg"]
+arguments:      ["-ap", "PCC+IMD"]
 
 # Result output
 resultPath:     "./result.json"

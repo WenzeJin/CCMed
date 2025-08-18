@@ -1,0 +1,658 @@
+package com.wenzejin.core.mr.jin.rules;
+
+import com.wenzejin.core.TestCase;
+import com.wenzejin.core.mr.assertion.*;
+import com.wenzejin.core.mr.jin.BinaryTag;
+import com.wenzejin.core.mr.jin.UtilFunctions;
+import com.wenzejin.core.mr.jin.FormulaWithTag;
+import com.wenzejin.core.mr.jin.QuantifierTag;
+import com.wenzejin.core.mr.jin.assertion.LinksValueAssertion;
+import com.wenzejin.core.result.Link;
+import com.wenzejin.core.rule.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class TagApplication {
+
+    public static boolean simpleMode = false;
+
+    private static final AtomicInteger idCounter = new AtomicInteger();
+
+    private static final Logger logger = LogManager.getLogger("TesterCore");
+
+    public static TestCase binaryFinalize(FormulaWithTag f) {
+        if (f.tag instanceof BinaryTag tag) {
+            if (tag.truth == BinaryTag.Truth.UNKNOWN) {
+                return null;
+            }
+
+            // collect variables which appear in links
+            var links = tag.links;
+
+            Set<String> vars = new HashSet<>();
+            for (var link : links) {
+                vars.addAll(link.collectVariables());
+            }
+
+            // extend patterns
+            var patterns = new ArrayList<Pattern>();
+            var patMap = new HashMap<String, Pattern>();
+            for (var p : f.patterns) {
+                var newPat = new Pattern(p.getName(), p.getData());
+                patterns.add(newPat);
+                patMap.put(p.getName(), newPat);
+            }
+
+            String dataType = "+NoDataChange";
+
+            boolean dataExtended = false;
+
+            if (!simpleMode && Math.random() > 0.5) {
+                // extend patterns by links
+                var varToPattern = f.formula.collectVariablePatternPairs();
+                for (var v: vars) {
+                    if (varToPattern.containsKey(v)) {
+                        dataType = "+DataExtension";
+                        dataExtended = true;
+                        var patName = varToPattern.get(v);
+                        var pat = patMap.get(patName);
+                        if (pat != null) {
+
+                            pat.randomExtend();
+                        }
+                    }
+                }
+            }
+
+
+            // set assertions
+            List<TestAssertion> assertions = new ArrayList<>();
+            if (tag.truth == BinaryTag.Truth.TRUE) {
+                var assertion = new TruthAssertion(true);
+                assertion.setRule(tag.ruleUsed + dataType);
+                assertions.add(assertion);
+            } else if (tag.truth == BinaryTag.Truth.FALSE) {
+                var assertion = new TruthAssertion(false);
+                assertion.setRule(tag.ruleUsed + dataType);
+                assertions.add(assertion);
+            }
+
+
+            TestAssertion assertion = null;
+            if (dataExtended) {
+                assertion = new LinksExtendAssertion(tag.links);
+                assertion.setRule(tag.ruleUsed + dataType);
+            } else {
+                assertion = new LinksEqualsAssertion(tag.links);
+                assertion.setRule(tag.ruleUsed + dataType);
+            }
+            assertions.add(assertion);
+
+
+            Rule genRule = new Rule("CRC-Gen-" + idCounter.incrementAndGet(), f.formula);
+            List<Bfunc> bfuncs = new ArrayList<>(f.bfuncs);
+
+            TestCase genTC = new TestCase(genRule);
+            genTC.setPatterns(patterns);
+            genTC.setBfuncs(bfuncs);
+            genTC.setAssertions(assertions);
+
+            genTC.getRuleUsed().add("TA-binary");
+            genTC.getRuleUsed().add(tag.ruleUsed);
+
+            genTC.setSource(tag.getSource());
+
+            return genTC;
+
+        } else {
+            return null;
+        }
+    }
+
+    public static TestCase binaryEntry(FormulaWithTag left, FormulaWithTag right, String newOp) {
+        Formula leftFormula = left.formula.clone();
+        Formula rightFormula = right.formula.clone();
+        Formula gen = null;
+        List<TestAssertion> assertions = null;
+
+        if (!(left.tag instanceof BinaryTag) || !(right.tag instanceof BinaryTag)) {
+            // Invalid tag
+            return null;
+        }
+
+        switch (newOp) {
+            case "and":
+                gen = new OpConnector(OpConnector.Op.AND, leftFormula, rightFormula);
+                assertions = and((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            case "or":
+                gen = new OpConnector(OpConnector.Op.OR, leftFormula, rightFormula);
+                assertions = or((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            case "implies":
+                gen = new OpConnector(OpConnector.Op.IMPLIES, leftFormula, rightFormula);
+                assertions = implies((BinaryTag) left.tag, (BinaryTag) right.tag);
+                break;
+            default:
+                break;
+        }
+
+        if (assertions == null || assertions.isEmpty()) {
+            // Invalid combination
+            return null;
+        }
+        Rule genRule = new Rule("CRC-Gen-" + idCounter.incrementAndGet(), gen);
+        List<Pattern> patterns = new ArrayList<>();
+        patterns.addAll(left.patterns);
+        patterns.addAll(right.patterns);
+        List<Bfunc> bfuncs = new ArrayList<>();
+        bfuncs.addAll(left.bfuncs);
+        bfuncs.addAll(right.bfuncs);
+
+        TestCase genTC = new TestCase(genRule);
+        genTC.setPatterns(patterns);
+        genTC.setBfuncs(bfuncs);
+        genTC.setAssertions(assertions);
+
+        for (TestAssertion assertion : assertions) {
+            genTC.getRuleUsed().add(assertion.getRule());
+        }
+
+        return genTC;
+    }
+
+    public static TestCase quantifierEntry(FormulaWithTag f, String newOp, boolean expectTruth) {
+        Formula ori = f.formula;
+        Formula gen = null;
+        List<TestAssertion> assertions = null;
+        if (!(f.tag instanceof QuantifierTag tag)) {
+            // Invalid tag
+            return null;
+        }
+
+        String newName = "CRC-Gen-" + idCounter.incrementAndGet();
+        String newPatName = newName + "-Pattern";
+        Pattern newPattern = null;
+
+        switch (newOp) {
+            case "forall":
+                if (expectTruth) {
+                    newPattern = new Pattern(newPatName, tag.valueTrue);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    if (!simpleMode) {
+                        newPattern.randomReduceByGate();
+                    }
+                } else {
+                    newPattern = new Pattern(newPatName, tag.valueFalse);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    if (!simpleMode) {
+                        newPattern.randomExtend();
+                    }
+                }
+                gen = new OpQuantifier(OpQuantifier.Op.FORALL, tag.variable, newPatName, ori);
+                assertions = forall(tag, newPattern.getData(), expectTruth);
+                break;
+            case "exists":
+                if (expectTruth) {
+                    newPattern = new Pattern(newPatName, tag.valueTrue);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    if (!simpleMode) {
+                        newPattern.randomExtend();
+                    }
+                } else {
+                    newPattern = new Pattern(newPatName, tag.valueFalse);
+                    if (newPattern.getData().isEmpty()) {
+                        // Invalid context
+                        return null;
+                    }
+                    if (!simpleMode) {
+                        newPattern.randomReduceByGate();
+                    }
+                }
+                gen = new OpQuantifier(OpQuantifier.Op.EXISTS, tag.variable, newPatName, ori);
+                assertions = exists(tag, newPattern.getData(), expectTruth);
+                break;
+            default:
+                break;
+        }
+
+        if (assertions == null || assertions.isEmpty()) {
+            // Invalid combination
+            return null;
+        }
+
+
+        Rule genRule = new Rule(newName, gen);
+        List<Pattern> patterns = new ArrayList<>(f.patterns);
+        patterns.add(newPattern);
+        List<Bfunc> bfuncs = new ArrayList<>(f.bfuncs);
+
+        TestCase genTC = new TestCase(genRule);
+        genTC.setPatterns(patterns);
+        genTC.setBfuncs(bfuncs);
+        genTC.setAssertions(assertions);
+
+        genTC.setSource(tag.getSource());
+
+        return genTC;
+    }
+
+
+    private static List<TestAssertion> and(BinaryTag left, BinaryTag right) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-and-1
+            usedRule = "TA-and-1";
+            assertions.add(new TruthAssertion(true));
+            Set<Link> cartesian = UtilFunctions.cartesian(left.links, right.links);
+            if (!cartesian.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(cartesian));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-and-2-a
+            usedRule = "TA-and-2";
+            assertions.add(new TruthAssertion(false));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(right.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-and-3
+            usedRule = "TA-and-3";
+            assertions.add(new TruthAssertion(false));
+            Set<Link> union = UtilFunctions.union(left.links, right.links);
+            if (!union.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(union));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-and-4-a
+            usedRule = "TA-and-4";
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(false);
+                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(left.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-and-5-a
+            usedRule = "TA-and-5";
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-and-6 no assertion pass
+            usedRule = "TA-and-6";
+        } else {
+            // try switch to match some rules
+            assertions.addAll(and(right,left));
+        }
+        if (!usedRule.isEmpty()) {
+            for (TestAssertion assertion : assertions) {
+                assertion.setRule(usedRule);
+            }
+        }
+        return assertions;
+    }
+
+    private static List<TestAssertion> or(BinaryTag left, BinaryTag right) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-or-1
+            usedRule = "TA-or-1";
+            assertions.add(new TruthAssertion(true));
+            Set<Link> union = UtilFunctions.union(left.links, right.links);
+            if (!union.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(union));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-or-2-a
+            usedRule = "TA-or-2";
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-or-3
+            usedRule = "TA-or-3";
+            assertions.add(new TruthAssertion(false));
+            Set<Link> cartesian = UtilFunctions.cartesian(left.links, right.links);
+            if (!cartesian.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(cartesian));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-4-a
+            usedRule = "TA-or-4";
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(left.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-5-a
+            usedRule = "TA-or-5";
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(true);
+                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(left.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-or-6 no assertion pass
+            usedRule = "TA-or-6";
+        } else {
+            // try switch to match some rules
+            assertions.addAll(or(right,left));
+        }
+        if (!usedRule.isEmpty()) {
+            for (TestAssertion assertion : assertions) {
+                assertion.setRule(usedRule);
+            }
+        }
+        return assertions;
+    }
+
+    private static List<TestAssertion> implies(BinaryTag left, BinaryTag right) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule;
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-1
+            usedRule = "TA-implies-1";
+            assertions.add(new TruthAssertion(true));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(right.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-implies-2
+            usedRule = "TA-implies-2";
+            assertions.add(new TruthAssertion(false));
+            Set<Link> cartesian = UtilFunctions.cartesian(UtilFunctions.flipSet(left.links), right.links);
+            if (!cartesian.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(cartesian));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-3
+            usedRule = "TA-implies-3";
+            assertions.add(new TruthAssertion(true));
+            Set<Link> union = UtilFunctions.union(UtilFunctions.flipSet(left.links), right.links);
+            if (!union.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(union));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-implies-4
+            usedRule = "TA-implies-4";
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksEqualsAssertion(UtilFunctions.flipSet(left.links)));
+            }
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-implies-5
+            usedRule = "TA-implies-5";
+            if (!left.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(false);
+                TestAssertion after = new LinksExceptAssertion(left.links);
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            // TA-implies-6
+            usedRule = "TA-implies-6";
+            assertions.add(new TruthAssertion(true));
+            if (!right.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(right.links));
+            }
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            // TA-implies-7
+            usedRule = "TA-implies-7";
+            assertions.add(new TruthAssertion(true));
+            if (!left.links.isEmpty()) {
+                assertions.add(new LinksSubsetAssertion(UtilFunctions.flipSet(left.links)));
+            }
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            // TA-implies-8
+            usedRule = "TA-implies-8";
+            if (!right.links.isEmpty()) {
+                TestAssertion pre = new TruthAssertion(true);
+                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(right.links));
+                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
+                assertions.add(cond);
+            }
+        } else {
+            // TA-implies-9 no assertions pass
+            usedRule = "TA-implies-9";
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(usedRule);
+        }
+        return assertions;
+    }
+
+    public static List<TestAssertion> forall(QuantifierTag tag, Set<String> newData, boolean expectTruth) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (expectTruth) {
+            // TA-forall-1
+            if (tag.valueTrue.containsAll(newData)) {
+                assertions.add(new TruthAssertion(true));
+                assertions.add(new LinksEqualsAssertion(new HashSet<>())); // empty set
+                usedRule = "TA-forall-1";
+            }
+        } else {
+            // TA-forall-2
+            Set<String> both = new HashSet<>(tag.valueFalse);
+            both.retainAll(newData);
+            if (!both.isEmpty()) {
+                assertions.add(new TruthAssertion(false));
+                assertions.add(new LinksValueAssertion(tag.variable, false, both));
+                usedRule = "TA-forall-2";
+            }
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(tag.ruleUsed+"+"+usedRule);
+        }
+        return assertions;
+    }
+
+    public static List<TestAssertion> exists(QuantifierTag tag, Set<String> newData, boolean expectTruth) {
+        List<TestAssertion> assertions = new ArrayList<>();
+        String usedRule = "";
+        if (expectTruth) {
+            // TA-exists-1
+            Set<String> both = new HashSet<>(tag.valueTrue);
+            both.retainAll(newData);
+            if (!both.isEmpty()) {
+                assertions.add(new TruthAssertion(true));
+                assertions.add(new LinksValueAssertion(tag.variable, true, both));
+                usedRule = "TA-exists-1";
+            }
+        } else {
+            // TA-exists-2
+            if (tag.valueFalse.containsAll(newData)) {
+                assertions.add(new TruthAssertion(false));
+                assertions.add(new LinksEqualsAssertion(new HashSet<>())); // empty set
+                usedRule = "TA-exists-2";
+            }
+        }
+        for (TestAssertion assertion : assertions) {
+            assertion.setRule(tag.ruleUsed+"+"+usedRule);
+        }
+        return assertions;
+    }
+
+
+    /**
+     * Determines the rule code based on the specified binary tags and the logical operation. <br>
+     * The rule code may be different with the number in TA-rules, for example, TA-implies-1 is 2 in the rule code. <br>
+     * The rule code indicates the 'kernel' difference between the rules. For example, TA-implies-1 can be derived from TA-and-2, so the rule code is 2. <br>
+     * The rule code is set for TA-and-1 to TA-and-6, while the rule code of other situations depends on which TA-and-1 to TA-and-6 can be derived from. <br>
+     *
+     * @param left  The left operand represented as a {@link BinaryTag}.
+     * @param right The right operand represented as a {@link BinaryTag}.
+     * @param newOp The logical operation to be applied. Supported operations are:
+     *              <ul>
+     *                  <li>"and" - Logical AND operation.</li>
+     *                  <li>"or" - Logical OR operation.</li>
+     *                  <li>"implies" - Logical implication operation.</li>
+     *              </ul>
+     * @return A byte representing the rule code for the specified operation and operands.
+     *         Returns 0 if the operation is not recognized.
+     */
+    public static byte getRuleCode(BinaryTag left, BinaryTag right, String newOp) {
+        return switch (newOp) {
+            case "and" -> getAndRuleCode(left, right);
+            case "or" -> getOrRuleCode(left, right);
+            case "implies" -> getImpliesRuleCode(left, right);
+            default -> 0;
+        };
+    }
+    
+    private static byte getAndRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getAndRuleCode(right, left);
+        }
+    }
+
+    private static byte getOrRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getOrRuleCode(right, left);
+        }
+    }
+
+    private static byte getImpliesRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            return 4;
+        } else {
+            return 6;
+        }
+    }
+
+    public static byte getRealRuleCode(BinaryTag left, BinaryTag right, String newOp) {
+        return switch (newOp) {
+            case "and" -> getRealAndRuleCode(left, right);
+            case "or" -> getRealOrRuleCode(left, right);
+            case "implies" -> getRealImpliesRuleCode(left, right);
+            default -> 0;
+        };
+    }
+    
+    private static byte getRealAndRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getRealAndRuleCode(right, left);
+        }
+    }
+
+    private static byte getRealOrRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 6;
+        } else {
+            return getRealOrRuleCode(right, left);
+        }
+    }
+
+    private static byte getRealImpliesRuleCode(BinaryTag left, BinaryTag right) {
+        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
+            return 1;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
+            return 2;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
+            return 3;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
+            return 4;
+        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 5;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
+            return 6;
+        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
+            return 7;
+        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
+            return 8;
+        } else {
+            return 8;
+        }
+    }
+
+    public static String getRuleName(BinaryTag left, BinaryTag right, String newOp) {
+        byte ruleCode = getRealRuleCode(left, right, newOp);
+        return switch (newOp) {
+            case "and" -> "TA-and-" + ruleCode;
+            case "or" -> "TA-or-" + ruleCode;
+            case "implies" -> "TA-implies-" + ruleCode;
+            default -> "";
+        };
+    }
+
+    public static boolean isUndetermined(BinaryTag left, BinaryTag right, String newOp) {
+        byte ruleCode = getRuleCode(left, right, newOp);
+        return ruleCode > 3;
+    }
+}

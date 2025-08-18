@@ -55,6 +55,7 @@ public class ARTCore implements MTCore {
             Formula formula = tc.getRule().formula;
             try {
                 BinaryTag wholeTag = new BinaryTag(tc.getResult().truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, tc.getResult().links);
+                wholeTag.addSource(tc.getId());
                 FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);

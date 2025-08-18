@@ -2,6 +2,8 @@ package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.result.Link;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class BinaryTag implements Tag {
@@ -13,11 +15,34 @@ public class BinaryTag implements Tag {
     public Truth truth;
     public Set<Link> links;
     public String ruleUsed;
+    public List<Integer> source;
 
     public BinaryTag(Truth truth, Set<Link> links) {
         this.truth = truth;
         this.links = links;
         ruleUsed = "";
+        source = new ArrayList<Integer>();
+    }
+
+    @Override
+    public void addSource(int sourceId) {
+        if (!source.contains(sourceId)) {
+            source.add(sourceId);
+        }
+    }
+
+    @Override
+    public List<Integer> getSource() {
+        return source;
+    }
+
+    @Override
+    public void addAllSources(List<Integer> sourceIds) {
+        for (Integer sourceId : sourceIds) {
+            if (!source.contains(sourceId)) {
+                source.add(sourceId);
+            }
+        }
     }
 
     public void flip() {

@@ -276,7 +276,7 @@ public class TesterCore {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("preprocessor.rules-input-directory", rulesPath);
         arguments.put("workspace-root", workspaceRoot);
-        if (workerType.equalsIgnoreCase("infuse")) {
+        if (workerType.equalsIgnoreCase("infuse") || workerType.equalsIgnoreCase("infuse-old")) {
             arguments.put("infuse.workspace-root", workspaceRoot);
             arguments.put("infuse.jar-target-path", targetPath);
             arguments.put("infuse.bfunc-class-path", bfuncPath);

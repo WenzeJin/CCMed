@@ -42,7 +42,6 @@ public class BinaryCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        // TODO: Implement TU
         if (!isUndetermined()) {
             var gen = TagUnification.unifyForBin(left, right, newOp);
             if (gen != null) {
