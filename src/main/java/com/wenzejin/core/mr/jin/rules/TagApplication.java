@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr.jin.rules;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.assertion.*;
 import com.wenzejin.core.mr.jin.BinaryTag;
 import com.wenzejin.core.mr.jin.UtilFunctions;

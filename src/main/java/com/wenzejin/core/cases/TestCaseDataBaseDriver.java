@@ -1,4 +1,4 @@
-package com.wenzejin.core;
+package com.wenzejin.core.cases;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 import java.util.List;
 
 public interface MTCore {

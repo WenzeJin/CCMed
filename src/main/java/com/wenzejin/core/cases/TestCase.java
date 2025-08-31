@@ -1,4 +1,4 @@
-package com.wenzejin.core;
+package com.wenzejin.core.cases;
 
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.result.Result;

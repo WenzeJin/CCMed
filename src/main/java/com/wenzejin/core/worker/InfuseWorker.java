@@ -1,6 +1,6 @@
 package com.wenzejin.core.worker;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
 import com.wenzejin.core.result.VAPair;

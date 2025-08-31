@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr.jin.rules;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.jin.UtilFunctions;

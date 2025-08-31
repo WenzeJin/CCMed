@@ -1,6 +1,6 @@
 package com.wenzejin.core.mr.jin;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
 import com.wenzejin.core.mr.jin.rules.TagUnification;
 

@@ -1,7 +1,7 @@
 package com.wenzejin;
 
-import com.wenzejin.core.TestCaseDataBaseDriver;
-import com.wenzejin.core.TesterCore;
+import com.wenzejin.core.cases.TestCaseDataBaseDriver;
+import com.wenzejin.core.Core;
 import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import org.apache.commons.cli.*;
 
@@ -48,10 +48,10 @@ public class Main {
         }
 
         if (!gui && fullTest) {
-            TesterCore testerCore = new TesterCore();
+            Core core = new Core();
             try {
-                testerCore.loadSettingsFromYaml(configPath);
-                testerCore.execute();
+                core.loadSettingsFromYaml(configPath);
+                core.execute();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

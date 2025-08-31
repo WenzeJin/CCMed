@@ -1,5 +1,6 @@
 package com.wenzejin.core;
 
+import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.util.RandomSubset;
 import com.wenzejin.core.util.XmlToRuleParser;
 import com.wenzejin.core.exception.XmlParseException;

@@ -2,7 +2,7 @@ package com.wenzejin.core.worker;
 
 import java.io.IOException;
 
-import com.wenzejin.core.TestCase;
+import com.wenzejin.core.cases.TestCase;
 
 /**
  * The TestWorker interface defines the contract for a worker that can execute test cases
