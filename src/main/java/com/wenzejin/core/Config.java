@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * 专门负责配置的加载、解析和管理。
  */
-public class TesterConfig {
+public class Config {
     private static final Logger logger = LogManager.getLogger("TesterConfig");
 
     public String mode;
@@ -39,7 +39,7 @@ public class TesterConfig {
     public boolean simpleMode;
     public String storeMode; // "all" or "fail"
 
-    public TesterConfig() {
+    public Config() {
         loadDefaultSettings();
     }
 

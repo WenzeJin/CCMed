@@ -1,57 +1,41 @@
 package com.wenzejin.core;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.wenzejin.core.cases.TestCase;
+import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.worker.TestWorker;
+import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.wenzejin.core.worker.TestWorker;
-import com.wenzejin.core.worker.TestWorkerFactory;
-import com.wenzejin.core.mr.assertion.TestAssertion;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestExecutor {
 
     public enum Mode { SOURCE, FOLLOW }
 
-    // Configurations
-    final String workerType;
-    final Map<String, Object> workerArguments;
-    final int threadNum;
-    final Mode mode;
-    
-    int checked;
-    final Map<TestCase, List<TestAssertion>> failedCases;
-    int firstFailure;
+    // --- Configuration ---
+    private final String workerType;
+    private final Map<String, Object> workerArguments;
+    private final int threadNum;
+    private final Mode mode;
 
+    // --- State ---
+    private int checked;
+    private final Map<TestCase, List<TestAssertion>> failedCases;
+    private int firstFailure;
     private long startTime;
 
-    ExecutorService executor;
-    ThreadLocal<TestWorker> threadLocalWorker;
-    Set<TestWorker> workersRegistry;
-    
+    private ExecutorService executor;
+    private ThreadLocal<TestWorker> threadLocalWorker;
+    private Set<TestWorker> workersRegistry;
 
     private static final Logger logger = LogManager.getLogger("TestExecutor");
 
     /**
      * Constructs a new TestExecutor instance with the specified parameters.
-     *
-     * @param mode            The mode in which the test executor operates.
-     * @param workerType      The type of worker to be used by the test executor.
-     * @param workerArguments A map of arguments to configure the worker.
-     * @param threadNum       The number of threads to be used by the test executor.
      */
     public TestExecutor(Mode mode, String workerType, Map<String, Object> workerArguments, int threadNum) {
         this.mode = mode;
@@ -59,47 +43,20 @@ public class TestExecutor {
         this.workerArguments = workerArguments;
         this.threadNum = threadNum;
         this.firstFailure = -1;
-        failedCases = new HashMap<>();
+        this.failedCases = new HashMap<>();
     }
 
-    /**
-     * Retrieves the number of test cases that have been checked.
-     *
-     * @return the count of checked cases.
-     */
-    public int getChecked() {
-        return checked;
-    }
-
-    /**
-     * Retrieves a map of failed test cases and their associated assertions.
-     *
-     * @return A map where the keys are {@link TestCase} objects representing
-     *         the failed test cases, and the values are lists of {@link TestAssertion}
-     *         objects detailing the assertions that failed for each test case.
-     */
-    public Map<TestCase, List<TestAssertion>> getFailedCases() {
-        return failedCases;
-    }
+    public int getChecked() { return checked; }
+    public Map<TestCase, List<TestAssertion>> getFailedCases() { return failedCases; }
+    public int getFirstFailure() { return firstFailure; }
 
     /**
      * Initializes the TestExecutor by setting up the worker's registry, thread pool executor,
-     * and thread-local worker instances. Each worker is initialized with a workspace, and 
-     * any errors during initialization are logged and result in an IllegalStateException.
-     *
-     * <p>Steps performed during initialization:
-     * <ul>
-     *   <li>Creates a thread-safe set to register workers.</li>
-     *   <li>Initializes a fixed thread pool executor with the specified number of threads.</li>
-     *   <li>Configures a thread-local variable to lazily initialize worker instances.</li>
-     * </ul>
-     *
-     * @throws IllegalStateException if a worker fails to initialize its workspace.
+     * and thread-local worker instances. Each worker is initialized with a workspace.
      */
     public void init() {
         workersRegistry = Collections.newSetFromMap(new ConcurrentHashMap<>());
         executor = Executors.newFixedThreadPool(threadNum);
-
         threadLocalWorker = ThreadLocal.withInitial(() -> {
             TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workerArguments);
             try {
@@ -118,57 +75,23 @@ public class TestExecutor {
 
     /**
      * Executes a list of test cases using a thread pool executor. Each test case is processed
-     * by a thread-local worker, with retries for failed executions. The method ensures proper
-     * initialization of the executor and worker before execution and provides progress updates
-     * via a callback.
-     * 
-     * <br>
-     * The execution process includes:
-     * <ul>
-     *     <li>Pre-test setup via {@code beforeTest(List<TestCase>)}.</li>
-     *     <li>Execution of each test case with up to 3 retries for failures.</li>
-     *     <li>Marking test cases as checked or handling unchecked cases.</li>
-     *     <li>Progress updates via {@code procedureCallback(int, int)}.</li>
-     *     <li>Post-test cleanup via {@code afterTest(List<TestCase>)}.</li>
-     * </ul>
-     *
-     * Logging:
-     * <ul>
-     *     <li>Warnings for missing test cases or retries on failures.</li>
-     *     <li>Errors for unexpected exceptions or interrupted execution.</li>
-     * </ul>
-     *
-     * Threading:
-     * <ul>
-     *     <li>Uses a thread pool executor to parallelize test case execution.</li>
-     *     <li>Handles interruptions gracefully by restoring the thread's interrupted status.</li>
-     * </ul>
-     * <br>
-     * 
-     * @param tcs the list of test cases to execute. If null or empty, the method logs a warning
-     *            and returns without performing any execution.
-     * @throws IllegalStateException if the executor or thread-local worker is not initialized.
-     *                               Ensure {@code init()} is called before invoking this method.
-    
+     * by a thread-local worker, with retries for failed executions. Progress is logged.
      */
     public void execute(List<TestCase> tcs) {
         if (tcs == null || tcs.isEmpty()) {
             logger.warn("No test cases provided for execution.");
             return;
         }
-
         if (executor == null || threadLocalWorker == null) {
             logger.error("Executor or thread-local worker is not initialized. Call init() before execute().");
             throw new IllegalStateException("TestExecutor is not properly initialized.");
         }
-
         beforeTest(tcs);
-        AtomicInteger checkCount = new AtomicInteger(0);
-        AtomicInteger progress = new AtomicInteger(0);
-        int totalTasks = tcs.size();
+        final AtomicInteger checkCount = new AtomicInteger(0);
+        final AtomicInteger progress = new AtomicInteger(0);
+        final int totalTasks = tcs.size();
         List<Callable<Void>> tasks = new ArrayList<>();
-
-        for (TestCase tc : tcs) {
+        for (final TestCase tc : tcs) {
             tasks.add(() -> {
                 TestWorker worker = threadLocalWorker.get();
                 boolean succeed = false;
@@ -181,7 +104,6 @@ public class TestExecutor {
                             logger.warn("Test case {} failed. Retry {} / 3", tc.getId(), retry);
                         }
                     }
-
                     if (succeed) {
                         tc.setChecked(true);
                         checkCount.incrementAndGet();
@@ -203,52 +125,37 @@ public class TestExecutor {
                 return null;
             });
         }
-
         try {
             executor.invokeAll(tasks);
         } catch (InterruptedException e) {
             logger.error("Execution interrupted. Terminating remaining tasks.", e);
-            Thread.currentThread().interrupt(); // Restore interrupted status
+            Thread.currentThread().interrupt();
         }
-
         checked = checkCount.get();
         afterTest(tcs);
     }
 
     /**
      * Closes the TestExecutor by shutting down the executor service and cleaning up resources.
-     * <p>
-     * This method performs the following steps:
-     * <ul>
-     *   <li>Shuts down the executor service gracefully, waiting for up to 10 seconds for tasks to complete.</li>
-     *   <li>If tasks do not complete within the specified time, forces a shutdown of the executor service.</li>
-     *   <li>Handles interruptions during the shutdown process by forcing a shutdown and restoring the interrupted status.</li>
-     *   <li>Invokes the {@code destroyWorkspace} method on all registered workers to clean up their workspaces.</li>
-     *   <li>Logs warnings or errors if any issues occur during the shutdown or workspace cleanup process.</li>
-     *   <li>Clears the worker's registry, executor, and thread-local worker references to release resources.</li>
-     * </ul>
-     * <p>
-     * Note: This method ensures that all resources are properly released, but it may log errors if workspace cleanup fails.
      */
     public void close() {
         if (executor != null && threadLocalWorker != null) {
-            executor.shutdown(); // Initiate shutdown of the executor
+            executor.shutdown();
             try {
                 if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
                     logger.warn("Executor did not terminate in the specified time. Forcing shutdown...");
-                    executor.shutdownNow(); // Force shutdown if tasks did not finish in time
+                    executor.shutdownNow();
                 }
             } catch (InterruptedException e) {
                 logger.warn("Execution interrupted during shutdown. Forcing shutdown...");
-                executor.shutdownNow(); // Force shutdown on interruption
-                Thread.currentThread().interrupt(); // Restore interrupted status
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
             for (TestWorker worker : workersRegistry) {
                 try {
                     worker.destroyWorkspace();
                 } catch (IOException e) {
-                    logger.error("Failed to close workspace for worker of type {}. Error: {}", workerType,
-                            e.getMessage(), e);
+                    logger.error("Failed to close workspace for worker of type {}. Error: {}", workerType, e.getMessage(), e);
                 }
             }
             workersRegistry = null;
@@ -257,9 +164,7 @@ public class TestExecutor {
         }
     }
 
-    public int getFirstFailure() {
-        return firstFailure;
-    }
+    // --- Internal helpers ---
 
     private void beforeTest(List<TestCase> tcs) {
         checked = 0;
@@ -270,8 +175,7 @@ public class TestExecutor {
 
     private void afterTest(List<TestCase> tcs) {
         long endTime = System.currentTimeMillis();
-        logger.info("Execution finished. Test cases checked: {} / {} , Time elapsed: {} ms",
-                checked, tcs.size(), endTime - startTime);
+        logger.info("Execution finished. Test cases checked: {} / {} , Time elapsed: {} ms", checked, tcs.size(), endTime - startTime);
         if (mode == Mode.FOLLOW) {
             logger.info("Test cases failed: {} / {}", failedCases.size(), tcs.size());
         }
@@ -279,11 +183,8 @@ public class TestExecutor {
 
     private boolean checkResult(TestCase tc) {
         if (mode == Mode.SOURCE) {
-            // When in source mode, we don't need to check the result
             return true;
         }
-
-        // When in follow mode, we need to check the result
         List<TestAssertion> failedAssertions = new ArrayList<>();
         boolean boolRes = tc.assertTest(failedAssertions);
         if (!boolRes) {
@@ -293,7 +194,7 @@ public class TestExecutor {
         }
         return true;
     }
-    
+
     private synchronized void handleFailedTestCase(TestCase tc, List<TestAssertion> failedAssertions) {
         failedCases.put(tc, failedAssertions);
     }
@@ -304,51 +205,29 @@ public class TestExecutor {
 
     private void procedureCallback(int currentProgress, int totalTasks) {
         int onePercent = totalTasks / 10;
-        if (onePercent == 0) {
-            onePercent = 1;
-        }
+        if (onePercent == 0) onePercent = 1;
         long currentTime = System.currentTimeMillis();
         if (currentProgress % onePercent == 0) {
             long elapsedTime = currentTime - startTime;
             long eta = elapsedTime * (totalTasks - currentProgress) / currentProgress;
-
-            // 格式化 ETA
             String formattedETA = formatETA(eta);
-
-            logger.info("Progress: {} / {}, {}%, ETA: {}", currentProgress, totalTasks,
-                    currentProgress * 100 / totalTasks,
-                    formattedETA);
+            logger.info("Progress: {} / {}, {}%, ETA: {}", currentProgress, totalTasks, currentProgress * 100 / totalTasks, formattedETA);
         }
     }
 
     /**
-     * Formats the estimated time of arrival (ETA) given in milliseconds into a human-readable
-     * string representation in the format of hours, minutes, and seconds.
-     *
-     * @param eta The estimated time of arrival in milliseconds.
-     * @return A formatted string representing the ETA in hours, minutes, and seconds.
-     *         For example, "2 h 15 m 30 s" or "45 s" if only seconds are present.
+     * Formats the estimated time of arrival (ETA) given in milliseconds into a human-readable string.
      */
     private static String formatETA(long eta) {
         long hours = eta / (3600 * 1000);
         eta %= 3600 * 1000;
-
         long minutes = eta / (60 * 1000);
         eta %= 60 * 1000;
-
         long seconds = eta / 1000;
-
         StringBuilder formattedETA = new StringBuilder();
-        if (hours > 0) {
-            formattedETA.append(hours).append(" h ");
-        }
-        if (minutes > 0) {
-            formattedETA.append(minutes).append(" m ");
-        }
-        if (seconds > 0 || formattedETA.isEmpty()) {
-            formattedETA.append(seconds).append(" s ");
-        }
-
+        if (hours > 0) formattedETA.append(hours).append(" h ");
+        if (minutes > 0) formattedETA.append(minutes).append(" m ");
+        if (seconds > 0 || formattedETA.isEmpty()) formattedETA.append(seconds).append(" s ");
         return formattedETA.toString().trim();
     }
 }

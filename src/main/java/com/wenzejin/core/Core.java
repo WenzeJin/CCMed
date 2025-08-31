@@ -13,29 +13,25 @@ import com.wenzejin.core.mr.jin.RandomCore;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Core {
-
-    // Configurations
+    // --- Logger & Config ---
     private static final Logger logger = LogManager.getLogger("TesterCore");
+    private final Config config;
 
-    private final TesterConfig config;
-
+    // --- Constructor ---
     public Core() {
-        this.config = new TesterConfig();
+        this.config = new Config();
     }
 
+    // --- Configuration Loading ---
     public void loadDefaultSettings() {
         config.loadDefaultSettings();
     }
@@ -44,6 +40,7 @@ public class Core {
         config.loadSettingsFromYaml(yamlPath);
     }
 
+    // --- Main Execution Entry ---
     public boolean execute() {
         return switch (config.mode) {
             case "normal" -> executeNormal();
@@ -55,87 +52,60 @@ public class Core {
         };
     }
 
+    // --- Normal Batch Execution ---
     private boolean executeNormal() {
         try {
-            // Initialize database
             TestCaseDataBaseDriver.setDatabaseUrl(config.databaseUrl);
             TestCaseDataBaseDriver.clearDB();
             TestCaseDataBaseDriver.initializeDB();
 
-            // Declare executors
-            TestExecutor preExecutor;
-            TestExecutor postExecutor;
-
-            // Initialize timer
-            long startTime = System.currentTimeMillis();
-
-            // Prepare arguments
-            Map<String, Object> arguments = prepareArguments();
-
-            // Prepare test cases
-            Preprocessor preprocessor = new Preprocessor(arguments);
+            final Map<String, Object> arguments = prepareArguments();
+            final Preprocessor preprocessor = new Preprocessor(arguments);
             preprocessor.generateTestCases();
             preprocessor.reduceSize(config.sourceLimit);
-            logger.info("Source cases preparation completed in {} ms.", System.currentTimeMillis() - startTime);
-            startTime = System.currentTimeMillis();
+            logger.info("Source cases preparation completed in {} ms.", System.currentTimeMillis());
 
-            // Initialize statistics
             boolean hasFailures = false;
             boolean sourceCaseFailures = false;
-            Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
+            final Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
-            // Prepare executors
-            preExecutor = new TestExecutor(TestExecutor.Mode.SOURCE, config.workerType, arguments, config.threadLimit);
-            postExecutor = new TestExecutor(TestExecutor.Mode.FOLLOW, config.workerType, arguments, config.threadLimit);
+            final TestExecutor preExecutor = new TestExecutor(TestExecutor.Mode.SOURCE, config.workerType, arguments, config.threadLimit);
+            final TestExecutor postExecutor = new TestExecutor(TestExecutor.Mode.FOLLOW, config.workerType, arguments, config.threadLimit);
             preExecutor.init();
             postExecutor.init();
 
-            // set rules configurations
             TagApplication.simpleMode = config.simpleMode;
 
-            int totalBatches = preprocessor.getSize() / config.batchSize;
-            int batchFollowUpLimit = config.followUpLimit / totalBatches;
+            final int totalBatches = preprocessor.getSize() / config.batchSize;
+            final int batchFollowUpLimit = config.followUpLimit / totalBatches;
             int totalFollowUp = 0;
             int firstFailure = -1;
+            long startTime = System.currentTimeMillis();
 
             for (int batch = 1; batch <= totalBatches; batch++) {
                 logger.info("*** Starting Batch {} ***", batch);
-
-                // Test source cases
                 logger.info("Testing source test cases...");
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
                 preExecutor.execute(sourceCases);
                 sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
                 logger.info("Source cases testing completed.");
-
                 TestCaseDataBaseDriver.storeTestCases(sourceCases, "source");
 
                 if (!sourceCaseFailures) {
-
-                    MTCore mtCore;
-
-                    if (config.ART) {
-                        mtCore = new ARTCore(config.threadLimit, config.enableUndetermined);
-                    } else {
-                        mtCore = new RandomCore(config.threadLimit, config.enableUndetermined);
-                    }
-
+                    MTCore mtCore = config.ART ? new ARTCore(config.threadLimit, config.enableUndetermined)
+                                               : new RandomCore(config.threadLimit, config.enableUndetermined);
                     mtCore.initCandidates(sourceCases);
                     int round = 0;
                     int processedCount = 0;
-
                     while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
                         round++;
                         logger.info("*** Batch {} : Round {} ***", batch, round);
-
                         int currentBatchSize = config.stopMode.contains("limited")
                                 ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
                                 : config.miniBatchSize;
                         List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
-
                         postExecutor.execute(followUpCases);
                         processedCount += followUpCases.size();
-
                         Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
                         batchFailures.forEach((testCase, assertions) -> failedCases.put(testCase.getId(), assertions));
                         if ("all".equalsIgnoreCase(config.storeMode)) {
@@ -148,38 +118,28 @@ public class Core {
                             firstFailure = totalFollowUp + postExecutor.getFirstFailure();
                         }
                         totalFollowUp += followUpCases.size();
-
                         if (hasFailures && config.stopMode.contains("panic")) {
                             logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", batch);
                             break;
                         }
                     }
-                    
                     logger.info("Batch {} completed. Processed {} follow-up cases.", batch, processedCount);
                     mtCore.logStats();
                 } else {
                     logger.warn("Testing interrupted due to failed source cases. No follow-up tests will be performed.");
                     break;
                 }
-
                 if (hasFailures && config.stopMode.contains("panic")) {
                     logger.warn("Testing interrupted due to failed cases. Panic mode activated.");
                     break;
                 }
-
-                
             }
-
             preExecutor.close();
             postExecutor.close();
-
-            // Dump results
             dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
-
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
-
             return failedCases.isEmpty();
         } catch (SQLException e) {
             logger.error("SQL Exception occurred: {}", e.getMessage(), e);
@@ -191,34 +151,30 @@ public class Core {
         return false;
     }
 
+    // --- Single Case Execution ---
     public boolean executeSingle() {
         if (!config.otherArgs.containsKey("id")) {
             logger.error("Single mode requires a case id.");
             return false;
         }
-
-        int caseId = -1;
+        int caseId;
         boolean passed = false;
-
         try {
             caseId = Integer.parseInt(config.otherArgs.get("id").toString());
         } catch (NumberFormatException e) {
             logger.error("Invalid case id: {}", config.otherArgs.get("id"));
             return false;
         }
-
         TestCaseDataBaseDriver.setDatabaseUrl(config.databaseUrl);
         Map<String, Object> arguments = prepareArguments();
-
         TestWorker worker = TestWorkerFactory.getTestWorker(config.workerType, arguments);
-
         try {
             TestCase tc = TestCaseDataBaseDriver.getTestCaseById(caseId);
             worker.initWorkspace();
             int retry = 0;
             boolean succeed = false;
             while (!succeed && retry <= 3) {
-                int error = worker.singleRun(tc); // 执行测试用例
+                int error = worker.singleRun(tc);
                 if (error == 0) {
                     succeed = true;
                 } else {
@@ -245,7 +201,6 @@ public class Core {
             }
             System.out.println("Test case details:");
             System.out.println(tc);
-
             System.out.println("Destroy workspace?: [Y/N]");
             int ch = System.in.read();
             if (ch == 'Y' || ch == 'y') {
@@ -259,6 +214,7 @@ public class Core {
         return passed;
     }
 
+    // --- Argument Preparation ---
     private Map<String, Object> prepareArguments() {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("preprocessor.rules-input-directory", config.rulesPath);
@@ -274,6 +230,7 @@ public class Core {
         return arguments;
     }
 
+    // --- Result Dumping ---
     private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases, int firstFailure) {
         JsonObject result = new JsonObject();
         result.addProperty("passed", !failed && !sourceFailed);
@@ -287,7 +244,6 @@ public class Core {
             failedArray.add(failedCase);
         }
         result.add("failed-cases", failedArray);
-
         try (FileOutputStream fos = new FileOutputStream(config.resultPath)){
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             fos.write(gson.toJson(result).getBytes());
@@ -295,8 +251,4 @@ public class Core {
             logger.error("Failed to dump result to file: {}", e.getMessage());
         }
     }
-
-    /* Tool functions for loading configurations */
-
-
 }
