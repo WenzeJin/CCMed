@@ -1,7 +1,5 @@
 package com.wenzejin.core.mr.assertion;
 
-import com.wenzejin.core.mr.jin.assertion.LinksValueAssertion;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

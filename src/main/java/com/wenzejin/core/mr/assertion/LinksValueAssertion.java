@@ -1,8 +1,6 @@
-package com.wenzejin.core.mr.jin.assertion;
+package com.wenzejin.core.mr.assertion;
 
 
-import com.wenzejin.core.mr.assertion.TestAssertion;
-import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import com.wenzejin.core.mr.jin.UtilFunctions;
 import com.wenzejin.core.result.Result;
 

@@ -168,8 +168,16 @@ public class Core {
         TestCaseDataBaseDriver.setDatabaseUrl(config.databaseUrl);
         Map<String, Object> arguments = prepareArguments();
         TestWorker worker = TestWorkerFactory.getTestWorker(config.workerType, arguments);
+        if (worker == null) {
+            logger.error("Failed to create TestWorker for type: {}", config.workerType);
+            return false;
+        }
         try {
             TestCase tc = TestCaseDataBaseDriver.getTestCaseById(caseId);
+            if (tc == null) {
+                logger.error("Test case with id {} not found in database.", caseId);
+                return false;
+            }
             worker.initWorkspace();
             int retry = 0;
             boolean succeed = false;
@@ -224,6 +232,11 @@ public class Core {
             arguments.put("infuse.jar-target-path", config.targetPath);
             arguments.put("infuse.bfunc-class-path", config.bfuncPath);
             arguments.put("infuse.arguments", config.arguments);
+        } else if (config.workerType.equalsIgnoreCase("mg")) {
+            arguments.put("mg.workspace-root", config.workspaceRoot);
+            arguments.put("mg.app-target-path", config.targetPath);
+            arguments.put("mg.bfunc-class-path", config.bfuncPath);
+            arguments.put("mg.arguments", config.arguments);
         } else {
             throw new IllegalArgumentException("Invalid worker type: " + config.workerType + ". Please check configurations.");
         }

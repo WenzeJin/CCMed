@@ -28,7 +28,7 @@ public class Preprocessor {
     private List<TestCase> testCases;
 
     // configurable arguments
-    private String rulesInputDirectory;
+    private final String rulesInputDirectory;
     private int enumMax;
     private int threadMax;
 
@@ -114,17 +114,6 @@ public class Preprocessor {
         return batch;
     }
 
-    /**
-     * Checks if there are more test cases available.
-     * Logs a message indicating that there are no more test cases
-     * if the test case list is empty.
-     */
-    public void hasMore() {
-        if (testCases.isEmpty()) {
-            logger.info("No more testcases.");
-        }
-    }
-
 
     /**
      * Generates test cases for the provided rules using a thread pool for parallel processing.
@@ -182,7 +171,7 @@ public class Preprocessor {
 
     /**
      * Reads and parses rules from XML files located in the specified directory.
-     * Utilizes the {@link XmlToRuleParser} to convert XML files into a list of {@link Rule} objects.
+     * Uses the {@link XmlToRuleParser} to convert XML files into a list of {@link Rule} objects.
      * 
      * @return A list of {@link Rule} objects parsed from the XML files, or {@code null} if an error occurs.
      */
@@ -203,7 +192,7 @@ public class Preprocessor {
      * 1. Rebinds variables in the rule to ensure they are unique.
      * 2. Creates new patterns with random data and binds them to the rule.
      * 3. Generates a pool of variants for each boolean function (bfunc) in the rule.
-     * 4. Enumerates all possible combinations of the bfunc variants.
+     * 4. Lists all possible combinations of the bfunc variants.
      * 5. Select a random subset of the bfunc combinations based on a predefined limit.
      * 6. Emits the final test cases using the rule, new patterns, bfunc names, and combinations.
      *
@@ -283,7 +272,7 @@ public class Preprocessor {
      * Generates a pool of binary functions (Bfunc) for a given rule.
      * 
      * <p>This method collects all binary functions (Bfunc) associated with the provided
-     * rule, enumerates new binary functions based on their parameter count, and assigns
+     * rule, lists new binary functions based on their parameter count, and assigns
      * parameter lists to the generated functions. The resulting pool is organized as a
      * map where the keys are the names of the original binary functions, and the values
      * are lists of newly generated binary functions.</p>
@@ -351,7 +340,7 @@ public class Preprocessor {
 
 
     /**
-     * Recursively enumerates all possible combinations of Bfunc objects based on the provided
+     * Recursively lists all possible combinations of Bfunc objects based on the provided
      * bfunc names and their corresponding pools. The method generates all combinations
      * by iterating through the Bfunc objects associated with each name and adding them
      * to the current combination.

@@ -6,7 +6,7 @@ import com.wenzejin.core.mr.jin.BinaryTag;
 import com.wenzejin.core.mr.jin.UtilFunctions;
 import com.wenzejin.core.mr.jin.FormulaWithTag;
 import com.wenzejin.core.mr.jin.QuantifierTag;
-import com.wenzejin.core.mr.jin.assertion.LinksValueAssertion;
+import com.wenzejin.core.mr.assertion.LinksValueAssertion;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
 import org.apache.logging.log4j.LogManager;

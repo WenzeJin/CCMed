@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +27,7 @@ public class MGWorker implements TestWorker {
 
     // Configurable Arguments
     private final String workspaceRoot;
-    private final String dirTargetPath;
+    private final String appTargetPath;
     private final String bfuncClassPath;
     private final List<String> arguments;
 
@@ -60,7 +61,7 @@ public class MGWorker implements TestWorker {
     
     public MGWorker(Map<String, Object> args) {
         workspaceRoot = (String) args.get("mg.workspace-root");
-        dirTargetPath = (String) args.get("mg.dir-target-path");
+        appTargetPath = (String) args.get("mg.app-target-path");
         bfuncClassPath = (String) args.get("mg.bfunc-class-path");
         Object argumentsObj = args.get("mg.arguments");
 
@@ -96,7 +97,7 @@ public class MGWorker implements TestWorker {
         }
 
         // Copy app directory to workspace
-        copiedAppDir = copyFileToWorkspace(dirTargetPath, workspace, "taget files");
+        copiedAppDir = copyFileToWorkspace(appTargetPath, workspace, "taget files");
 
         // Copy bfunc class file to workspace
         copiedBfuncClass = copyFileToWorkspace(bfuncClassPath, workspace, "Bfunc class file");
@@ -201,7 +202,8 @@ public class MGWorker implements TestWorker {
         try {
             generateRuleInput(rules);
             generateBfuncInput(bfuncs);
-            generatePatternAndContextInput(patterns);
+            var patternUsed = tc.getRule().collectPatterns();
+            generatePatternAndContextInput(patterns, patternUsed);
             int result = execute();
             if (result != 0) {
                 return result;
@@ -231,9 +233,20 @@ public class MGWorker implements TestWorker {
             return 1;
         }
 
+        try {
+            var perms = Files.getPosixFilePermissions(absoluteApp);
+            perms.add(PosixFilePermission.OWNER_EXECUTE);
+            perms.add(PosixFilePermission.GROUP_EXECUTE);
+            perms.add(PosixFilePermission.OTHERS_EXECUTE);
+            Files.setPosixFilePermissions(absoluteApp, perms);
+        } catch (UnsupportedOperationException | IOException e) {
+            logger.warn("Failed to set execute permission for {}: {}", absoluteApp, e.getMessage());
+        }
+
+
         List<String> args = new ArrayList<>(List.of(
                 absoluteApp.toString(),
-                "-m", "test",
+                "-m", "TEST",
                 "-i", contextPool.toString(),
                 "-o", outputIncs.toString(),
                 "-r", ruleInput.toString(),
@@ -274,7 +287,7 @@ public class MGWorker implements TestWorker {
         return Paths.get(workspaceRoot, "mg_worker_" + uuid.toString()).toString();
     }
 
-    private void generatePatternAndContextInput(Set<Pattern> patterns) throws IOException {
+    private void generatePatternAndContextInput(Set<Pattern> patterns, Set<String> used) throws IOException {
         if (workspace == null || !Files.exists(workspace)) {
             return;
         }
@@ -285,6 +298,9 @@ public class MGWorker implements TestWorker {
             int context_cnt = 0;
             for (Pattern pat: patterns) {
                 String name = pat.getName();
+                if (!used.contains(name)) {
+                    continue;
+                }
                 JSONArray contextArray = new JSONArray();
                 for (String data: pat.getData()) {
                     context_cnt++;

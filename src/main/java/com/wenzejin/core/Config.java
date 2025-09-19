@@ -54,7 +54,7 @@ public class Config {
         databaseUrl = "data/testcase.db";
         workerType = "infuse";
         workspaceRoot = "workspace";
-        targetPath = "cc_utils/INFUSE_ORI/INFUSE-2.1.1-test-modified-withbug2.jar";
+        targetPath = "cc_utils/INFUSE_ORI/std.jar";
         bfuncPath = "cc_utils/INFUSE_ORI/Bfunction.class";
         rulesPath = "rules/4_level_rule/rule_data";
         arguments = List.of("-approach", "ECC+IMD", "-mg");
