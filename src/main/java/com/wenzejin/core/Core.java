@@ -24,7 +24,7 @@ import java.util.*;
 public class Core {
     // --- Logger & Config ---
     private static final Logger logger = LogManager.getLogger("TesterCore");
-    private final Config config;
+    private Config config;
 
     // --- Constructor ---
     public Core() {
@@ -38,6 +38,14 @@ public class Core {
 
     public void loadSettingsFromYaml(String yamlPath) throws IOException {
         config.loadSettingsFromYaml(yamlPath);
+    }
+
+    public void setConfig(Config config) {
+        this.config = config;
+    }
+
+    public Config getConfig() {
+        return config;
     }
 
     // --- Main Execution Entry ---
@@ -227,19 +235,9 @@ public class Core {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("preprocessor.rules-input-directory", config.rulesPath);
         arguments.put("workspace-root", config.workspaceRoot);
-        if (config.workerType.equalsIgnoreCase("infuse") || config.workerType.equalsIgnoreCase("infuse-old")) {
-            arguments.put("infuse.workspace-root", config.workspaceRoot);
-            arguments.put("infuse.jar-target-path", config.targetPath);
-            arguments.put("infuse.bfunc-class-path", config.bfuncPath);
-            arguments.put("infuse.arguments", config.arguments);
-        } else if (config.workerType.equalsIgnoreCase("mg")) {
-            arguments.put("mg.workspace-root", config.workspaceRoot);
-            arguments.put("mg.app-target-path", config.targetPath);
-            arguments.put("mg.bfunc-class-path", config.bfuncPath);
-            arguments.put("mg.arguments", config.arguments);
-        } else {
-            throw new IllegalArgumentException("Invalid worker type: " + config.workerType + ". Please check configurations.");
-        }
+        arguments.put("std.workspace-root", config.workspaceRoot);
+        arguments.put("std.jar-target-path", config.targetPath);
+        arguments.put("std.bfunc-class-path", config.bfuncPath);
         return arguments;
     }
 
