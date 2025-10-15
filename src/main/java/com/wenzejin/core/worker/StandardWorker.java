@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
  * Standard worker is for those cc which support the new interface for testing.
  */
 public abstract class StandardWorker implements TestWorker {
+
     static Logger logger = LogManager.getLogger("StandardWorker");
 
     // Configurable Arguments
@@ -59,8 +60,8 @@ public abstract class StandardWorker implements TestWorker {
      * - arguments: A list of arguments, filtered and cast to strings.
      * - uuid: A unique identifier for the instance.
      */
-    public StandardWorker(Map<String, Object> args) {
-        workspaceRoot = (String) args.get("std.workspace-root");
+    public StandardWorker(String workspace, Map<String, Object> args) {
+        workspaceRoot = workspace;
         jarTargetPath = (String) args.get("std.jar-target-path");
         bfuncClassPath = (String) args.get("std.bfunc-class-path");
         Object argumentsObj = args.get("std.arguments");
@@ -190,8 +191,9 @@ public abstract class StandardWorker implements TestWorker {
      * @return 0 if success, 1 if failed.
      */
     @Override
-    public int singleRun(TestCase tc) {
+    public int execute(TestCase tc, boolean source) {
         int error = 0;
+        cleanWorkspace();
         List<Rule> rules = List.of(tc.getRule());
         Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
         List<Bfunc> bfuncs = tc.getBfuncs();
@@ -201,15 +203,54 @@ public abstract class StandardWorker implements TestWorker {
             generateBfuncInput(bfuncs);
             generatePatternAndContextInput(patterns);
             int result = execute();
+
             if (result != 0) {
                 return result;
             }
+
             analyzeSingleResult(tc);
         } catch (IOException e) {
             logger.warn("IOException occurred when running test case: {}", tc.getId());
             error = 1;
         }
         return error;
+    }
+
+    @Override
+    public void logTestCase(Path logDir) {
+        try {
+            Files.createDirectories(logDir);
+        } catch (IOException e) {
+            return; // 创建目录失败就不继续拷贝
+        }
+
+        String[] toCopy =
+                {"context_pool.json", "rule.xml", "bfunc_in.txt", "bfunc_out.txt", "incs.json", "stdout.txt", "stderr.txt"};
+
+        for (String path : toCopy) {
+            try {
+                Path from = workspace.resolve(path);
+                if (!Files.exists(from)) {
+                    continue;
+                }
+                Files.copy(from, logDir.resolve(path), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ignore) {}
+        }
+    }
+
+    private void cleanWorkspace() {
+        String[] toClean =
+                {"context_pool.json", "rule.xml", "bfunc_in.txt", "bfunc_out.txt", "incs.json", "stdout.txt", "stderr.txt"};
+
+        for (String path : toClean) {
+            try {
+                Path delete = workspace.resolve(path);
+                if (!Files.exists(delete)) {
+                    continue;
+                }
+                Files.delete(delete);
+            } catch (IOException ignored) {}
+        }
     }
 
     private int execute() {

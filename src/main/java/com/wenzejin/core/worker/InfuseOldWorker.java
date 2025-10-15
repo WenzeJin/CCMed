@@ -7,10 +7,9 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class InfuseOldWorker extends StandardWorker {
-    static Logger logger = LogManager.getLogger("InfuseOldWorker");
 
-    public InfuseOldWorker(Map<String, Object> args) {
-        super(args);
+    public InfuseOldWorker(String workspace, Map<String, Object> args) {
+        super(workspace, args);
     }
 
     @Override

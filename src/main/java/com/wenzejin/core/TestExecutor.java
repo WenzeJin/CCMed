@@ -8,6 +8,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,10 +21,12 @@ public class TestExecutor {
     public enum Mode { SOURCE, FOLLOW }
 
     // --- Configuration ---
+    private final String workspace;
     private final String workerType;
     private final Map<String, Object> workerArguments;
     private final int threadNum;
     private final Mode mode;
+    private final Path logSpace;
 
     // --- State ---
     private int checked;
@@ -37,11 +43,14 @@ public class TestExecutor {
     /**
      * Constructs a new TestExecutor instance with the specified parameters.
      */
-    public TestExecutor(Mode mode, String workerType, Map<String, Object> workerArguments, int threadNum) {
+    public TestExecutor(Mode mode, String workspace, String workerType, Map<String, Object> workerArguments, int threadNum) {
         this.mode = mode;
+        this.workspace = workspace;
         this.workerType = workerType;
         this.workerArguments = workerArguments;
         this.threadNum = threadNum;
+
+        logSpace = Paths.get(workspace, "logs");
         this.firstFailure = -1;
         this.failedCases = new HashMap<>();
     }
@@ -58,7 +67,7 @@ public class TestExecutor {
         workersRegistry = Collections.newSetFromMap(new ConcurrentHashMap<>());
         executor = Executors.newFixedThreadPool(threadNum);
         threadLocalWorker = ThreadLocal.withInitial(() -> {
-            TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workerArguments);
+            TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workspace, workerArguments);
             try {
                 worker.initWorkspace();
                 workersRegistry.add(worker);
@@ -98,7 +107,7 @@ public class TestExecutor {
                 boolean passed = false;
                 try {
                     for (int retry = 0; retry <= 3 && !succeed; retry++) {
-                        if (worker.singleRun(tc) == 0) {
+                        if (worker.execute(tc, mode == Mode.SOURCE) == 0) {
                             succeed = true;
                         } else {
                             logger.warn("Test case {} failed. Retry {} / 3", tc.getId(), retry);
@@ -111,6 +120,7 @@ public class TestExecutor {
                     } else {
                         handleUncheckTestCase(tc);
                     }
+                    logTestCase(tc, worker);
                 } catch (Exception e) {
                     logger.error("Unexpected error while executing test case {}: {}", tc.getId(), e.getMessage(), e);
                 } finally {
@@ -125,6 +135,7 @@ public class TestExecutor {
                 return null;
             });
         }
+
         try {
             executor.invokeAll(tasks);
         } catch (InterruptedException e) {
@@ -229,5 +240,26 @@ public class TestExecutor {
         if (minutes > 0) formattedETA.append(minutes).append(" m ");
         if (seconds > 0 || formattedETA.isEmpty()) formattedETA.append(seconds).append(" s ");
         return formattedETA.toString().trim();
+    }
+
+    private void logTestCase(TestCase tc, TestWorker worker) {
+        Path logDir;
+        String id = "" + tc.getId();
+        if (mode == Mode.SOURCE) {
+            logDir = logSpace.resolve("source").resolve(id);
+        } else if (!tc.getPassed()) {
+            logDir = logSpace.resolve("failed").resolve(id);
+        } else {
+            return;
+        }
+
+        worker.logTestCase(logDir);
+        if (mode == Mode.FOLLOW) {
+            // create file info.txt
+            Path infoFile = logDir.resolve("info.txt");
+            try {
+                Files.write(infoFile, (tc + "\n" + tc.getSource()).getBytes());
+            } catch (IOException ignore) {}
+        }
     }
 }

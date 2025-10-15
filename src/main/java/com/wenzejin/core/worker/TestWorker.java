@@ -1,6 +1,7 @@
 package com.wenzejin.core.worker;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import com.wenzejin.core.cases.TestCase;
 
@@ -36,5 +37,8 @@ public interface TestWorker {
      * @param tc the test case to be executed
      * @return an integer representing the result of the test case execution
      */
-    int singleRun(TestCase tc);
+    int execute(TestCase tc, boolean source);
+
+
+    void logTestCase(Path logDir);
 }

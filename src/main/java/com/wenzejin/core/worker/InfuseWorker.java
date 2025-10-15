@@ -8,10 +8,8 @@ import java.util.*;
 
 public class InfuseWorker extends StandardWorker {
 
-    static Logger logger = LogManager.getLogger("InfuseWorker");
-
-    public InfuseWorker(Map<String, Object> args) {
-        super(args);
+    public InfuseWorker(String workspace, Map<String, Object> args) {
+        super(workspace, args);
     }
 
     @Override

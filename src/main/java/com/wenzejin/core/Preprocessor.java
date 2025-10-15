@@ -29,8 +29,8 @@ public class Preprocessor {
 
     // configurable arguments
     private final String rulesInputDirectory;
-    private int enumMax;
-    private int threadMax;
+    private final int enumMax;
+    private final int threadMax;
 
     // default configurations
     private static final int DEFAULT_ENUM_MAX = Integer.MAX_VALUE;
@@ -38,46 +38,13 @@ public class Preprocessor {
 
     private static final Logger logger = LogManager.getLogger("Preprocessor");
 
-    /**
-     * The Preprocessor class is responsible for initializing and validating the configuration
-     * parameters required for preprocessing tasks. It ensures that the necessary input directory
-     * and other parameters are properly set and fall back to default values when invalid inputs
-     * are provided.
-     *
-     * @param args A map containing configuration parameters:
-     *             <ul>
-     *                 <li><b>preprocessor.rules-input-directory</b>: The directory path for rules input (String). 
-     *                 This parameter is mandatory and cannot be null or empty.</li>
-     *                 <li><b>preprocessor.enum-max</b>: The maximum enumeration value (int). 
-     *                 Defaults to {@code DEFAULT_ENUM_MAX} if not provided or invalid (<= 0).</li>
-     *                 <li><b>preprocessor.thread-max</b>: The maximum number of threads (int). 
-     *                 Defaults to {@code DEFAULT_THREAD_MAX} if not provided or invalid (<= 0).</li>
-     *             </ul>
-     * 
-     * @throws IllegalArgumentException If the rules input directory is not specified or is empty.
-     */
-    public Preprocessor(Map<String, Object> args) {
-        rulesInputDirectory = (String) args.get("preprocessor.rules-input-directory");
-        if (rulesInputDirectory == null || rulesInputDirectory.isEmpty()) {
-            logger.fatal("No directory specified for rules input");
-            throw new IllegalArgumentException("No directory specified for rules input.");
-        }
 
-        enumMax = (int) args.getOrDefault("preprocessor.enum-max", DEFAULT_ENUM_MAX);
-        if (enumMax <= 0) {
-            logger.warn("enumMax <= 0, using default value.");
-            enumMax = DEFAULT_ENUM_MAX;
-        }
-
-        threadMax = (int) args.getOrDefault("preprocessor.thread-max", DEFAULT_THREAD_MAX);
-        if (threadMax <= 0) {
-            logger.warn("threadMax <= 0, using default value");
-            threadMax = DEFAULT_THREAD_MAX;
-        }
-
+    public Preprocessor(String rulesInput, int enumMax, int threadMax) {
+        this.rulesInputDirectory = rulesInput;
+        this.enumMax = enumMax;
+        this.threadMax = threadMax;
         testCases = new ArrayList<>();
-
-        logger.info("Preprocessor initialized. enumMax={} threadMax={}", enumMax, threadMax);
+        logger.info("Preprocessor initialized.  enumMax={} threadMax={}", enumMax, threadMax);
     }
 
     /* Functions for size operations */
@@ -119,21 +86,10 @@ public class Preprocessor {
      * Generates test cases for the provided rules using a thread pool for parallel processing.
      * Each rule is processed in a separate thread, and the method waits for all tasks to complete
      * within a specified time limit.
-     *
-     * <p>The method performs the following steps:
-     * <ul>
-     *   <li>Creates a fixed thread pool with a maximum number of threads defined by {@code threadMax}.</li>
-     *   <li>Submits tasks to the thread pool to generate test cases for each rule in {@code rulesInput}.</li>
-     *   <li>Shuts down the thread pool and waits for all tasks to complete within 1 minute.</li>
-     *   <li>Logs a fatal message if the tasks do not finish within the time limit or if execution is interrupted.</li>
-     *   <li>Logs the total number of generated test cases upon successful completion.</li>
-     * </ul>
-     *
-     * <p>Note: If the thread pool is interrupted during execution, the current thread's interrupt
-     * status is restored.
-     *
      */
     public void generateTestCases() {
+        testCases.clear();
+
         var rulesInput = readRules();
         if (rulesInput == null || rulesInput.isEmpty()) {
             logger.warn("No rules provided for test case generation.");

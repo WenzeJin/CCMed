@@ -18,18 +18,26 @@ import java.util.Map;
 public class Config {
     private static final Logger logger = LogManager.getLogger("TesterConfig");
 
-    public String mode;
+    public String taskName;
+    public boolean timeStamp;
+
+    public int threadLimit;
+
+    /* preprocess */
+    public int enumLimit;
+    public String rulesPath;
+
     public String stopMode;
     public int sourceLimit;
     public int followUpLimit;
-    public int threadLimit;
+
     public int batchSize;
     public int miniBatchSize;
     public String databaseUrl;
     public String workerType;
     public String targetPath;
     public String bfuncPath;
-    public String rulesPath;
+
     public String workspaceRoot;
     public List<String> arguments;
     public Map<String, Object> otherArgs;
@@ -44,13 +52,18 @@ public class Config {
     }
 
     public void loadDefaultSettings() {
-        mode = "normal";
+        taskName = "DefaultTask";
+        timeStamp = true;
+
+        threadLimit = Runtime.getRuntime().availableProcessors();
+        enumLimit = Integer.MAX_VALUE;
+
         stopMode = "panic";
         sourceLimit = 500;
         followUpLimit = 2000;
         batchSize = 500;
         miniBatchSize = 200;
-        threadLimit = 8;
+
         databaseUrl = "data/testcase.db";
         workerType = "infuse";
         workspaceRoot = "workspace";
@@ -99,9 +112,14 @@ public class Config {
 
     private void assignSetting(String key, Object value) {
         switch (key) {
-            case "mode" -> this.mode = value.toString();
-            case "stopMode" -> this.stopMode = value.toString();
+
+            case "taskName" -> taskName = (String) value;
+            case "timeStamp" -> timeStamp = (boolean) value;
+
             case "threadLimit" -> this.threadLimit = Integer.parseInt(value.toString());
+            case "enumLimit" -> this.enumLimit = Integer.parseInt(value.toString());
+
+            case "stopMode" -> this.stopMode = value.toString();
             case "sourceLimit" -> this.sourceLimit = Integer.parseInt(value.toString());
             case "followUpLimit" -> this.followUpLimit = Integer.parseInt(value.toString());
             case "batchSize" -> this.batchSize = Integer.parseInt(value.toString());

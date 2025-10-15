@@ -12,16 +12,15 @@ import java.util.*;
 
 
 public class MGWorker extends StandardWorker {
-
-    static Logger logger = LogManager.getLogger("MGWorker");
     
-    
-    public MGWorker(Map<String, Object> args) {
-        super(args);
+    public MGWorker(String workspace, Map<String, Object> args) {
+        super(workspace, args);
     }
 
     @Override
     protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args) {
+        target = target.resolve("bin").resolve("app");
+
         try {
             var perms = Files.getPosixFilePermissions(target);
             perms.add(PosixFilePermission.OWNER_EXECUTE);

@@ -5,26 +5,29 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.cases.TestCaseDataBaseDriver;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.jin.ARTCore;
 import com.wenzejin.core.mr.jin.RandomCore;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.worker.TestWorker;
-import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import me.tongfei.progressbar.ProgressBar;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Core {
     // --- Logger & Config ---
     private static final Logger logger = LogManager.getLogger("TesterCore");
     private Config config;
+
+    private String workspace;
 
     // --- Constructor ---
     public Core() {
@@ -50,25 +53,36 @@ public class Core {
 
     // --- Main Execution Entry ---
     public boolean execute() {
-        return switch (config.mode) {
-            case "normal" -> executeNormal();
-            case "single" -> executeSingle();
-            default -> {
-                logger.error("Invalid mode: {}", config.mode);
-                yield false;
-            }
-        };
+        return executeNormal();
+    }
+
+    private void setWorkspace() {
+        String taskName = config.taskName;
+        if (config.timeStamp) {
+            String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            taskName = taskName + "_" + timestamp;
+        }
+        workspace = Paths.get(config.workspaceRoot, taskName).toString();
+    }
+
+    private void exportConfig() {
+        // TODO: exportConfig to "config"
+    }
+
+    private void setLogDirectory() {
+        System.setProperty("logDir", Paths.get(workspace, "app_logs").toString());
     }
 
     // --- Normal Batch Execution ---
     private boolean executeNormal() {
-        try {
-            TestCaseDataBaseDriver.setDatabaseUrl(config.databaseUrl);
-            TestCaseDataBaseDriver.clearDB();
-            TestCaseDataBaseDriver.initializeDB();
+        setWorkspace();
+        exportConfig();
 
+        try {
             final Map<String, Object> arguments = prepareArguments();
-            final Preprocessor preprocessor = new Preprocessor(arguments);
+            final Preprocessor preprocessor = new Preprocessor(config.rulesPath, config.enumLimit, config.threadLimit);
+
             preprocessor.generateTestCases();
             preprocessor.reduceSize(config.sourceLimit);
             logger.info("Source cases preparation completed in {} ms.", System.currentTimeMillis());
@@ -77,8 +91,10 @@ public class Core {
             boolean sourceCaseFailures = false;
             final Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
-            final TestExecutor preExecutor = new TestExecutor(TestExecutor.Mode.SOURCE, config.workerType, arguments, config.threadLimit);
-            final TestExecutor postExecutor = new TestExecutor(TestExecutor.Mode.FOLLOW, config.workerType, arguments, config.threadLimit);
+            final TestExecutor preExecutor = new TestExecutor(
+                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit);
+            final TestExecutor postExecutor = new TestExecutor(
+                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit);
             preExecutor.init();
             postExecutor.init();
 
@@ -90,14 +106,22 @@ public class Core {
             int firstFailure = -1;
             long startTime = System.currentTimeMillis();
 
+
+            ProgressBar pb;
+            if (config.stopMode.contains("limited")) {
+                pb = new ProgressBar("Testing Progress", config.followUpLimit);
+            } else {
+                pb = new ProgressBar("Testing Progress", -1);
+            }
+
             for (int batch = 1; batch <= totalBatches; batch++) {
                 logger.info("*** Starting Batch {} ***", batch);
                 logger.info("Testing source test cases...");
+                pb.setExtraMessage("B #" + batch + " S");
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
                 preExecutor.execute(sourceCases);
                 sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
                 logger.info("Source cases testing completed.");
-                TestCaseDataBaseDriver.storeTestCases(sourceCases, "source");
 
                 if (!sourceCaseFailures) {
                     MTCore mtCore = config.ART ? new ARTCore(config.threadLimit, config.enableUndetermined)
@@ -108,6 +132,7 @@ public class Core {
                     while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
                         round++;
                         logger.info("*** Batch {} : Round {} ***", batch, round);
+                        pb.setExtraMessage("B #" + batch + " FMB #" + round);
                         int currentBatchSize = config.stopMode.contains("limited")
                                 ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
                                 : config.miniBatchSize;
@@ -116,16 +141,12 @@ public class Core {
                         processedCount += followUpCases.size();
                         Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
                         batchFailures.forEach((testCase, assertions) -> failedCases.put(testCase.getId(), assertions));
-                        if ("all".equalsIgnoreCase(config.storeMode)) {
-                            TestCaseDataBaseDriver.storeTestCases(followUpCases, "followup");
-                        } else {
-                            TestCaseDataBaseDriver.storeTestCases(batchFailures.keySet(), "failed");
-                        }
                         hasFailures = hasFailures || !batchFailures.isEmpty();
                         if (!batchFailures.isEmpty() && firstFailure == -1) {
                             firstFailure = totalFollowUp + postExecutor.getFirstFailure();
                         }
                         totalFollowUp += followUpCases.size();
+                        pb.stepBy(followUpCases.size());
                         if (hasFailures && config.stopMode.contains("panic")) {
                             logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", batch);
                             break;
@@ -139,18 +160,18 @@ public class Core {
                 }
                 if (hasFailures && config.stopMode.contains("panic")) {
                     logger.warn("Testing interrupted due to failed cases. Panic mode activated.");
+                    System.out.println("Testing interrupted due to failed cases. (panic mode activated)");
                     break;
                 }
             }
             preExecutor.close();
             postExecutor.close();
+            pb.close();
             dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
             return failedCases.isEmpty();
-        } catch (SQLException e) {
-            logger.error("SQL Exception occurred: {}", e.getMessage(), e);
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
         } catch (Exception e) {
@@ -159,85 +180,26 @@ public class Core {
         return false;
     }
 
-    // --- Single Case Execution ---
-    public boolean executeSingle() {
-        if (!config.otherArgs.containsKey("id")) {
-            logger.error("Single mode requires a case id.");
-            return false;
-        }
-        int caseId;
-        boolean passed = false;
-        try {
-            caseId = Integer.parseInt(config.otherArgs.get("id").toString());
-        } catch (NumberFormatException e) {
-            logger.error("Invalid case id: {}", config.otherArgs.get("id"));
-            return false;
-        }
-        TestCaseDataBaseDriver.setDatabaseUrl(config.databaseUrl);
-        Map<String, Object> arguments = prepareArguments();
-        TestWorker worker = TestWorkerFactory.getTestWorker(config.workerType, arguments);
-        if (worker == null) {
-            logger.error("Failed to create TestWorker for type: {}", config.workerType);
-            return false;
-        }
-        try {
-            TestCase tc = TestCaseDataBaseDriver.getTestCaseById(caseId);
-            if (tc == null) {
-                logger.error("Test case with id {} not found in database.", caseId);
-                return false;
-            }
-            worker.initWorkspace();
-            int retry = 0;
-            boolean succeed = false;
-            while (!succeed && retry <= 3) {
-                int error = worker.singleRun(tc);
-                if (error == 0) {
-                    succeed = true;
-                } else {
-                    logger.warn("Test case {} RE or TLE. Retry {} / 3", tc.getId(), retry);
-                    retry++;
-                }
-            }
-            if (succeed) {
-                if (tc.getAssertions() != null) {
-                    List<TestAssertion> failedAssertions = new ArrayList<>();
-                    passed = tc.assertTest(failedAssertions);
-                    if (passed) {
-                        logger.info("Test case {} passed.", tc.getId());
-                    } else {
-                        logger.warn("Test case {} failed.", tc.getId());
-                        System.out.println("Failed assertions:");
-                        for (TestAssertion a : failedAssertions) {
-                            System.out.println(a);
-                        }
-                    }
-                }
-            } else {
-                logger.error("Test case {} failed after 3 retries.", tc.getId());
-            }
-            System.out.println("Test case details:");
-            System.out.println(tc);
-            System.out.println("Destroy workspace?: [Y/N]");
-            int ch = System.in.read();
-            if (ch == 'Y' || ch == 'y') {
-                worker.destroyWorkspace();
-            }
-        } catch (SQLException e) {
-            logger.error("SQL Exception Occurred: {}, check case id maybe.", e.getMessage());
-        } catch (IOException e) {
-            logger.error("IO Exception Occurred: {}.", e.getMessage());
-        }
-        return passed;
-    }
-
     // --- Argument Preparation ---
     private Map<String, Object> prepareArguments() {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("preprocessor.rules-input-directory", config.rulesPath);
-        arguments.put("workspace-root", config.workspaceRoot);
-        arguments.put("std.workspace-root", config.workspaceRoot);
+
+        String taskName = config.taskName;
+        if (config.timeStamp) {
+            // 获取当前时间并格式化
+            String timestamp = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            taskName = taskName + "_" + timestamp;
+        }
+
+        // 使用 Paths 来拼接路径，避免手动加斜杠
+        Path fullPath = Paths.get(config.workspaceRoot, taskName);
+
+        arguments.put("workspace-root", fullPath.toString());
         arguments.put("std.jar-target-path", config.targetPath);
         arguments.put("std.bfunc-class-path", config.bfuncPath);
+        arguments.put("std.arguments", config.arguments);
         return arguments;
     }
 
@@ -250,11 +212,11 @@ public class Core {
         JsonArray failedArray = new JsonArray();
         for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
             JsonObject failedCase = new JsonObject();
-            failedCase.addProperty("case-id", entry.getKey());
-            failedCase.addProperty("failed-assertions", entry.getValue().toString());
+            failedCase.addProperty("case_id", entry.getKey());
+            failedCase.addProperty("failed_assertions", entry.getValue().toString());
             failedArray.add(failedCase);
         }
-        result.add("failed-cases", failedArray);
+        result.add("failed_cases", failedArray);
         try (FileOutputStream fos = new FileOutputStream(config.resultPath)){
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             fos.write(gson.toJson(result).getBytes());

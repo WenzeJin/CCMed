@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.wenzejin'
-version = '1.0.0'
+version = '1.1.0'
 mainClassName = 'com.wenzejin.Main'
 
 repositories {
@@ -50,8 +50,8 @@ dependencies {
     // Gson
     implementation 'com.google.code.gson:gson:2.12.1'
 
-    // sqlite3 driver
-    implementation 'org.xerial:sqlite-jdbc:3.49.1.0'
+    // Progressbar
+    implementation 'me.tongfei:progressbar:0.10.1'
 
     implementation 'commons-cli:commons-cli:1.5.0'
 }
