@@ -6,10 +6,6 @@ import com.wenzejin.core.result.Result;
 import java.util.Set;
 
 public class LinksExtendAssertion implements TestAssertion {
-    static {
-        // Register this assertion in the TestAssertionRegistry for serialization and deserialization
-        TestAssertionRegistry.register(LinksExtendAssertion.class);
-    }
 
     private final Set<Link> linkSet;
 

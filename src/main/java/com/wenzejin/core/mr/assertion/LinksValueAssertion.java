@@ -7,10 +7,6 @@ import com.wenzejin.core.result.Result;
 import java.util.Set;
 
 public class LinksValueAssertion implements TestAssertion {
-    static {
-        // 在 TestAssertionRegistry 中注册该断言，以便测试用例的序列化和反序列化
-        TestAssertionRegistry.register(LinksValueAssertion.class);
-    }
 
     private final Set<String> valueSet;
 

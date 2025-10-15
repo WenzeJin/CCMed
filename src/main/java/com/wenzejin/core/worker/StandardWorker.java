@@ -201,7 +201,10 @@ public abstract class StandardWorker implements TestWorker {
         try {
             generateRuleInput(rules);
             generateBfuncInput(bfuncs);
-            generatePatternAndContextInput(patterns);
+
+            Set<String> used = tc.getRule().collectPatterns();
+
+            generatePatternAndContextInput(patterns, used);
             int result = execute();
 
             if (result != 0) {
@@ -304,7 +307,7 @@ public abstract class StandardWorker implements TestWorker {
         return Paths.get(workspaceRoot, "std_worker_" + uuid.toString()).toString();
     }
 
-    private void generatePatternAndContextInput(Set<Pattern> patterns) throws IOException {
+    private void generatePatternAndContextInput(Set<Pattern> patterns, Set<String> used) throws IOException {
         if (workspace == null || !Files.exists(workspace)) {
             return;
         }
@@ -315,6 +318,9 @@ public abstract class StandardWorker implements TestWorker {
             int context_cnt = 0;
             for (Pattern pat: patterns) {
                 String name = pat.getName();
+                if (!used.contains(name)) {
+                    continue;
+                }
                 JSONArray contextArray = new JSONArray();
                 for (String data: pat.getData()) {
                     context_cnt++;

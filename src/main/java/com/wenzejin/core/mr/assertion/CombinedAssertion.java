@@ -5,11 +5,6 @@ import com.wenzejin.core.result.Result;
 import java.util.Objects;
 
 public class CombinedAssertion implements TestAssertion {
-    static {
-        // 在 TestAssertionRegistry 中注册该断言，以便测试用例的序列化和反序列化
-        TestAssertionRegistry.register(CombinedAssertion.class);
-    }
-
 
     public enum Type {
         AND,

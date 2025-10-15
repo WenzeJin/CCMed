@@ -1,7 +1,6 @@
 package com.wenzejin;
 
 import com.wenzejin.core.Core;
-import com.wenzejin.core.mr.assertion.TestAssertionRegistry;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.sql.SQLException;
 public class Main {
 
     public static void main(String[] args) {
-        TestAssertionRegistry.register();
 
         Options options = new Options();
         options.addOption("g", "gui", false, "Run in GUI mode");

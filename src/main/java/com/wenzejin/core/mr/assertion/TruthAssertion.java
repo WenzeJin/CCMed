@@ -3,10 +3,6 @@ package com.wenzejin.core.mr.assertion;
 import com.wenzejin.core.result.Result;
 
 public class TruthAssertion implements TestAssertion {
-    static {
-        // 在 TestAssertionRegistry 中注册该断言，以便测试用例的序列化和反序列化
-        TestAssertionRegistry.register(TruthAssertion.class);
-    }
 
     private final boolean truthValue;
 
