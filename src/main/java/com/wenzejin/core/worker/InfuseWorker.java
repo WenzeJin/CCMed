@@ -14,6 +14,7 @@ public class InfuseWorker extends StandardWorker {
 
     @Override
     protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args) {
+        Path cctPath = workspace.resolve("cct.txt");
         List<String> cmdLine = new ArrayList<>( List.of(
             "java", "-jar", target.toString(),
             "-test",
@@ -21,7 +22,7 @@ public class InfuseWorker extends StandardWorker {
             "-bfuncs", bfc.toString(),
             "-contextpool", cp.toString(),
             "-incs", inc.toString(),
-            "-cct", "cct.txt"
+            "-cct", cctPath.toString()
         ));
         cmdLine.addAll(args);
         return cmdLine;

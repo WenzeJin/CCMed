@@ -14,11 +14,28 @@ public class QuantifierTag implements Tag{
     public String ruleUsed;
     public String parentID;
     public List<Integer> source;
+    public boolean isRealQuantifier;
 
     public QuantifierTag(String variable) {
         this.variable = variable;
         valueTrue = new HashSet<>();
         valueFalse = new HashSet<>();
+        ruleUsed = "";
+        parentID = "";
+        source = new ArrayList<>();
+        isRealQuantifier = true;
+    }
+
+    public QuantifierTag(boolean truth) {
+        isRealQuantifier = false;
+        if (truth) {
+            valueTrue = new HashSet<>(Set.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+            valueFalse = new HashSet<>();
+        } else {
+            valueTrue = new HashSet<>();
+            valueFalse = new HashSet<>(Set.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+        }
+        variable = "fake_variable";
         ruleUsed = "";
         parentID = "";
         source = new ArrayList<>();

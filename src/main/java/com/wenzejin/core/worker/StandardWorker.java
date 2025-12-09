@@ -41,25 +41,6 @@ public abstract class StandardWorker implements TestWorker {
     Path copiedJar;
     Path copiedBfuncClass;
 
-    /**
-     * The InfuseWorker class is responsible for initializing and managing the workspace
-     * and configuration required for the infusion process. It extracts and validates
-     * parameters from the provided arguments map and assigns them to the appropriate
-     * fields. Additionally, it generates a unique identifier (UUID) for each instance.
-     *
-     * @param args A map containing the following keys:
-     *             - "infuse.workspace-root": The root directory of the workspace (String).
-     *             - "infuse.jar-target-path": The target path for the JAR file (String).
-     *             - "infuse.bfunc-class-path": The class path for the bfunc (String).
-     *             - "infuse.arguments": A list of arguments (List<String>).
-     *
-     * Fields initialized:
-     * - workspaceRoot: The root directory of the workspace.
-     * - jarTargetPath: The target path for the JAR file.
-     * - bfuncClassPath: The class path for the bfunc.
-     * - arguments: A list of arguments, filtered and cast to strings.
-     * - uuid: A unique identifier for the instance.
-     */
     public StandardWorker(String workspace, Map<String, Object> args) {
         workspaceRoot = workspace;
         jarTargetPath = (String) args.get("std.jar-target-path");
@@ -211,7 +192,7 @@ public abstract class StandardWorker implements TestWorker {
                 return result;
             }
 
-            analyzeSingleResult(tc);
+            analyzeResult(tc);
         } catch (IOException e) {
             logger.warn("IOException occurred when running test case: {}", tc.getId());
             error = 1;
@@ -374,7 +355,7 @@ public abstract class StandardWorker implements TestWorker {
         }
     }
 
-    private void analyzeSingleResult(TestCase tc) throws IOException {
+    private void analyzeResult(TestCase tc) throws IOException {
 
         Path incsPath = Path.of(workspace.toString(), "incs.json");
 
@@ -411,7 +392,7 @@ public abstract class StandardWorker implements TestWorker {
                 result.links = links;
             }
             tc.setResult(result);
-            tc.setChecked(true);
+            tc.setExecuted(true);
         }
     }
 

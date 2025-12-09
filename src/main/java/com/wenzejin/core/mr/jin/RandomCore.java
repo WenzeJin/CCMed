@@ -21,20 +21,16 @@ import java.util.Map;
 
 public class RandomCore implements MTCore {
     private static final Logger logger = LogManager.getLogger("RandomCore");
-    private static final double binaryRate = 0.8;
-
 
     List<TestCaseCandidate> candidates;
     List<TestCaseCandidate> tested;
 
     final int threadNum;
-    final boolean enableUndetermined;
 
-    public RandomCore(int threadNum, boolean enableUndetermined) {
+    public RandomCore(int threadNum) {
         tested = new ArrayList<>();
         candidates = new ArrayList<>();
         this.threadNum = threadNum;
-        this.enableUndetermined = enableUndetermined;
     }
 
     public void initCandidates(List<TestCase> tcs) {
@@ -52,6 +48,15 @@ public class RandomCore implements MTCore {
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
                 List<Tag> tags = TagCreation.entry(tc);
+
+                if (Math.random() < 0.05) {
+                    QuantifierTag wholeTagQ = new QuantifierTag(tc.getResult().truth);
+                    wholeTagQ.addSource(tc.getId());
+                    FormulaWithTag wholeQ = new FormulaWithTag(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
+                    wholeQ.oriRule = tc.getOriRule();
+                    quantifierPool.add(wholeQ);
+                }
+
                 if (formula instanceof OpConnector) {
                     // binary formula
                     Formula leftFormula = ((OpConnector) formula).left;
@@ -95,7 +100,7 @@ public class RandomCore implements MTCore {
                 }
                 for (String op : binaryOps) {
                     var candidate = new BinaryCandidate(left, right, op);
-                    if (!enableUndetermined && candidate.isUndetermined()) {
+                    if (candidate.isUndetermined()) {
                         continue;
                     }
                     candidates.add(candidate);
@@ -110,6 +115,14 @@ public class RandomCore implements MTCore {
                 if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
+
+                var lt = (QuantifierTag) left.tag;
+                var rt = (QuantifierTag) right.tag;
+
+                if (!lt.isRealQuantifier && !rt.isRealQuantifier) {
+                    continue;
+                }
+
                 for (String op : binaryOps) {
                     for (String quantifierOp : quantifierOps) {
                         candidates.add(new QuantifierCandidate(left, right, op, quantifierOp, true));

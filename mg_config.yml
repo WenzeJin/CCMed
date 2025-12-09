@@ -1,0 +1,43 @@
+mode:           "normal"  # normal, single
+
+id: 518
+
+stopMode:       "limited" # panic, limited, panic + limited
+# panic: stop when a crash is found
+# limited: stop when the number of crashes reaches the limit
+
+# Enable ART or not
+ART:            true
+
+# Simple mode (disable data changes)
+simpleMode:     true
+
+# Limit
+sourceLimit:    344
+followUpLimit:  500
+
+# Batch Options (A big batch includes: source -> follow-up, while a mini batch is a small batch of follow-up)
+batchSize:      344
+miniBatchSize:  100
+threadLimit:    8
+
+# Database options (for failed test cases)
+databaseUrl:    "data/testcase.db"
+
+# Worker options (which worker to use and where to work)
+workerType:     "mg"
+workspaceRoot:  "workspace"
+
+# Resource options
+targetPath:     "cc_utils/mg/mgapp"
+rulesPath:      "rules/level3all"
+bfuncPath:      "cc_utils/Bfunction.class"
+
+# Test arguments
+arguments:      ["-t", "ECC"]
+
+# Result output
+resultPath:     "./result.json"
+storeMode:       "all"
+
+# id: xxx (if you want to run a single test case)

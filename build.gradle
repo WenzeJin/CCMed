@@ -38,9 +38,6 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
 
-    // 添加 YAML 依赖
-    implementation 'org.yaml:snakeyaml:2.0'
-
     // 添加 log4j 依赖
     implementation 'org.apache.logging.log4j:log4j-core:2.12.4'
     implementation 'org.apache.logging.log4j:log4j-api:2.12.4'
@@ -54,6 +51,10 @@ dependencies {
     implementation 'me.tongfei:progressbar:0.10.1'
 
     implementation 'commons-cli:commons-cli:1.5.0'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.1'
 }
 
 test {

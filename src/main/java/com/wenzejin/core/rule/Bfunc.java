@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Bfunc implements Cloneable {
 
-    private final String name;
+    private String name;
 
     private int paramNum;
 
@@ -32,6 +32,10 @@ public class Bfunc implements Cloneable {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setParamList(List<String> paramList) {
@@ -139,7 +143,7 @@ public class Bfunc implements Cloneable {
             while (binary.length() < combinationNum) {
                 binary = "0" + binary;
             }
-            Bfunc bfunc = new Bfunc(namePrefix + "_" + i, paramNum);
+            Bfunc bfunc = new Bfunc("random_" + namePrefix + "_" + i, paramNum);
             for (int j = 0; j < combinationNum; j++) {
                 bfunc.addValue(combinations.get(j), binary.charAt(j) == '1');
             }

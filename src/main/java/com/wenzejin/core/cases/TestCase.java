@@ -31,8 +31,7 @@ public class TestCase {
     private List<String> ruleUsed;
     private final List<Integer> source;
 
-    // Only used in memory-only mode
-    private boolean checked;            // Checked
+    private boolean executed;            // Executed
     private boolean passed;             // Passed
 
     public TestCase() {
@@ -40,7 +39,7 @@ public class TestCase {
         oriRule = null;
         result = null;
         assertions = null;
-        checked = false;
+        executed = false;
         passed = false;
         ruleUsed = new ArrayList<>();
         source = new ArrayList<>();
@@ -92,12 +91,12 @@ public class TestCase {
         return id;
     }
 
-    public void setChecked(boolean checked) {
-        this.checked = checked;
+    public void setExecuted(boolean executed) {
+        this.executed = executed;
     }
 
-    public boolean getChecked() {
-        return checked;
+    public boolean getExecuted() {
+        return executed;
     }
 
     public void setPassed(boolean passed) {
@@ -165,7 +164,7 @@ public class TestCase {
                 ", bfuncs=" + bfuncs +
                 ", assertions=" + assertions +
                 ", result=" + result +
-                ", checked=" + checked +
+                ", checked=" + executed +
                 ", passed=" + passed +
                 ", source=" + source +
                 '}';

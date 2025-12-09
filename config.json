@@ -1,0 +1,23 @@
+{
+  "taskName": "CMID_test",
+  "timeStamp": true,
+  "stopMode": "limited",
+  "ART": true,
+  "simpleMode": false,
+  "sourceLimit": 344,
+  "followUpLimit": 100,
+  "batchSize": 344,
+  "miniBatchSize": 100,
+  "threadLimit": 8,
+  "workerType": "cmid",
+  "workspaceRoot": "workspace",
+  "targetPath": "cc_utils/cmid/CMID.jar",
+  "rulesPath": "rules/level3all",
+  "bfuncPath": "cc_utils/Bfunction.class",
+  "storeMode": "all",
+  "cmid": {
+    "properties": {
+      "processor": "geas_c"
+    }
+  }
+}

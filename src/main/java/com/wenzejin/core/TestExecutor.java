@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +26,7 @@ public class TestExecutor {
     private final int threadNum;
     private final Mode mode;
     private final Path logSpace;
+    private final String storeMode;
 
     // --- State ---
     private int checked;
@@ -43,7 +43,7 @@ public class TestExecutor {
     /**
      * Constructs a new TestExecutor instance with the specified parameters.
      */
-    public TestExecutor(Mode mode, String workspace, String workerType, Map<String, Object> workerArguments, int threadNum) {
+    public TestExecutor(Mode mode, String workspace, String workerType, Map<String, Object> workerArguments, int threadNum, String storeMode) {
         this.mode = mode;
         this.workspace = workspace;
         this.workerType = workerType;
@@ -53,6 +53,8 @@ public class TestExecutor {
         logSpace = Paths.get(workspace, "logs");
         this.firstFailure = -1;
         this.failedCases = new HashMap<>();
+
+        this.storeMode = storeMode;
     }
 
     public int getChecked() { return checked; }
@@ -64,10 +66,12 @@ public class TestExecutor {
      * and thread-local worker instances. Each worker is initialized with a workspace.
      */
     public void init() {
+        logger.info("Initializing test executor");
         workersRegistry = Collections.newSetFromMap(new ConcurrentHashMap<>());
         executor = Executors.newFixedThreadPool(threadNum);
         threadLocalWorker = ThreadLocal.withInitial(() -> {
             TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workspace, workerArguments);
+            logger.info("Initializing worker of type {}.", workerType);
             try {
                 worker.initWorkspace();
                 workersRegistry.add(worker);
@@ -99,14 +103,17 @@ public class TestExecutor {
         final AtomicInteger checkCount = new AtomicInteger(0);
         final AtomicInteger progress = new AtomicInteger(0);
         final int totalTasks = tcs.size();
+        logger.info("Executing tests for {} tasks.", totalTasks);
         List<Callable<Void>> tasks = new ArrayList<>();
         for (final TestCase tc : tcs) {
             tasks.add(() -> {
+
                 TestWorker worker = threadLocalWorker.get();
+
                 boolean succeed = false;
                 boolean passed = false;
                 try {
-                    for (int retry = 0; retry <= 3 && !succeed; retry++) {
+                    for (int retry = 0; retry <= 2 && !succeed; retry++) {
                         if (worker.execute(tc, mode == Mode.SOURCE) == 0) {
                             succeed = true;
                         } else {
@@ -114,7 +121,7 @@ public class TestExecutor {
                         }
                     }
                     if (succeed) {
-                        tc.setChecked(true);
+                        tc.setExecuted(true);
                         checkCount.incrementAndGet();
                         passed = checkResult(tc);
                     } else {
@@ -123,6 +130,9 @@ public class TestExecutor {
                     logTestCase(tc, worker);
                 } catch (Exception e) {
                     logger.error("Unexpected error while executing test case {}: {}", tc.getId(), e.getMessage(), e);
+                    tc.setPassed(false);
+                    logTestCase(tc, worker);
+                    handleUncheckTestCase(tc);
                 } finally {
                     int currentProgress = progress.incrementAndGet();
                     if (!succeed || !passed) {
@@ -243,12 +253,18 @@ public class TestExecutor {
     }
 
     private void logTestCase(TestCase tc, TestWorker worker) {
+        if (storeMode.equals("none")) {
+            return;
+        }
+
         Path logDir;
         String id = "" + tc.getId();
         if (mode == Mode.SOURCE) {
             logDir = logSpace.resolve("source").resolve(id);
         } else if (!tc.getPassed()) {
             logDir = logSpace.resolve("failed").resolve(id);
+        } else if (storeMode.equals("all")) {
+            logDir = logSpace.resolve("passed").resolve(id);
         } else {
             return;
         }

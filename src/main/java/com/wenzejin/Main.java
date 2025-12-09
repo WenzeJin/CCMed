@@ -1,10 +1,10 @@
 package com.wenzejin;
 
+import com.wenzejin.core.Config;
 import com.wenzejin.core.Core;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 
 public class Main {
@@ -19,9 +19,8 @@ public class Main {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd;
 
-        String configPath = "./config.yml";
+        String configPath = "./config.json";
         boolean gui = false;
-        boolean fullTest = true;
 
         try {
             cmd = parser.parse(options, args);
@@ -36,15 +35,17 @@ public class Main {
             System.out.println("Error parsing command line: " + e.getMessage());
         }
 
-        if (!gui && fullTest) {
-            Core core = new Core();
+        if (!gui) {
             try {
-                core.loadSettingsFromYaml(configPath);
+                Config conf = Config.loadFromJson(configPath);
+                if (!conf.validate(true)) {
+                    System.exit(-1);
+                }
+                Core core = new Core(conf);
                 core.execute();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-
     }
 }

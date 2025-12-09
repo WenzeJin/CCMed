@@ -19,7 +19,7 @@ import java.util.Set;
 public class TagCreation {
 
     private static void guardBeforeAll(TestCase tc) throws NoTestResultException {
-        if (!tc.getChecked()) {
+        if (!tc.getExecuted()) {
             throw new NoTestResultException("The test case has not been checked yet.");
         }
     }

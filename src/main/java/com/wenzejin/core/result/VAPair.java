@@ -27,10 +27,7 @@ public class VAPair {
 
     @Override
     public String toString() {
-        return "VAPair{" +
-                "key='" + key + '\'' +
-                ", value='" + value + '\'' +
-                '}';
+        return "<" + key + "," + value + ">";
     }
 
     @Override

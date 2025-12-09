@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class ARTCore implements MTCore {
     private static final Logger logger = LogManager.getLogger("ARTCore");
-    private static double binaryRate = 0.8;
+    private static final double binaryRate = 0.7;
     private static final double randomRate = 0.3;
 
     List<TestCaseCandidate> tested;
@@ -30,19 +30,13 @@ public class ARTCore implements MTCore {
     List<TestCaseCandidate> quantifierCandidates;
 
     final int threadNum;
-    boolean enableUndetermined;
 
-    public ARTCore(int threadNum, boolean enableUndetermined) {
+
+    public ARTCore(int threadNum) {
         tested = new ArrayList<>();
         binaryCandidates = new ArrayList<>();
         quantifierCandidates = new ArrayList<>();
         this.threadNum = threadNum;
-        this.enableUndetermined = enableUndetermined;
-        if (enableUndetermined) {
-            binaryRate = 0.8;
-        } else {
-            binaryRate = 0.7;
-        }
     }
 
     public void initCandidates(List<TestCase> tcs) {
@@ -59,6 +53,15 @@ public class ARTCore implements MTCore {
                 FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
+
+                if (Math.random() < 0.05) {
+                    QuantifierTag wholeTagQ = new QuantifierTag(tc.getResult().truth);
+                    wholeTagQ.addSource(tc.getId());
+                    FormulaWithTag wholeQ = new FormulaWithTag(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
+                    wholeQ.oriRule = tc.getOriRule();
+                    quantifierPool.add(wholeQ);
+                }
+
                 List<Tag> tags = TagCreation.entry(tc);
                 if (formula instanceof OpConnector) {
                     // binary formula
@@ -102,7 +105,7 @@ public class ARTCore implements MTCore {
                 }
                 for (String op : binaryOps) {
                     var candidate = new BinaryCandidate(left, right, op);
-                    if (!enableUndetermined && candidate.isUndetermined()) {
+                    if (candidate.isUndetermined()) {
                         continue;
                     }
                     binaryCandidates.add(candidate);
@@ -117,6 +120,14 @@ public class ARTCore implements MTCore {
                 if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
+
+                var lt = (QuantifierTag) left.tag;
+                var rt = (QuantifierTag) right.tag;
+
+                if (!lt.isRealQuantifier && !rt.isRealQuantifier) {
+                    continue;
+                }
+
                 for (String op : binaryOps) {
                     for (String quantifierOp : quantifierOps) {
                         quantifierCandidates.add(new QuantifierCandidate(left, right, op, quantifierOp, true));
@@ -242,6 +253,7 @@ public class ARTCore implements MTCore {
         logger.info("Binary cases: {}, Quantifier cases: {}", binUsed.size(), quantUsed.size());
 
         parallelUpdateMinDistance(used);
+        Collections.shuffle(thisBatch);
         return thisBatch;
     }
 

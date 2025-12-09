@@ -14,8 +14,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import me.tongfei.progressbar.ProgressBar;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -25,36 +25,15 @@ import java.util.*;
 public class Core {
     // --- Logger & Config ---
     private static final Logger logger = LogManager.getLogger("TesterCore");
-    private Config config;
+    private final Config config;
 
     private String workspace;
 
-    // --- Constructor ---
-    public Core() {
-        this.config = new Config();
-    }
-
-    // --- Configuration Loading ---
-    public void loadDefaultSettings() {
-        config.loadDefaultSettings();
-    }
-
-    public void loadSettingsFromYaml(String yamlPath) throws IOException {
-        config.loadSettingsFromYaml(yamlPath);
-    }
-
-    public void setConfig(Config config) {
+    public Core(Config config) {
         this.config = config;
     }
 
-    public Config getConfig() {
-        return config;
-    }
-
     // --- Main Execution Entry ---
-    public boolean execute() {
-        return executeNormal();
-    }
 
     private void setWorkspace() {
         String taskName = config.taskName;
@@ -64,18 +43,24 @@ public class Core {
             taskName = taskName + "_" + timestamp;
         }
         workspace = Paths.get(config.workspaceRoot, taskName).toString();
+        try {
+            Files.createDirectories(Paths.get(config.workspaceRoot, taskName));
+        }  catch (IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 
     private void exportConfig() {
-        // TODO: exportConfig to "config"
-    }
-
-    private void setLogDirectory() {
-        System.setProperty("logDir", Paths.get(workspace, "app_logs").toString());
+        try {
+            String path = Paths.get(workspace, "config.json").toString();
+            config.saveToJson(path);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 
     // --- Normal Batch Execution ---
-    private boolean executeNormal() {
+    public void execute() {
         setWorkspace();
         exportConfig();
 
@@ -92,15 +77,15 @@ public class Core {
             final Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
 
             final TestExecutor preExecutor = new TestExecutor(
-                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit);
+                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
             final TestExecutor postExecutor = new TestExecutor(
-                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit);
+                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
             preExecutor.init();
             postExecutor.init();
 
             TagApplication.simpleMode = config.simpleMode;
 
-            final int totalBatches = preprocessor.getSize() / config.batchSize;
+            final int totalBatches = preprocessor.getSize() / config.batchSize + ((preprocessor.getSize() % config.batchSize) == 0 ? 0 : 1);
             final int batchFollowUpLimit = config.followUpLimit / totalBatches;
             int totalFollowUp = 0;
             int firstFailure = -1;
@@ -124,8 +109,8 @@ public class Core {
                 logger.info("Source cases testing completed.");
 
                 if (!sourceCaseFailures) {
-                    MTCore mtCore = config.ART ? new ARTCore(config.threadLimit, config.enableUndetermined)
-                                               : new RandomCore(config.threadLimit, config.enableUndetermined);
+                    MTCore mtCore = config.ART ? new ARTCore(config.threadLimit)
+                                               : new RandomCore(config.threadLimit);
                     mtCore.initCandidates(sourceCases);
                     int round = 0;
                     int processedCount = 0;
@@ -171,13 +156,11 @@ public class Core {
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
-            return failedCases.isEmpty();
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Unexpected Exception occurred: {}", e.getMessage(), e);
         }
-        return false;
     }
 
     // --- Argument Preparation ---
@@ -185,21 +168,12 @@ public class Core {
         Map<String, Object> arguments = new HashMap<>();
         arguments.put("preprocessor.rules-input-directory", config.rulesPath);
 
-        String taskName = config.taskName;
-        if (config.timeStamp) {
-            // 获取当前时间并格式化
-            String timestamp = LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            taskName = taskName + "_" + timestamp;
-        }
-
-        // 使用 Paths 来拼接路径，避免手动加斜杠
-        Path fullPath = Paths.get(config.workspaceRoot, taskName);
-
-        arguments.put("workspace-root", fullPath.toString());
         arguments.put("std.jar-target-path", config.targetPath);
         arguments.put("std.bfunc-class-path", config.bfuncPath);
         arguments.put("std.arguments", config.arguments);
+
+        arguments.putAll(config.otherArgs);
+
         return arguments;
     }
 
@@ -217,9 +191,12 @@ public class Core {
             failedArray.add(failedCase);
         }
         result.add("failed_cases", failedArray);
-        try (FileOutputStream fos = new FileOutputStream(config.resultPath)){
+
+        Path resultPath = Paths.get(workspace, "result.json");
+
+        try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            fos.write(gson.toJson(result).getBytes());
+            Files.write(resultPath, gson.toJson(result).getBytes());
         } catch (IOException e) {
             logger.error("Failed to dump result to file: {}", e.getMessage());
         }

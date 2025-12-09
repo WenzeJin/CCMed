@@ -10,6 +10,8 @@ public class TestWorkerFactory {
             return new InfuseOldWorker(workspace, arguments);
         } else if (workerType.equalsIgnoreCase("mg")) {
             return new MGWorker(workspace, arguments);
+        } else if (workerType.equalsIgnoreCase("cmid")) {
+            return new CMIDWorker(workspace, arguments);
         } else {
             return null;
         }
