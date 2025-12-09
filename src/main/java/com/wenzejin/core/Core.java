@@ -66,7 +66,7 @@ public class Core {
 
         try {
             final Map<String, Object> arguments = prepareArguments();
-            final Preprocessor preprocessor = new Preprocessor(config.rulesPath, config.enumLimit, config.threadLimit);
+            final Preprocessor preprocessor = new Preprocessor(config.rulesPath, config.enumLimit, config.threadLimit, config.bfuncPolicy);
 
             preprocessor.generateTestCases();
             preprocessor.reduceSize(config.sourceLimit);

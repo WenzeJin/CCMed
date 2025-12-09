@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,20 +32,17 @@ public class Preprocessor {
     private final String rulesInputDirectory;
     private final int enumMax;
     private final int threadMax;
-
-    // default configurations
-    private static final int DEFAULT_ENUM_MAX = Integer.MAX_VALUE;
-    private static final int DEFAULT_THREAD_MAX = Runtime.getRuntime().availableProcessors();
+    private final String bfuncPolicy;
 
     private static final Logger logger = LogManager.getLogger("Preprocessor");
 
-
-    public Preprocessor(String rulesInput, int enumMax, int threadMax) {
+    public Preprocessor(String rulesInput, int enumMax, int threadMax, String bfuncPolicy) {
         this.rulesInputDirectory = rulesInput;
         this.enumMax = enumMax;
         this.threadMax = threadMax;
         testCases = new ArrayList<>();
-        logger.info("Preprocessor initialized.  enumMax={} threadMax={}", enumMax, threadMax);
+        this.bfuncPolicy = bfuncPolicy;
+        logger.info("Preprocessor initialized.  enumMax={} threadMax={} bfuncPolicy={}", enumMax, threadMax, bfuncPolicy);
     }
 
     /* Functions for size operations */
@@ -163,14 +161,21 @@ public class Preprocessor {
         var newPatterns = createPatterns(rule);
 
         // Create variants of each bfunc.
-        var bfuncPool = generateBfuncPool(rule);
-        var bfuncNames = bfuncPool.keySet().stream().toList();
+    
+        List<String> bfuncNames = getBfuncNames(rule);
 
         // Generate combinations of bfunc variants
-        List<List<Bfunc>> bfuncCombinations = new ArrayList<>();
-        enumerateBfuncs(0, bfuncNames, bfuncPool, new ArrayList<>(), bfuncCombinations);
+        List<List<Bfunc>> bfuncCombinations;
+        if (bfuncPolicy.equals("random")) {
+            bfuncCombinations = randomBfuncs(rule, bfuncNames, enumMax);
+        } else {
+            // first enumerate all, then random a subset
+            var bfuncPool = generateBfuncPool(rule);
+            bfuncCombinations = new ArrayList<>();
+            enumerateBfuncs(0, bfuncNames, bfuncPool, new ArrayList<>(), bfuncCombinations);
+            bfuncCombinations = RandomSubset.getRandom(bfuncCombinations, enumMax);
+        }
 
-        bfuncCombinations = RandomSubset.getRandom(bfuncCombinations, enumMax);
 
         // Generate testcases
         emitTestCases(rule, newPatterns, bfuncNames, bfuncCombinations);
@@ -260,6 +265,15 @@ public class Preprocessor {
         return bfuncPool;
     }
 
+    private static List<String> getBfuncNames(Rule rule) {
+        var bfuncs = rule.collectBfuncs();
+        List<String> bfuncNames = new ArrayList<>();
+        for (BfuncLiteral bfunc : bfuncs) {
+            bfuncNames.add(bfunc.name);
+        }
+        return bfuncNames;
+    }
+
 
     /**
      * Generates and emits test cases based on the provided rule, patterns, 
@@ -326,5 +340,46 @@ public class Preprocessor {
         }
     }
 
-    
+    private static List<List<Bfunc>> randomBfuncs(Rule rule, List<String> bfuncNames, int enumMax) {
+        Set<List<Bfunc>> bfuncCombinations = new java.util.HashSet<>();
+
+        var bfuncs = rule.collectBfuncs();
+        Map<String, BfuncLiteral> bfuncLiteralMap = new HashMap<>();
+        for (BfuncLiteral bf : bfuncs) {
+            bfuncLiteralMap.put(bf.name, bf);
+        }
+
+        int failCount = 0;
+        int idCounter = 0;
+        while (bfuncCombinations.size() < enumMax) {
+            List<Bfunc> currentCombination = new ArrayList<>();
+            for (String name : bfuncNames) {
+                BfuncLiteral literal = bfuncLiteralMap.get(name);
+                Bfunc bfunc = Bfunc.getOneRandomBfunc(rule.getId() + "_" + name, literal.params.size(), idCounter);
+
+                List<BfuncLiteral.Param> originalParamList = new ArrayList<>(literal.params);
+                originalParamList.sort(BfuncLiteral.Param::compareTo);
+                List<String> paramList = new ArrayList<>();
+                for (var param : originalParamList) {
+                    paramList.add(param.var);
+                }
+                bfunc.setParamList(paramList);
+
+                currentCombination.add(bfunc);
+            }
+
+            if (!bfuncCombinations.add(currentCombination)) {
+                failCount++;
+            } else {
+                failCount = 0;
+                idCounter++;
+            }
+
+            if (failCount >= 3) {
+                break;
+            }
+        }
+
+        return new ArrayList<>(bfuncCombinations);
+    }
 }

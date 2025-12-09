@@ -75,7 +75,14 @@ public class Bfunc implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Bfunc bfunc = (Bfunc) o;
-        return name.equals(bfunc.name) && valueMap.equals(bfunc.valueMap) && paramList.equals(bfunc.paramList);
+        return valueMap.equals(bfunc.valueMap) && paramList.equals(bfunc.paramList);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = paramList.hashCode();
+        result = 31 * result + valueMap.hashCode();
+        return result;
     }
 
     static private void generateCombinations(List<Pattern> patterns, int index, String current, List<String> result) {
@@ -151,6 +158,20 @@ public class Bfunc implements Cloneable {
         }
 
         return bfuncs;
+    }
+
+    static public Bfunc getOneRandomBfunc(String namePrefix, int paramNum, int id) {
+        List<String> combinations = new ArrayList<>();
+        generateBinaryCombinations(0, paramNum, "", combinations);
+
+        Bfunc bfunc = new Bfunc("random_" + namePrefix + "_" + id, paramNum);
+        java.util.Random random = new java.util.Random();
+
+        for (String combination : combinations) {
+            bfunc.addValue(combination, random.nextBoolean());
+        }
+
+        return bfunc;
     }
 
 }

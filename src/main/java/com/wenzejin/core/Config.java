@@ -39,6 +39,7 @@ public class Config {
 
     public boolean simpleMode = false;
     public String storeMode = "fail";
+    public String bfuncPolicy = "enum";
 
     // =====================
     // 未知字段（用户自定义）
@@ -119,6 +120,15 @@ public class Config {
         if (!validStoreModes.contains(storeMode)) {
             if (verbose) {
                 System.out.println("FATAL: storeMode must be one of " + validStoreModes);
+            }
+            return false;
+        }
+
+        // bfuncPolicy check
+        Set<String> validBfuncPolicies = new HashSet<>(Arrays.asList("enum", "random"));
+        if (!validBfuncPolicies.contains(bfuncPolicy)) {
+            if (verbose) {
+                System.out.println("FATAL: bfuncPolicy must be one of " + validBfuncPolicies);
             }
             return false;
         }
