@@ -156,6 +156,9 @@ public class Core {
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
+            System.out.println("Testing completed successfully! Result: " +
+                    (hasFailures ? "FAILED cases detected." : "All passed.") +
+                    " Total time: " + (System.currentTimeMillis() - startTime) / 1000 + " s.");
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
         } catch (Exception e) {

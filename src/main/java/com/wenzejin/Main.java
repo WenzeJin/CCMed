@@ -2,6 +2,7 @@ package com.wenzejin;
 
 import com.wenzejin.core.Config;
 import com.wenzejin.core.Core;
+import com.wenzejin.gui.MainGUI;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
@@ -25,7 +26,6 @@ public class Main {
         try {
             cmd = parser.parse(options, args);
             if (cmd.hasOption("g")) {
-                System.out.println("GUI is not implemented yet.");
                 gui = true;
             }
             if (cmd.hasOption("c")) {
@@ -46,6 +46,8 @@ public class Main {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        } else {
+            MainGUI.main(args);
         }
     }
 }

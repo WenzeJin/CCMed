@@ -50,3 +50,5 @@ data/
 result.txt
 workspace/
 result.json
+
+*.log
