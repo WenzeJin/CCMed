@@ -1,19 +1,75 @@
-[2025-12-09 19:46:10] [INFO] Preprocessor - Preprocessor initialized.  enumMax=10 threadMax=8 bfuncPolicy=random
-[2025-12-09 19:46:11] [INFO] Preprocessor - Generated 17101 test cases.
-[2025-12-09 19:46:11] [INFO] Preprocessor - Reducing size from 17101 to 300
-[2025-12-09 19:46:11] [INFO] TesterCore - Source cases preparation completed in 1765280771438 ms.
-[2025-12-09 19:46:11] [INFO] TestExecutor - Initializing test executor
-[2025-12-09 19:46:11] [INFO] TestExecutor - Initializing test executor
-[2025-12-09 19:46:12] [INFO] TesterCore - *** Starting Batch 1 ***
-[2025-12-09 19:46:12] [INFO] TesterCore - Testing source test cases...
-[2025-12-09 19:46:12] [INFO] TestExecutor - Executing tests for 300 tasks.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:12] [INFO] TestExecutor - Initializing worker of type infuse.
-[2025-12-09 19:46:13] [WARN] StandardWorker - Process exited with non-zero code: 130
-[2025-12-09 19:46:13] [WARN] TestExecutor - Test case 5579 failed. Retry 0 / 3
+[2025-12-09 20:34:17] [INFO] WorkspaceManager - Workspace created at: workspace/TEST_20251209203417
+[2025-12-09 20:34:17] [INFO] WorkspaceManager - Config exported to workspace/TEST_20251209203417/config.json
+[2025-12-09 20:34:17] [INFO] Preprocessor - Preprocessor initialized.  enumMax=10 threadMax=8 bfuncPolicy=random
+[2025-12-09 20:34:17] [INFO] Preprocessor - Generated 17103 test cases.
+[2025-12-09 20:34:17] [INFO] Preprocessor - Reducing size from 17103 to 300
+[2025-12-09 20:34:17] [INFO] TesterCore - Source cases preparation completed in 1765283657828 ms.
+[2025-12-09 20:34:17] [INFO] TestExecutor - Initializing test executor
+[2025-12-09 20:34:17] [INFO] TestExecutor - Initializing test executor
+[2025-12-09 20:34:18] [INFO] TesterCore - *** Starting Batch 1 ***
+[2025-12-09 20:34:18] [INFO] TesterCore - Testing source test cases...
+[2025-12-09 20:34:18] [INFO] TestExecutor - Executing tests for 300 tasks.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:18] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:34:24] [INFO] TestExecutor - Progress: 30 / 300, 10%, ETA: 53 s
+[2025-12-09 20:34:29] [INFO] TestExecutor - Progress: 60 / 300, 20%, ETA: 45 s
+[2025-12-09 20:34:35] [INFO] TestExecutor - Progress: 90 / 300, 30%, ETA: 39 s
+[2025-12-09 20:34:39] [INFO] TestExecutor - Progress: 120 / 300, 40%, ETA: 32 s
+[2025-12-09 20:34:44] [INFO] TestExecutor - Progress: 150 / 300, 50%, ETA: 26 s
+[2025-12-09 20:34:50] [INFO] TestExecutor - Progress: 180 / 300, 60%, ETA: 21 s
+[2025-12-09 20:34:56] [INFO] TestExecutor - Progress: 210 / 300, 70%, ETA: 16 s
+[2025-12-09 20:35:01] [INFO] TestExecutor - Progress: 240 / 300, 80%, ETA: 10 s
+[2025-12-09 20:35:05] [INFO] TestExecutor - Progress: 270 / 300, 90%, ETA: 5 s
+[2025-12-09 20:35:09] [INFO] TestExecutor - Progress: 300 / 300, 100%, ETA: 0 s
+[2025-12-09 20:35:09] [INFO] TestExecutor - Execution finished. Test cases checked: 300 / 300 , Time elapsed: 51395 ms
+[2025-12-09 20:35:09] [INFO] TesterCore - Source cases testing completed.
+[2025-12-09 20:35:09] [INFO] ARTCore - Total 1082460 candidates generated.
+[2025-12-09 20:35:09] [INFO] TesterCore - *** Batch 1 : Round 1 ***
+[2025-12-09 20:35:09] [INFO] ARTCore - Mini batch generated. Binary distance: Min 100.0 Max 100.0 Avg 100.0; Quantifier distance: Min 100.0 Max 100.0 Avg 100.0
+[2025-12-09 20:35:09] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2025-12-09 20:35:11] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:11] [INFO] TestExecutor - Initializing worker of type infuse.
+[2025-12-09 20:35:14] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
+[2025-12-09 20:35:15] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
+[2025-12-09 20:35:16] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2025-12-09 20:35:18] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2025-12-09 20:35:21] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 10 s
+[2025-12-09 20:35:23] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 7 s
+[2025-12-09 20:35:24] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
+[2025-12-09 20:35:26] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2025-12-09 20:35:28] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2025-12-09 20:35:29] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2025-12-09 20:35:29] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 17905 ms
+[2025-12-09 20:35:29] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2025-12-09 20:35:29] [INFO] TesterCore - Batch 1 completed. Processed 100 follow-up cases.
+[2025-12-09 20:35:29] [INFO] ARTCore - Tested candidates: 100
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-and-1: 9
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-and-2: 7
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-and-3: 4
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-exists-1: 11
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-exists-2: 4
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-forall-1: 10
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-forall-2: 5
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-implies-1: 8
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-implies-2: 8
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-implies-3: 4
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-implies-4: 6
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-or-1: 6
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-or-2: 13
+[2025-12-09 20:35:29] [INFO] ARTCore - Rule TA-or-3: 5
+[2025-12-09 20:35:29] [INFO] ResultReporter - Result dumped to workspace/TEST_20251209203417/result.json
+[2025-12-09 20:35:29] [INFO] TesterCore - Testing completed successfully! Failed cases have been stored in the database.
+[2025-12-09 20:35:29] [INFO] TesterCore - Total time elapsed: 71633 ms. 300 source -> 100 follow-up checked, 0 failed cases.

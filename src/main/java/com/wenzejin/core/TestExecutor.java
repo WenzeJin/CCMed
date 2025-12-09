@@ -113,7 +113,7 @@ public class TestExecutor {
                 boolean succeed = false;
                 boolean passed = false;
                 try {
-                    for (int retry = 0; retry <= 2 && !succeed; retry++) {
+                    for (int retry = 0; retry <= 3 && !succeed; retry++) {
                         if (worker.execute(tc, mode == Mode.SOURCE) == 0) {
                             succeed = true;
                         } else {

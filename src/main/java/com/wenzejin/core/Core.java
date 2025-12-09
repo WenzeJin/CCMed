@@ -1,9 +1,5 @@
 package com.wenzejin.core;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.assertion.TestAssertion;
@@ -12,57 +8,33 @@ import com.wenzejin.core.mr.jin.RandomCore;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import me.tongfei.progressbar.ProgressBar;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Core {
     // --- Logger & Config ---
     private static final Logger logger = LogManager.getLogger("TesterCore");
     private final Config config;
+    private final ProgressListener progressListener;
 
     private String workspace;
 
     public Core(Config config) {
+        this(config, new CLIProgressListener());
+    }
+
+    public Core(Config config, ProgressListener progressListener) {
         this.config = config;
+        this.progressListener = progressListener;
     }
 
     // --- Main Execution Entry ---
 
-    private void setWorkspace() {
-        String taskName = config.taskName;
-        if (config.timeStamp) {
-            String timestamp = LocalDateTime.now()
-                    .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            taskName = taskName + "_" + timestamp;
-        }
-        workspace = Paths.get(config.workspaceRoot, taskName).toString();
-        try {
-            Files.createDirectories(Paths.get(config.workspaceRoot, taskName));
-        }  catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    private void exportConfig() {
-        try {
-            String path = Paths.get(workspace, "config.json").toString();
-            config.saveToJson(path);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-    }
-
     // --- Normal Batch Execution ---
     public void execute() {
-        setWorkspace();
-        exportConfig();
+        WorkspaceManager workspaceManager = new WorkspaceManager(config);
+        workspace = workspaceManager.setupWorkspace();
+        workspaceManager.exportConfig();
 
         try {
             final Map<String, Object> arguments = prepareArguments();
@@ -92,17 +64,16 @@ public class Core {
             long startTime = System.currentTimeMillis();
 
 
-            ProgressBar pb;
             if (config.stopMode.contains("limited")) {
-                pb = new ProgressBar("Testing Progress", config.followUpLimit);
+                progressListener.onStart(config.followUpLimit, "Testing Progress");
             } else {
-                pb = new ProgressBar("Testing Progress", -1);
+                progressListener.onStart(-1, "Testing Progress");
             }
 
             for (int batch = 1; batch <= totalBatches; batch++) {
                 logger.info("*** Starting Batch {} ***", batch);
                 logger.info("Testing source test cases...");
-                pb.setExtraMessage("B #" + batch + " S");
+                progressListener.onStep(0, "B #" + batch + " S");
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
                 preExecutor.execute(sourceCases);
                 sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
@@ -117,7 +88,7 @@ public class Core {
                     while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
                         round++;
                         logger.info("*** Batch {} : Round {} ***", batch, round);
-                        pb.setExtraMessage("B #" + batch + " FMB #" + round);
+                        progressListener.onStep(0, "B #" + batch + " FMB #" + round);
                         int currentBatchSize = config.stopMode.contains("limited")
                                 ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
                                 : config.miniBatchSize;
@@ -131,7 +102,7 @@ public class Core {
                             firstFailure = totalFollowUp + postExecutor.getFirstFailure();
                         }
                         totalFollowUp += followUpCases.size();
-                        pb.stepBy(followUpCases.size());
+                        progressListener.onStep(followUpCases.size(), null);
                         if (hasFailures && config.stopMode.contains("panic")) {
                             logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", batch);
                             break;
@@ -151,8 +122,11 @@ public class Core {
             }
             preExecutor.close();
             postExecutor.close();
-            pb.close();
-            dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
+            progressListener.onFinish(null);
+            
+            ResultReporter reporter = new ResultReporter(workspace);
+            reporter.dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
+            
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
                     System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
@@ -161,8 +135,10 @@ public class Core {
                     " Total time: " + (System.currentTimeMillis() - startTime) / 1000 + " s.");
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
+            progressListener.onError(e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected Exception occurred: {}", e.getMessage(), e);
+            progressListener.onError(e.getMessage());
         }
     }
 
@@ -178,30 +154,5 @@ public class Core {
         arguments.putAll(config.otherArgs);
 
         return arguments;
-    }
-
-    // --- Result Dumping ---
-    private void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases, int firstFailure) {
-        JsonObject result = new JsonObject();
-        result.addProperty("passed", !failed && !sourceFailed);
-        result.addProperty("source-failed", sourceFailed);
-        result.addProperty("first-failure", firstFailure);
-        JsonArray failedArray = new JsonArray();
-        for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
-            JsonObject failedCase = new JsonObject();
-            failedCase.addProperty("case_id", entry.getKey());
-            failedCase.addProperty("failed_assertions", entry.getValue().toString());
-            failedArray.add(failedCase);
-        }
-        result.add("failed_cases", failedArray);
-
-        Path resultPath = Paths.get(workspace, "result.json");
-
-        try {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            Files.write(resultPath, gson.toJson(result).getBytes());
-        } catch (IOException e) {
-            logger.error("Failed to dump result to file: {}", e.getMessage());
-        }
     }
 }

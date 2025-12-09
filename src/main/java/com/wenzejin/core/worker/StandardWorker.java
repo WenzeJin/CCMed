@@ -262,7 +262,7 @@ public abstract class StandardWorker implements TestWorker {
         try {
             Process process = builder.start();
 
-            if (!process.waitFor(5, TimeUnit.SECONDS)) {
+            if (!process.waitFor(6, TimeUnit.SECONDS)) {
                 logger.warn("Execution time limit exceeded. Terminating process.");
                 process.destroy();
                 return 2;
