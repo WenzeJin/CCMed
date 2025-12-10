@@ -2,10 +2,16 @@ package com.wenzejin.core;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.result.ExecutionStatus;
+import com.wenzejin.core.result.Result;
+import com.wenzejin.core.result.TestOutcome;
+import com.wenzejin.core.worker.RawExecutionResult;
 import com.wenzejin.core.worker.TestWorker;
 import com.wenzejin.core.worker.TestWorkerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,9 +35,6 @@ public class TestExecutor {
     private final String storeMode;
 
     // --- State ---
-    private int checked;
-    private final Map<TestCase, List<TestAssertion>> failedCases;
-    private int firstFailure;
     private long startTime;
 
     private ExecutorService executor;
@@ -51,15 +54,8 @@ public class TestExecutor {
         this.threadNum = threadNum;
 
         logSpace = Paths.get(workspace, "logs");
-        this.firstFailure = -1;
-        this.failedCases = new HashMap<>();
-
         this.storeMode = storeMode;
     }
-
-    public int getChecked() { return checked; }
-    public Map<TestCase, List<TestAssertion>> getFailedCases() { return failedCases; }
-    public int getFirstFailure() { return firstFailure; }
 
     /**
      * Initializes the TestExecutor by setting up the worker's registry, thread pool executor,
@@ -90,70 +86,99 @@ public class TestExecutor {
      * Executes a list of test cases using a thread pool executor. Each test case is processed
      * by a thread-local worker, with retries for failed executions. Progress is logged.
      */
-    public void execute(List<TestCase> tcs) {
+    public List<TestOutcome> execute(List<TestCase> tcs) {
         if (tcs == null || tcs.isEmpty()) {
             logger.warn("No test cases provided for execution.");
-            return;
+            return Collections.emptyList();
         }
         if (executor == null || threadLocalWorker == null) {
             logger.error("Executor or thread-local worker is not initialized. Call init() before execute().");
             throw new IllegalStateException("TestExecutor is not properly initialized.");
         }
-        beforeTest(tcs);
-        final AtomicInteger checkCount = new AtomicInteger(0);
+        
+        startTime = System.currentTimeMillis();
         final AtomicInteger progress = new AtomicInteger(0);
         final int totalTasks = tcs.size();
         logger.info("Executing tests for {} tasks.", totalTasks);
-        List<Callable<Void>> tasks = new ArrayList<>();
+        
+        List<Callable<TestOutcome>> tasks = new ArrayList<>();
         for (final TestCase tc : tcs) {
             tasks.add(() -> {
-
                 TestWorker worker = threadLocalWorker.get();
+                RawExecutionResult rawResult = null;
+                ExecutionStatus status = ExecutionStatus.CRASHED;
+                Result sutResult = null;
+                List<TestAssertion> failedAssertions = new ArrayList<>();
+                String errorMessage = null;
 
-                boolean succeed = false;
-                boolean passed = false;
                 try {
-                    for (int retry = 0; retry <= 3 && !succeed; retry++) {
-                        if (worker.execute(tc, mode == Mode.SOURCE) == 0) {
-                            succeed = true;
+                    for (int retry = 0; retry <= 3; retry++) {
+                        rawResult = worker.execute(tc);
+                        if (rawResult.exitCode == 0) {
+                            status = ExecutionStatus.SUCCESS;
+                            break;
+                        } else if (rawResult.exitCode == 2) { // Assuming 2 is timeout based on StandardWorker
+                             status = ExecutionStatus.TIMEOUT;
+                             logger.warn("Test case {} timed out. Retry {} / 3", tc.getId(), retry);
                         } else {
-                            logger.warn("Test case {} failed. Retry {} / 3", tc.getId(), retry);
+                             status = ExecutionStatus.CRASHED;
+                             logger.warn("Test case {} crashed. Retry {} / 3", tc.getId(), retry);
                         }
                     }
-                    if (succeed) {
-                        tc.setExecuted(true);
-                        checkCount.incrementAndGet();
-                        passed = checkResult(tc);
-                    } else {
-                        handleUncheckTestCase(tc);
+
+                    if (status == ExecutionStatus.SUCCESS) {
+                        sutResult = worker.parseResult(rawResult, tc);
+                        if (sutResult == null) {
+                            status = ExecutionStatus.INVALID_OUTPUT;
+                            errorMessage = "Failed to parse result";
+                            logger.warn("Failed to parse result for test case: {}", tc.getId());
+                        } else {
+                            if (mode == Mode.FOLLOW) {
+                                for (TestAssertion assertion : tc.getAssertions()) {
+                                    if (!assertion.assertTest(sutResult)) {
+                                        failedAssertions.add(assertion);
+                                    }
+                                }
+                            }
+                        }
                     }
-                    logTestCase(tc, worker);
                 } catch (Exception e) {
                     logger.error("Unexpected error while executing test case {}: {}", tc.getId(), e.getMessage(), e);
-                    tc.setPassed(false);
-                    logTestCase(tc, worker);
-                    handleUncheckTestCase(tc);
+                    status = ExecutionStatus.CRASHED;
+                    errorMessage = e.getMessage();
                 } finally {
                     int currentProgress = progress.incrementAndGet();
-                    if (!succeed || !passed) {
-                        synchronized (this) {
-                            firstFailure = Math.min(firstFailure, currentProgress);
-                        }
-                    }
                     procedureCallback(currentProgress, totalTasks);
                 }
-                return null;
+                
+                TestOutcome outcome = new TestOutcome(
+                    tc, 
+                    mode == Mode.SOURCE, 
+                    status, 
+                    sutResult, 
+                    failedAssertions, 
+                    errorMessage, 
+                    rawResult != null ? rawResult.durationMs : 0
+                );
+                
+                logTestCase(outcome, rawResult);
+                return outcome;
             });
         }
 
+        List<TestOutcome> outcomes = new ArrayList<>();
         try {
-            executor.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            logger.error("Execution interrupted. Terminating remaining tasks.", e);
+            List<Future<TestOutcome>> futures = executor.invokeAll(tasks);
+            for (Future<TestOutcome> future : futures) {
+                outcomes.add(future.get());
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Execution interrupted or failed.", e);
             Thread.currentThread().interrupt();
         }
-        checked = checkCount.get();
-        afterTest(tcs);
+        
+        afterTest(outcomes);
+        return outcomes;
     }
 
     /**
@@ -187,41 +212,15 @@ public class TestExecutor {
 
     // --- Internal helpers ---
 
-    private void beforeTest(List<TestCase> tcs) {
-        checked = 0;
-        firstFailure = tcs.size() + 1;
-        failedCases.clear();
-        startTime = System.currentTimeMillis();
-    }
-
-    private void afterTest(List<TestCase> tcs) {
+    private void afterTest(List<TestOutcome> outcomes) {
         long endTime = System.currentTimeMillis();
-        logger.info("Execution finished. Test cases checked: {} / {} , Time elapsed: {} ms", checked, tcs.size(), endTime - startTime);
+        long checked = outcomes.stream().filter(o -> o.status == ExecutionStatus.SUCCESS).count();
+        long failed = outcomes.stream().filter(o -> !o.isPassed()).count();
+        
+        logger.info("Execution finished. Test cases checked: {} / {} , Time elapsed: {} ms", checked, outcomes.size(), endTime - startTime);
         if (mode == Mode.FOLLOW) {
-            logger.info("Test cases failed: {} / {}", failedCases.size(), tcs.size());
+            logger.info("Test cases failed: {} / {}", failed, outcomes.size());
         }
-    }
-
-    private boolean checkResult(TestCase tc) {
-        if (mode == Mode.SOURCE) {
-            return true;
-        }
-        List<TestAssertion> failedAssertions = new ArrayList<>();
-        boolean boolRes = tc.assertTest(failedAssertions);
-        if (!boolRes) {
-            handleFailedTestCase(tc, failedAssertions);
-            logger.warn("Test case id {} failed.", tc.getId());
-            return false;
-        }
-        return true;
-    }
-
-    private synchronized void handleFailedTestCase(TestCase tc, List<TestAssertion> failedAssertions) {
-        failedCases.put(tc, failedAssertions);
-    }
-
-    private synchronized void handleUncheckTestCase(TestCase tc) {
-        failedCases.put(tc, tc.getAssertions());
     }
 
     private void procedureCallback(int currentProgress, int totalTasks) {
@@ -252,16 +251,16 @@ public class TestExecutor {
         return formattedETA.toString().trim();
     }
 
-    private void logTestCase(TestCase tc, TestWorker worker) {
+    private void logTestCase(TestOutcome outcome, RawExecutionResult rawResult) {
         if (storeMode.equals("none")) {
             return;
         }
 
         Path logDir;
-        String id = "" + tc.getId();
+        String id = outcome.testCaseId;
         if (mode == Mode.SOURCE) {
             logDir = logSpace.resolve("source").resolve(id);
-        } else if (!tc.getPassed()) {
+        } else if (!outcome.isPassed()) {
             logDir = logSpace.resolve("failed").resolve(id);
         } else if (storeMode.equals("all")) {
             logDir = logSpace.resolve("passed").resolve(id);
@@ -269,13 +268,52 @@ public class TestExecutor {
             return;
         }
 
-        worker.logTestCase(logDir);
-        if (mode == Mode.FOLLOW) {
-            // create file info.txt
-            Path infoFile = logDir.resolve("info.txt");
-            try {
-                Files.write(infoFile, (tc + "\n" + tc.getSource()).getBytes());
-            } catch (IOException ignore) {}
+        try {
+            Files.createDirectories(logDir);
+
+            if (rawResult != null) {
+                if (rawResult.artifacts != null) {
+                    for (Map.Entry<String, String> entry : rawResult.artifacts.entrySet()) {
+                        Files.writeString(logDir.resolve(entry.getKey()), entry.getValue());
+                    }
+                }
+                if (rawResult.stdout != null) {
+                    Files.writeString(logDir.resolve("stdout.txt"), rawResult.stdout);
+                }
+                if (rawResult.stderr != null) {
+                    Files.writeString(logDir.resolve("stderr.txt"), rawResult.stderr);
+                }
+            }
+
+            // create file info.json
+            JSONObject info = new JSONObject();
+            info.put("id", outcome.testCaseId);
+            info.put("isSource", outcome.isSource);
+            info.put("status", outcome.status.toString());
+            info.put("passed", outcome.isPassed());
+            info.put("duration", outcome.durationMs);
+            info.put("exitCode", rawResult != null ? rawResult.exitCode : -1);
+            
+            if (outcome.errorMessage != null) {
+                info.put("error", outcome.errorMessage);
+            }
+            
+            if (!outcome.isSource) {
+                info.put("source", outcome.testCase.getSource());
+            }
+            
+            if (!outcome.failedAssertions.isEmpty()) {
+                JSONArray failures = new JSONArray();
+                for (TestAssertion assertion : outcome.failedAssertions) {
+                    failures.put(assertion.toString());
+                }
+                info.put("failedAssertions", failures);
+            }
+
+            Files.writeString(logDir.resolve("info.json"), info.toString(2));
+            
+        } catch (IOException e) {
+            logger.error("Failed to log test case {}", outcome.testCaseId, e);
         }
     }
 }

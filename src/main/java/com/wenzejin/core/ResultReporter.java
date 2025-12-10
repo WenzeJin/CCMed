@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.wenzejin.core.mr.assertion.TestAssertion;
+import com.wenzejin.core.cases.TestCase;
+import com.wenzejin.core.result.TestOutcome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 public class ResultReporter {
     private static final Logger logger = LogManager.getLogger("ResultReporter");
@@ -23,16 +24,34 @@ public class ResultReporter {
         this.workspace = workspace;
     }
 
-    public void dumpJsonResult(boolean failed, boolean sourceFailed, Map<Integer, List<TestAssertion>> failedCases, int firstFailure) {
+    public void dumpJsonResult(boolean failed, boolean sourceFailed, List<TestOutcome> failedOutcomes, int firstFailure) {
         JsonObject result = new JsonObject();
         result.addProperty("passed", !failed && !sourceFailed);
         result.addProperty("source-failed", sourceFailed);
         result.addProperty("first-failure", firstFailure);
         JsonArray failedArray = new JsonArray();
-        for (Map.Entry<Integer, List<TestAssertion>> entry: failedCases.entrySet()) {
+        for (TestOutcome outcome : failedOutcomes) {
             JsonObject failedCase = new JsonObject();
-            failedCase.addProperty("case_id", entry.getKey());
-            failedCase.addProperty("failed_assertions", entry.getValue().toString());
+            TestCase tc = outcome.testCase;
+            failedCase.addProperty("case_id", tc.getId());
+            failedCase.addProperty("status", outcome.status.toString());
+            
+            JsonArray sourceArray = new JsonArray();
+            for (Integer srcId : tc.getSource()) {
+                sourceArray.add(srcId);
+            }
+            failedCase.add("source", sourceArray);
+
+            JsonArray assertionArray = new JsonArray();
+            for (TestAssertion assertion : outcome.failedAssertions) {
+                assertionArray.add(assertion.toString());
+            }
+            failedCase.add("failed_assertions", assertionArray);
+
+            if (outcome.errorMessage != null) {
+                failedCase.addProperty("error_message", outcome.errorMessage);
+            }
+            
             failedArray.add(failedCase);
         }
         result.add("failed_cases", failedArray);

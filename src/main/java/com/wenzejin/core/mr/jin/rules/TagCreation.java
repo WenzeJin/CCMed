@@ -9,6 +9,8 @@ import com.wenzejin.core.mr.jin.QuantifierTag;
 import com.wenzejin.core.mr.jin.Tag;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
+import com.wenzejin.core.result.TestOutcome;
+import com.wenzejin.core.result.ExecutionStatus;
 import com.wenzejin.core.rule.OpQuantifier;
 import com.wenzejin.core.rule.Pattern;
 
@@ -18,25 +20,26 @@ import java.util.Set;
 
 public class TagCreation {
 
-    private static void guardBeforeAll(TestCase tc) throws NoTestResultException {
-        if (!tc.getExecuted()) {
+    private static void guardBeforeAll(TestOutcome outcome) throws NoTestResultException {
+        if (outcome.status != ExecutionStatus.SUCCESS) {
             throw new NoTestResultException("The test case has not been checked yet.");
         }
     }
 
     /**
      * Create tags, based on TC rules
-     * @param tc test case
+     * @param outcome test outcome
      * @return a list of tags, [leftTag, rightTag] (If the test case's root is a quantifier, only one tag is returned)
      * @throws NoTestResultException if the test case has not been checked yet
      */
-    public static List<Tag> entry(TestCase tc) throws NoTestResultException {
+    public static List<Tag> entry(TestOutcome outcome) throws NoTestResultException {
+        TestCase tc = outcome.testCase;
         String nodeType = tc.getRule().formula.getNodeType();
         return switch (nodeType) {
-            case "and"      -> and(tc);
-            case "or"       -> or(tc);
-            case "implies"  -> implies(tc);
-            case "forall", "exists" -> List.of(quantifier(tc));
+            case "and"      -> and(outcome);
+            case "or"       -> or(outcome);
+            case "implies"  -> implies(outcome);
+            case "forall", "exists" -> List.of(quantifier(outcome));
             default         -> throw new NoRuleException("The test case is not a valid CRC test case.");
         };
     }
@@ -47,10 +50,11 @@ public class TagCreation {
      * @return a list of tags, [leftTag, rightTag]
      * @throws NoTestResultException if the test case has not been checked yet
      */
-    private static List<Tag> and(TestCase tc) throws NoTestResultException {
-        guardBeforeAll(tc);
-        Result result = tc.getResult();
-        List<Set<Link>> links = UtilFunctions.attribution(tc);
+    private static List<Tag> and(TestOutcome outcome) throws NoTestResultException {
+        guardBeforeAll(outcome);
+        TestCase tc = outcome.testCase;
+        Result result = outcome.sutResult;
+        List<Set<Link>> links = UtilFunctions.attribution(tc, result);
         Set<Link> leftLinks = links.get(0);
         Set<Link> rightLinks = links.get(1);
 
@@ -120,10 +124,11 @@ public class TagCreation {
      * @return a list of tags, [leftTag, rightTag]
      * @throws NoTestResultException if the test case has not been checked yet
      */
-    private static List<Tag> or(TestCase tc) throws NoTestResultException {
-        guardBeforeAll(tc);
-        Result result = tc.getResult();
-        List<Set<Link>> links = UtilFunctions.attribution(tc);
+    private static List<Tag> or(TestOutcome outcome) throws NoTestResultException {
+        guardBeforeAll(outcome);
+        TestCase tc = outcome.testCase;
+        Result result = outcome.sutResult;
+        List<Set<Link>> links = UtilFunctions.attribution(tc, result);
         Set<Link> leftLinks = links.get(0);
         Set<Link> rightLinks = links.get(1);
 
@@ -193,10 +198,11 @@ public class TagCreation {
      * @return a list of tags, [leftTag, rightTag]
      * @throws NoTestResultException if the test case has not been checked yet
      */
-    private static List<Tag> implies(TestCase tc) throws NoTestResultException {
-        guardBeforeAll(tc);
-        Result result = tc.getResult();
-        List<Set<Link>> links = UtilFunctions.attribution(tc);
+    private static List<Tag> implies(TestOutcome outcome) throws NoTestResultException {
+        guardBeforeAll(outcome);
+        TestCase tc = outcome.testCase;
+        Result result = outcome.sutResult;
+        List<Set<Link>> links = UtilFunctions.attribution(tc, result);
         Set<Link> leftLinks = new HashSet<>(links.get(0));
         Set<Link> rightLinks = new HashSet<>(links.get(1));
         Set<Link> flippedLeftLinks = UtilFunctions.flipSet(leftLinks);
@@ -262,9 +268,10 @@ public class TagCreation {
         return List.of(leftTag, rightTag);
     }
 
-    private static Tag quantifier(TestCase tc) {
-        guardBeforeAll(tc);
-        Result result = tc.getResult();
+    private static Tag quantifier(TestOutcome outcome) throws NoTestResultException {
+        guardBeforeAll(outcome);
+        TestCase tc = outcome.testCase;
+        Result result = outcome.sutResult;
         OpQuantifier formula = (OpQuantifier) tc.getRule().formula;
 
         if (formula == null) {

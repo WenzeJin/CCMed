@@ -1,7 +1,6 @@
 package com.wenzejin.core.cases;
 
 import com.wenzejin.core.mr.assertion.TestAssertion;
-import com.wenzejin.core.result.Result;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
@@ -27,20 +26,13 @@ public class TestCase {
     private List<Pattern> patterns;
     private List<Bfunc> bfuncs;
     private List<TestAssertion> assertions;    // Assertion
-    private Result result;          // Result
     private List<String> ruleUsed;
     private final List<Integer> source;
-
-    private boolean executed;            // Executed
-    private boolean passed;             // Passed
 
     public TestCase() {
         id = idCounter.getAndIncrement();
         oriRule = null;
-        result = null;
         assertions = null;
-        executed = false;
-        passed = false;
         ruleUsed = new ArrayList<>();
         source = new ArrayList<>();
     }
@@ -91,30 +83,6 @@ public class TestCase {
         return id;
     }
 
-    public void setExecuted(boolean executed) {
-        this.executed = executed;
-    }
-
-    public boolean getExecuted() {
-        return executed;
-    }
-
-    public void setPassed(boolean passed) {
-        this.passed = passed;
-    }
-
-    public boolean getPassed() {
-        return passed;
-    }
-
-    public void setResult(Result result) {
-        this.result = result;
-    }
-
-    public Result getResult() {
-        return result;
-    }
-
     public List<String> getRuleUsed() { return ruleUsed; }
 
     public List<Integer> getSource() {
@@ -123,20 +91,6 @@ public class TestCase {
 
     public void setSource(List<Integer> source) {
         this.source.addAll(source);
-    }
-
-    public boolean assertTest(List<TestAssertion> failedAssertions) {
-        if (result == null) {
-            return false;
-        }
-        passed = true;
-        for (TestAssertion a : assertions) {
-            if (!a.assertTest(result)) {
-                failedAssertions.add(a);
-                passed = false;
-            }
-        }
-        return passed;
     }
 
     public boolean isValid() {
@@ -151,8 +105,7 @@ public class TestCase {
         if (!Objects.equals(rule, testCase.rule)) return false;
         if (!Objects.equals(patterns, testCase.patterns)) return false;
         if (!Objects.equals(bfuncs, testCase.bfuncs)) return false;
-        if (!Objects.equals(assertions, testCase.assertions)) return false;
-        return Objects.equals(result, testCase.result);
+        return Objects.equals(assertions, testCase.assertions);
     }
 
     @Override
@@ -163,9 +116,6 @@ public class TestCase {
                 ", patterns=" + patterns +
                 ", bfuncs=" + bfuncs +
                 ", assertions=" + assertions +
-                ", result=" + result +
-                ", checked=" + executed +
-                ", passed=" + passed +
                 ", source=" + source +
                 '}';
     }

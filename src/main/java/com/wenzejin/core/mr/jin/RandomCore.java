@@ -6,6 +6,7 @@ import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.jin.rules.TagCreation;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
+import com.wenzejin.core.result.TestOutcome;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
 import com.wenzejin.core.rule.OpQuantifier;
@@ -33,24 +34,26 @@ public class RandomCore implements MTCore {
         this.threadNum = threadNum;
     }
 
-    public void initCandidates(List<TestCase> tcs) {
+    public void initCandidates(List<TestOutcome> outcomes) {
         List<FormulaWithTag> binaryPool = new ArrayList<>();
         List<FormulaWithTag> quantifierPool = new ArrayList<>();
         String[] binaryOps = {"and", "or", "implies"};
         String[] quantifierOps = {"forall", "exists"};
 
-        for (TestCase tc : tcs) {
+        for (TestOutcome outcome : outcomes) {
+            if (outcome.sutResult == null) continue;
+            TestCase tc = outcome.testCase;
             Formula formula = tc.getRule().formula;
             try {
-                BinaryTag wholeTag = new BinaryTag(tc.getResult().truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, tc.getResult().links);
+                BinaryTag wholeTag = new BinaryTag(outcome.sutResult.truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, outcome.sutResult.links);
                 wholeTag.addSource(tc.getId());
                 FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
-                List<Tag> tags = TagCreation.entry(tc);
+                List<Tag> tags = TagCreation.entry(outcome);
 
                 if (Math.random() < 0.05) {
-                    QuantifierTag wholeTagQ = new QuantifierTag(tc.getResult().truth);
+                    QuantifierTag wholeTagQ = new QuantifierTag(outcome.sutResult.truth);
                     wholeTagQ.addSource(tc.getId());
                     FormulaWithTag wholeQ = new FormulaWithTag(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
                     wholeQ.oriRule = tc.getOriRule();

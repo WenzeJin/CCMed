@@ -1,9 +1,9 @@
 package com.wenzejin.core.worker;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import com.wenzejin.core.cases.TestCase;
+import com.wenzejin.core.result.Result;
 
 /**
  * The TestWorker interface defines the contract for a worker that can execute test cases
@@ -32,13 +32,18 @@ public interface TestWorker {
     void destroyWorkspace() throws IOException;
 
     /**
-     * Executes a single run of the given test case.
-     *
-     * @param tc the test case to be executed
-     * @return an integer representing the result of the test case execution
+     * Run a single test case.
+     * @param tc TestCase to run
+     * @return RawExecutionResult containing exit code, logs, and artifacts.
      */
-    int execute(TestCase tc, boolean source);
+    RawExecutionResult execute(TestCase tc);
 
+    /**
+     * Parse the raw execution result into a domain Result object.
+     * @param raw The raw execution result.
+     * @param tc The test case that was executed.
+     * @return The parsed Result object.
+     */
+    Result parseResult(RawExecutionResult raw, TestCase tc);
 
-    void logTestCase(Path logDir);
 }

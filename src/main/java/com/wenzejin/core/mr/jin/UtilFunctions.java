@@ -11,8 +11,7 @@ import java.util.*;
 
 public class UtilFunctions {
 
-    public static List<Set<Link>> attribution(TestCase tc) {
-        Result result = tc.getResult();
+    public static List<Set<Link>> attribution(TestCase tc, Result result) {
         if (result == null) {
             return null;
         }

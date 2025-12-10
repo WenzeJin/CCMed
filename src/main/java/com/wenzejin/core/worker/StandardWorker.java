@@ -168,59 +168,65 @@ public abstract class StandardWorker implements TestWorker {
     /**
      * Run a single test case.
      * @param tc TestCase to run
-     *           The result will be stored in the TestCase object.
-     * @return 0 if success, 1 if failed.
+     * @return RawExecutionResult containing exit code, logs, and artifacts.
      */
     @Override
-    public int execute(TestCase tc, boolean source) {
-        int error = 0;
+    public RawExecutionResult execute(TestCase tc) {
         cleanWorkspace();
         List<Rule> rules = List.of(tc.getRule());
         Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
         List<Bfunc> bfuncs = tc.getBfuncs();
 
+        int exitCode = 1;
+        long duration = 0;
+        String stdout = "";
+        String stderr = "";
+        Map<String, String> artifacts = new HashMap<>();
+
         try {
             generateRuleInput(rules);
+            artifacts.put("rule.xml", Files.readString(workspace.resolve("rule.xml")));
             generateBfuncInput(bfuncs);
+            artifacts.put("bfunc_in.txt", Files.readString(workspace.resolve("bfunc_in.txt")));
 
             Set<String> used = tc.getRule().collectPatterns();
 
             generatePatternAndContextInput(patterns, used);
-            int result = execute();
+            artifacts.put("context_pool.json", Files.readString(workspace.resolve("context_pool.json")));
 
-            if (result != 0) {
-                return result;
+            long startTime = System.currentTimeMillis();
+            exitCode = execute();
+            duration = System.currentTimeMillis() - startTime;
+
+            // Read outputs
+            Path logPath = workspace.resolve("stdout.txt");
+            if (Files.exists(logPath)) {
+                stdout = Files.readString(logPath);
             }
 
-            analyzeResult(tc);
+            Path errPath = workspace.resolve("stderr.txt");
+            if (Files.exists(errPath)) {
+                stderr = Files.readString(errPath);
+            }
+
+            Path incsPath = workspace.resolve("incs.json");
+            if (Files.exists(incsPath)) {
+                artifacts.put("incs.json", Files.readString(incsPath));
+            }
+
+            Path bfuncOutPath = workspace.resolve("bfunc_out.txt");
+            if (Files.exists(bfuncOutPath)) {
+                artifacts.put("bfunc_out.txt", Files.readString(bfuncOutPath));
+            }
+
         } catch (IOException e) {
-            logger.warn("IOException occurred when running test case: {}", tc.getId());
-            error = 1;
+            logger.warn("IOException occurred when running test case: {}", tc.getId(), e);
+            stderr += "\nException: " + e.getMessage();
         }
-        return error;
+
+        return new RawExecutionResult(exitCode, stdout, stderr, duration, artifacts);
     }
 
-    @Override
-    public void logTestCase(Path logDir) {
-        try {
-            Files.createDirectories(logDir);
-        } catch (IOException e) {
-            return; // 创建目录失败就不继续拷贝
-        }
-
-        String[] toCopy =
-                {"context_pool.json", "rule.xml", "bfunc_in.txt", "bfunc_out.txt", "incs.json", "stdout.txt", "stderr.txt"};
-
-        for (String path : toCopy) {
-            try {
-                Path from = workspace.resolve(path);
-                if (!Files.exists(from)) {
-                    continue;
-                }
-                Files.copy(from, logDir.resolve(path), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ignore) {}
-        }
-    }
 
     private void cleanWorkspace() {
         String[] toClean =
@@ -355,46 +361,37 @@ public abstract class StandardWorker implements TestWorker {
         }
     }
 
-    private void analyzeResult(TestCase tc) throws IOException {
-
-        Path incsPath = Path.of(workspace.toString(), "incs.json");
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(incsPath.toString()))) {
-            // read lines
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-
-            // parse json
-            JSONObject incs = new JSONObject(sb.toString());
-            Result result = null;
-            for (String ruleId: incs.keySet()) {
-                if (!ruleId.equals(tc.getRule().id)) {
-                    continue;
-                }
-                JSONObject rule = incs.getJSONObject(ruleId);
-                result = new Result(rule.getBoolean("truth"));
-
-                // parse links
-                Set<Link> links = new HashSet<>();
-                for (Object linkObj: rule.getJSONArray("links")) {
-                    JSONArray link = (JSONArray) linkObj;
-                    Link.Type type = rule.getBoolean("truth") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
-                    Set<VAPair> vaSet = new HashSet<>();
-                    for (Object vaObj: link) {
-                        JSONObject va = (JSONObject) vaObj;
-                        vaSet.add(new VAPair(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
-                    }
-                    links.add(new Link(type, vaSet));
-                }
-                result.links = links;
-            }
-            tc.setResult(result);
-            tc.setExecuted(true);
+    @Override
+    public Result parseResult(RawExecutionResult raw, TestCase tc) {
+        String incsContent = raw.artifacts.get("incs.json");
+        if (incsContent == null) {
+            return null;
         }
-    }
 
+        JSONObject incs = new JSONObject(incsContent);
+        Result result = null;
+        for (String ruleId: incs.keySet()) {
+            if (!ruleId.equals(tc.getRule().id)) {
+                continue;
+            }
+            JSONObject rule = incs.getJSONObject(ruleId);
+            result = new Result(rule.getBoolean("truth"));
+
+            // parse links
+            Set<Link> links = new HashSet<>();
+            for (Object linkObj: rule.getJSONArray("links")) {
+                JSONArray link = (JSONArray) linkObj;
+                Link.Type type = rule.getBoolean("truth") ? Link.Type.SATISFIED : Link.Type.VIOLATED;
+                Set<VAPair> vaSet = new HashSet<>();
+                for (Object vaObj: link) {
+                    JSONObject va = (JSONObject) vaObj;
+                    vaSet.add(new VAPair(va.getString("var"), va.getJSONObject("value").getJSONObject("fields").getString("data")));
+                }
+                links.add(new Link(type, vaSet));
+            }
+            result.links = links;
+        }
+        return result;
+    }
 
 }

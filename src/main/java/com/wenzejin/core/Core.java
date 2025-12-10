@@ -2,10 +2,11 @@ package com.wenzejin.core;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.MTCore;
-import com.wenzejin.core.mr.assertion.TestAssertion;
 import com.wenzejin.core.mr.jin.ARTCore;
 import com.wenzejin.core.mr.jin.RandomCore;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
+import com.wenzejin.core.result.ExecutionStatus;
+import com.wenzejin.core.result.TestOutcome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,7 +47,7 @@ public class Core {
 
             boolean hasFailures = false;
             boolean sourceCaseFailures = false;
-            final Map<Integer, List<TestAssertion>> failedCases = new HashMap<>();
+            final List<TestOutcome> failedOutcomes = new ArrayList<>();
 
             final TestExecutor preExecutor = new TestExecutor(
                     TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
@@ -75,14 +76,19 @@ public class Core {
                 logger.info("Testing source test cases...");
                 progressListener.onStep(0, "B #" + batch + " S");
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
-                preExecutor.execute(sourceCases);
-                sourceCaseFailures = preExecutor.getChecked() != sourceCases.size();
+                
+                List<TestOutcome> sourceOutcomes = preExecutor.execute(sourceCases);
+                long successfulSourceCases = sourceOutcomes.stream()
+                        .filter(o -> o.status == ExecutionStatus.SUCCESS)
+                        .count();
+                sourceCaseFailures = successfulSourceCases != sourceCases.size();
+                
                 logger.info("Source cases testing completed.");
 
                 if (!sourceCaseFailures) {
                     MTCore mtCore = config.ART ? new ARTCore(config.threadLimit)
                                                : new RandomCore(config.threadLimit);
-                    mtCore.initCandidates(sourceCases);
+                    mtCore.initCandidates(sourceOutcomes);
                     int round = 0;
                     int processedCount = 0;
                     while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
@@ -93,14 +99,24 @@ public class Core {
                                 ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
                                 : config.miniBatchSize;
                         List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
-                        postExecutor.execute(followUpCases);
+                        
+                        List<TestOutcome> followUpOutcomes = postExecutor.execute(followUpCases);
                         processedCount += followUpCases.size();
-                        Map<TestCase, List<TestAssertion>> batchFailures = postExecutor.getFailedCases();
-                        batchFailures.forEach((testCase, assertions) -> failedCases.put(testCase.getId(), assertions));
-                        hasFailures = hasFailures || !batchFailures.isEmpty();
-                        if (!batchFailures.isEmpty() && firstFailure == -1) {
-                            firstFailure = totalFollowUp + postExecutor.getFirstFailure();
+                        
+                        List<TestOutcome> batchFailures = new ArrayList<>();
+                        for (int i = 0; i < followUpOutcomes.size(); i++) {
+                            TestOutcome outcome = followUpOutcomes.get(i);
+                            if (!outcome.isPassed()) {
+                                batchFailures.add(outcome);
+                                if (firstFailure == -1) {
+                                    firstFailure = totalFollowUp + i + 1;
+                                }
+                            }
                         }
+                        
+                        failedOutcomes.addAll(batchFailures);
+                        hasFailures = hasFailures || !batchFailures.isEmpty();
+                        
                         totalFollowUp += followUpCases.size();
                         progressListener.onStep(followUpCases.size(), null);
                         if (hasFailures && config.stopMode.contains("panic")) {
@@ -125,11 +141,11 @@ public class Core {
             progressListener.onFinish(null);
             
             ResultReporter reporter = new ResultReporter(workspace);
-            reporter.dumpJsonResult(hasFailures, sourceCaseFailures, failedCases, firstFailure);
+            reporter.dumpJsonResult(hasFailures, sourceCaseFailures, failedOutcomes, firstFailure);
             
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
-                    System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedCases.size());
+                    System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedOutcomes.size());
             System.out.println("Testing completed successfully! Result: " +
                     (hasFailures ? "FAILED cases detected." : "All passed.") +
                     " Total time: " + (System.currentTimeMillis() - startTime) / 1000 + " s.");

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.result.Result;
+import java.util.regex.Matcher;
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Pattern;
 import com.wenzejin.core.rule.Rule;
@@ -21,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 
 
 public class CMIDWorker implements TestWorker {
@@ -227,16 +227,20 @@ public class CMIDWorker implements TestWorker {
     /**
      * Run a single test case.
      * @param tc TestCase to run
-     *           The result will be stored in the TestCase object.
-     * @return 0 if success, 1 if failed.
+     * @return RawExecutionResult containing exit code, logs, and artifacts.
      */
     @Override
-    public int execute(TestCase tc, boolean source) {
-        int error = 0;
+    public RawExecutionResult execute(TestCase tc) {
         cleanWorkspace();
         List<Rule> rules = List.of(tc.getRule());
         Set<Pattern> patterns = new HashSet<>(tc.getPatterns());
         List<Bfunc> bfuncs = tc.getBfuncs();
+
+        int exitCode = 1;
+        long duration = 0;
+        String stdout = "";
+        String stderr = "";
+        Map<String, String> artifacts = new HashMap<>();
 
         try {
             generateRuleInput(rules);
@@ -245,57 +249,35 @@ public class CMIDWorker implements TestWorker {
             Set<String> used = tc.getRule().collectPatterns();
 
             generatePatternAndContextInput(patterns, used);
-            int ret = execute();
 
-            if (ret != 0) {
-                return ret;
+            long startTime = System.currentTimeMillis();
+            exitCode = execute();
+            duration = System.currentTimeMillis() - startTime;
+
+            // Read outputs
+            Path logPath = workspace.resolve("stdout.txt");
+            if (Files.exists(logPath)) {
+                stdout = Files.readString(logPath);
             }
 
-            Result result;
-
-            try {
-                result = analyzeResult(tc.getRule());
-            } catch (IllegalStateException e) {
-                logger.warn("Exception occurred when analyzing result for test case: {}", tc.getId(), e);
-                result = null;
+            Path errPath = workspace.resolve("stderr.txt");
+            if (Files.exists(errPath)) {
+                stderr = Files.readString(errPath);
             }
 
-            if (result != null) {
-                tc.setResult(analyzeResult(tc.getRule()));
-                tc.setExecuted(true);
-            } else {
-                logger.warn("Failed to analyze result for test case: {}", tc.getId());
-                return 1;
+            Path incsPath = workspace.resolve("incs.txt");
+            if (Files.exists(incsPath)) {
+                artifacts.put("incs.txt", Files.readString(incsPath));
             }
 
         } catch (IOException e) {
-            logger.warn("IOException occurred when running test case: {}", tc.getId());
-            error = 1;
+            logger.warn("IOException occurred when running test case: {}", tc.getId(), e);
+            stderr += "\nException: " + e.getMessage();
         }
-        return error;
+
+        return new RawExecutionResult(exitCode, stdout, stderr, duration, artifacts);
     }
 
-    @Override
-    public void logTestCase(Path logDir) {
-        try {
-            Files.createDirectories(logDir);
-        } catch (IOException e) {
-            return; // 创建目录失败就不继续拷贝
-        }
-
-        String[] toCopy =
-                {"config.properties", "data.txt", "pattern.xml", "rule.xml", "bfunc_in.txt", "bfunc_out.txt", "incs.txt", "stdout.txt", "stderr.txt"};
-
-        for (String path : toCopy) {
-            try {
-                Path from = workspace.resolve(path);
-                if (!Files.exists(from)) {
-                    continue;
-                }
-                Files.copy(from, logDir.resolve(path), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ignore) {}
-        }
-    }
 
     private void cleanWorkspace() {
         String[] toClean =
@@ -373,7 +355,6 @@ public class CMIDWorker implements TestWorker {
                 pw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
                 pw.write("<patterns>\n");
 
-                int cnt = 0;
                 for (Pattern pat: patterns) {
                     if (!used.contains(pat.getName())) {
                         continue;
@@ -403,7 +384,6 @@ public class CMIDWorker implements TestWorker {
                         );
                         cw.write(dataLine);
                         cw.newLine();
-                        cnt++;
                     }
 
                 }
@@ -447,10 +427,39 @@ public class CMIDWorker implements TestWorker {
         }
     }
 
-    private Result analyzeResult(Rule rule) throws IOException {
-        String ruleId = rule.getId();
-        Path incsPath = workspace.resolve("incs.txt");
-        var lines = Files.readAllLines(incsPath);
+
+
+    private String getRandomString() {
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            StringBuilder sb = new StringBuilder();
+            Random random = new Random();
+
+            for (int i = 0; i < 6; i++) {
+                int index = random.nextInt(chars.length());
+                sb.append(chars.charAt(index));
+            }
+
+            return sb.toString();
+    }
+
+    private String getTimeString() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // 格式化到微秒（6 位）
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSSSSS");
+
+        return now.format(formatter);
+    }
+
+    @Override
+    public Result parseResult(RawExecutionResult raw, TestCase tc) {
+        String incsContent = raw.artifacts.get("incs.txt");
+        if (incsContent == null) {
+            return null;
+        }
+
+        String ruleId = tc.getRule().getId();
+        List<String> lines = Arrays.asList(incsContent.split("\\r?\\n"));
 
         List<Integer> sectionIndices = new ArrayList<>();
 
@@ -464,7 +473,8 @@ public class CMIDWorker implements TestWorker {
         }
 
         if (sectionIndices.isEmpty()) {
-            throw new IllegalStateException("文件中未找到任何 START 段");
+            logger.warn("No START section found in incs.txt");
+            return null;
         }
 
         // 2 找到最大编号
@@ -478,7 +488,8 @@ public class CMIDWorker implements TestWorker {
         }
 
         if (startLine == -1 || endLine == -1) {
-            throw new IllegalStateException("找不到最后一段 [" + lastIndex + "]");
+            logger.warn("Cannot find last section [" + lastIndex + "]");
+            return null;
         }
 
         // 4 提取该段内容
@@ -501,7 +512,8 @@ public class CMIDWorker implements TestWorker {
             }
         }
         if (!foundTruth) {
-            throw new IllegalStateException("在最后一段中找不到规则 " + ruleId + " 的真值信息");
+            logger.warn("Cannot find truth value for rule " + ruleId + " in last section");
+            return null;
         }
 
         // 6 找出 TOTAL[n] 和 END[n] 之间的部分
@@ -513,7 +525,7 @@ public class CMIDWorker implements TestWorker {
             }
         }
 
-        var var2pat = rule.formula.collectVariablePatternPairs();
+        var var2pat = tc.getRule().formula.collectVariablePatternPairs();
         var pat2var = new HashMap<String, String>();
         for (var entry : var2pat.entrySet()) {
             pat2var.put(entry.getValue(), entry.getKey());
@@ -550,30 +562,6 @@ public class CMIDWorker implements TestWorker {
             }
         }
 
-
         return new Result(truth, links);
-    }
-
-
-    private String getRandomString() {
-            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            StringBuilder sb = new StringBuilder();
-            Random random = new Random();
-
-            for (int i = 0; i < 6; i++) {
-                int index = random.nextInt(chars.length());
-                sb.append(chars.charAt(index));
-            }
-
-            return sb.toString();
-    }
-
-    private String getTimeString() {
-        LocalDateTime now = LocalDateTime.now();
-
-        // 格式化到微秒（6 位）
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSSSSS");
-
-        return now.format(formatter);
     }
 }
