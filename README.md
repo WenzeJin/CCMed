@@ -84,6 +84,15 @@ Or specify a custom configuration file:
 ./gradlew run --args="-c my_config.json"
 ```
 
+Enable follow-up detail data export:
+```bash
+./gradlew run --args="-c my_config.json --detail-data"
+```
+
+`--detail-data` is optional. When enabled, it writes `detail-data.txt` into the job workspace directory
+(the same directory as `result.json`). One line per follow-up case in the format:
+`durationMs<TAB>sourceRootType<TAB>followUpRootType`
+
 #### GUI Mode
 Launch the graphical interface:
 ```bash

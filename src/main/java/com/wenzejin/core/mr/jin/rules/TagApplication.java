@@ -9,9 +9,6 @@ import com.wenzejin.core.mr.jin.QuantifierTag;
 import com.wenzejin.core.mr.assertion.LinksValueAssertion;
 import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,8 +17,6 @@ public class TagApplication {
     public static boolean simpleMode = false;
 
     private static final AtomicInteger idCounter = new AtomicInteger();
-
-    private static final Logger logger = LogManager.getLogger("TesterCore");
 
     public static TestCase binaryFinalize(FormulaWithTag f) {
         if (f.tag instanceof BinaryTag tag) {

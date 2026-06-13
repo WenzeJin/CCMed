@@ -4,5 +4,6 @@ public enum ExecutionStatus {
     SUCCESS,
     CRASHED,
     TIMEOUT,
-    INVALID_OUTPUT
+    INVALID_OUTPUT,
+    SKIPPED
 }

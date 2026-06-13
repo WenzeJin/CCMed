@@ -1,0 +1,20 @@
+{
+  "taskName": "demo",
+  "timeStamp": true,
+  "stopMode": "limited",
+  "ART": true,
+  "simpleMode": false,
+  "sourceLimit": 500,
+  "bfuncPolicy": "enum",
+  "followUpLimit": 1000,
+  "batchSize": 500,
+  "miniBatchSize": 100,
+  "threadLimit": 8,
+  "workerType": "infuse",
+  "workspaceRoot": "workspace",
+  "targetPath": "cc_utils/INFUSE_ORI/INFUSE_v14.jar",
+  "rulesPath": "rules/4_level_rule/rule_data",
+  "bfuncPath": "cc_utils/Bfunction.class",
+  "storeMode": "fail",
+  "arguments": ["-approach", "ECC+GEAS_ori", "-mg"]
+}

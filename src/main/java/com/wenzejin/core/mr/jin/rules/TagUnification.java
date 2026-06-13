@@ -223,7 +223,6 @@ public class TagUnification {
     }
 
     private static BinaryTag and(BinaryTag f, BinaryTag g) {
-        BinaryTag newTag = null;
         if (f.truth == BinaryTag.Truth.TRUE && g.truth == BinaryTag.Truth.TRUE) {
             return new BinaryTag(BinaryTag.Truth.TRUE, UtilFunctions.cartesian(f.links, g.links));
         } else if (f.truth == BinaryTag.Truth.TRUE && g.truth == BinaryTag.Truth.FALSE) {

@@ -67,7 +67,6 @@ public class TestExecutor {
         executor = Executors.newFixedThreadPool(threadNum);
         threadLocalWorker = ThreadLocal.withInitial(() -> {
             TestWorker worker = TestWorkerFactory.getTestWorker(workerType, workspace, workerArguments);
-            logger.info("Initializing worker of type {}.", workerType);
             try {
                 worker.initWorkspace();
                 workersRegistry.add(worker);
@@ -112,7 +111,7 @@ public class TestExecutor {
                 String errorMessage = null;
 
                 try {
-                    for (int retry = 0; retry <= 3; retry++) {
+                    for (int retry = 0; retry <= 2; retry++) {
                         rawResult = worker.execute(tc);
                         if (rawResult.exitCode == 0) {
                             status = ExecutionStatus.SUCCESS;
@@ -215,7 +214,7 @@ public class TestExecutor {
     private void afterTest(List<TestOutcome> outcomes) {
         long endTime = System.currentTimeMillis();
         long checked = outcomes.stream().filter(o -> o.status == ExecutionStatus.SUCCESS).count();
-        long failed = outcomes.stream().filter(o -> !o.isPassed()).count();
+        long failed = outcomes.stream().filter(o -> !o.isPassed() && o.status != ExecutionStatus.SKIPPED).count();
         
         logger.info("Execution finished. Test cases checked: {} / {} , Time elapsed: {} ms", checked, outcomes.size(), endTime - startTime);
         if (mode == Mode.FOLLOW) {

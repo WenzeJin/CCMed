@@ -32,6 +32,7 @@ public class CMIDWorker implements TestWorker {
     private final String workspaceRoot;
     private final String jarTargetPath;
     private final Map<String, String> properties;
+    private final boolean byPassMode;
 
     // UUID
     private final UUID uuid;
@@ -49,6 +50,7 @@ public class CMIDWorker implements TestWorker {
         for (String key: cmidProps.keySet()) {
             properties.put(key, cmidProps.get(key).toString());
         }
+        byPassMode = cmidArgs.optBoolean("byPassMode", true);
 
         uuid = UUID.randomUUID();
 
@@ -356,7 +358,7 @@ public class CMIDWorker implements TestWorker {
                 pw.write("<patterns>\n");
 
                 for (Pattern pat: patterns) {
-                    if (!used.contains(pat.getName())) {
+                    if (byPassMode && !used.contains(pat.getName())) {
                         continue;
                     }
 

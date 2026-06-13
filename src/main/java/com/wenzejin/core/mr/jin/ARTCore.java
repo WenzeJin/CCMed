@@ -90,9 +90,11 @@ public class ARTCore implements MTCore {
             }
         }
 
+        logger.info("Total PU extracted: {}", binaryPool.size() + quantifierPool.size());
+
         generateBinaryCandidates(binaryPool, binaryOps);
         generateQuantifierCandidates(quantifierPool, binaryOps, quantifierOps);
-        logger.info("Total {} candidates generated.", binaryCandidates.size(), quantifierCandidates.size());
+        logger.info("Total PU {} candidates generated.", binaryCandidates.size() + quantifierCandidates.size());
     }
 
     private void generateBinaryCandidates(List<FormulaWithTag> binaryPool, String[] binaryOps) {

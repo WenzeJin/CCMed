@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)  // 忽略未知字段，避免出错
@@ -40,6 +39,7 @@ public class Config {
     public boolean simpleMode = false;
     public String storeMode = "fail";
     public String bfuncPolicy = "enum";
+    public boolean detailData = false;
 
     // =====================
     // 未知字段（用户自定义）

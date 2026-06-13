@@ -10,6 +10,7 @@ import com.wenzejin.core.result.TestOutcome;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Core {
@@ -37,6 +38,10 @@ public class Core {
         workspace = workspaceManager.setupWorkspace();
         workspaceManager.exportConfig();
 
+        TestExecutor preExecutor = null;
+        TestExecutor postExecutor = null;
+        DetailDataRecorder detailDataRecorder = null;
+
         try {
             final Map<String, Object> arguments = prepareArguments();
             final Preprocessor preprocessor = new Preprocessor(config.rulesPath, config.enumLimit, config.threadLimit, config.bfuncPolicy);
@@ -49,9 +54,9 @@ public class Core {
             boolean sourceCaseFailures = false;
             final List<TestOutcome> failedOutcomes = new ArrayList<>();
 
-            final TestExecutor preExecutor = new TestExecutor(
+                preExecutor = new TestExecutor(
                     TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
-            final TestExecutor postExecutor = new TestExecutor(
+                postExecutor = new TestExecutor(
                     TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
             preExecutor.init();
             postExecutor.init();
@@ -63,6 +68,12 @@ public class Core {
             int totalFollowUp = 0;
             int firstFailure = -1;
             long startTime = System.currentTimeMillis();
+            final Map<Integer, String> sourceRootTypeMap = new HashMap<>();
+
+            if (config.detailData) {
+                String detailDataPath = Paths.get(workspace, "detail-data.txt").toString();
+                detailDataRecorder = new DetailDataRecorder(detailDataPath);
+            }
 
 
             if (config.stopMode.contains("limited")) {
@@ -78,6 +89,16 @@ public class Core {
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
                 
                 List<TestOutcome> sourceOutcomes = preExecutor.execute(sourceCases);
+                for (TestOutcome sourceOutcome : sourceOutcomes) {
+                    if (sourceOutcome.testCase != null
+                            && sourceOutcome.testCase.getRule() != null
+                            && sourceOutcome.testCase.getRule().formula != null) {
+                        sourceRootTypeMap.put(
+                                sourceOutcome.testCase.getId(),
+                                sourceOutcome.testCase.getRule().formula.getNodeType()
+                        );
+                    }
+                }
                 long successfulSourceCases = sourceOutcomes.stream()
                         .filter(o -> o.status == ExecutionStatus.SUCCESS)
                         .count();
@@ -101,12 +122,15 @@ public class Core {
                         List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
                         
                         List<TestOutcome> followUpOutcomes = postExecutor.execute(followUpCases);
+                        if (detailDataRecorder != null) {
+                            detailDataRecorder.recordFollowUpOutcomes(followUpOutcomes, sourceRootTypeMap);
+                        }
                         processedCount += followUpCases.size();
                         
                         List<TestOutcome> batchFailures = new ArrayList<>();
                         for (int i = 0; i < followUpOutcomes.size(); i++) {
                             TestOutcome outcome = followUpOutcomes.get(i);
-                            if (!outcome.isPassed()) {
+                            if (!outcome.isPassed() && outcome.status != ExecutionStatus.SKIPPED) {
                                 batchFailures.add(outcome);
                                 if (firstFailure == -1) {
                                     firstFailure = totalFollowUp + i + 1;
@@ -136,8 +160,6 @@ public class Core {
                     break;
                 }
             }
-            preExecutor.close();
-            postExecutor.close();
             progressListener.onFinish(null);
             
             ResultReporter reporter = new ResultReporter(workspace);
@@ -155,6 +177,20 @@ public class Core {
         } catch (Exception e) {
             logger.error("Unexpected Exception occurred: {}", e.getMessage(), e);
             progressListener.onError(e.getMessage());
+        } finally {
+            if (preExecutor != null) {
+                preExecutor.close();
+            }
+            if (postExecutor != null) {
+                postExecutor.close();
+            }
+            if (detailDataRecorder != null) {
+                try {
+                    detailDataRecorder.close();
+                } catch (Exception e) {
+                    logger.warn("Failed to close detail-data recorder: {}", e.getMessage());
+                }
+            }
         }
     }
 

@@ -15,6 +15,8 @@ public class Main {
         Options options = new Options();
         options.addOption("g", "gui", false, "Run in GUI mode");
         options.addOption("c","config",true,"Specify the configuration file");
+        options.addOption("d", "detail-data", false,
+            "Enable follow-up detail data export (saved in job workspace)");
         // Parse the command line arguments
 
         CommandLineParser parser = new DefaultParser();
@@ -22,6 +24,7 @@ public class Main {
 
         String configPath = "./config.json";
         boolean gui = false;
+        boolean detailData = false;
 
         try {
             cmd = parser.parse(options, args);
@@ -31,6 +34,9 @@ public class Main {
             if (cmd.hasOption("c")) {
                 configPath = cmd.getOptionValue("c");
             }
+            if (cmd.hasOption("detail-data")) {
+                detailData = true;
+            }
         } catch (ParseException e) {
             System.out.println("Error parsing command line: " + e.getMessage());
         }
@@ -38,6 +44,9 @@ public class Main {
         if (!gui) {
             try {
                 Config conf = Config.loadFromJson(configPath);
+                if (detailData) {
+                    conf.detailData = true;
+                }
                 if (!conf.validate(true)) {
                     System.exit(-1);
                 }

@@ -163,6 +163,11 @@ public class Preprocessor {
         // Create variants of each bfunc.
     
         List<String> bfuncNames = getBfuncNames(rule);
+        boolean log = false;
+
+        if (log) {
+            logger.info("bfuncNames: {}", bfuncNames.toString());
+        }
 
         // Generate combinations of bfunc variants
         List<List<Bfunc>> bfuncCombinations;
@@ -171,8 +176,15 @@ public class Preprocessor {
         } else {
             // first enumerate all, then random a subset
             var bfuncPool = generateBfuncPool(rule);
+            if (log) {
+                logger.info("bfuncPool: {}", bfuncPool.toString());
+            }
             bfuncCombinations = new ArrayList<>();
             enumerateBfuncs(0, bfuncNames, bfuncPool, new ArrayList<>(), bfuncCombinations);
+            if (log) {
+                logger.info("Total bfunc combinations: {}", bfuncCombinations.size());
+                logger.info("bfuncCombinations: {}", bfuncCombinations.toString());
+            }
             bfuncCombinations = RandomSubset.getRandom(bfuncCombinations, enumMax);
         }
 

@@ -75,7 +75,7 @@ public class Bfunc implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Bfunc bfunc = (Bfunc) o;
-        return valueMap.equals(bfunc.valueMap) && paramList.equals(bfunc.paramList);
+        return name.equals(bfunc.name) && valueMap.equals(bfunc.valueMap) && paramList.equals(bfunc.paramList);
     }
 
     @Override
