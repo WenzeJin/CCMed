@@ -3,7 +3,6 @@ package com.wenzejin.core;
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.jin.ARTCore;
-import com.wenzejin.core.mr.jin.RandomCore;
 import com.wenzejin.core.mr.jin.rules.TagApplication;
 import com.wenzejin.core.result.ExecutionStatus;
 import com.wenzejin.core.result.TestOutcome;
@@ -44,7 +43,7 @@ public class Core {
 
         try {
             final Map<String, Object> arguments = prepareArguments();
-            final Preprocessor preprocessor = new Preprocessor(config.rulesPath, config.enumLimit, config.threadLimit, config.bfuncPolicy);
+            final SourceGenerator preprocessor = new SourceGenerator(config.rulesPath, config.enumLimit, config.threadLimit, config.bfuncPolicy);
 
             preprocessor.generateTestCases();
             preprocessor.reduceSize(config.sourceLimit);
@@ -107,8 +106,7 @@ public class Core {
                 logger.info("Source cases testing completed.");
 
                 if (!sourceCaseFailures) {
-                    MTCore mtCore = config.ART ? new ARTCore(config.threadLimit)
-                                               : new RandomCore(config.threadLimit);
+                    MTCore mtCore = new ARTCore(config.threadLimit);
                     mtCore.initCandidates(sourceOutcomes);
                     int round = 0;
                     int processedCount = 0;

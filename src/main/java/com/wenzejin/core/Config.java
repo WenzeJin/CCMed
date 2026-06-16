@@ -25,7 +25,6 @@ public class Config {
     public int sourceLimit;
     public int followUpLimit;
 
-    public boolean ART = true;
     public int batchSize;
     public int miniBatchSize;
 

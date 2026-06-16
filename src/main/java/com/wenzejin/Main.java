@@ -2,7 +2,6 @@ package com.wenzejin;
 
 import com.wenzejin.core.Config;
 import com.wenzejin.core.Core;
-import com.wenzejin.gui.MainGUI;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class Main {
                 throw new RuntimeException(e);
             }
         } else {
-            MainGUI.main(args);
+            System.out.println("GUI mode is not implemented yet.");
         }
     }
 }
