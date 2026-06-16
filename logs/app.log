@@ -1,204 +1,204 @@
-[2026-06-13 22:38:41] [INFO] WorkspaceManager - Workspace created at: workspace/demo_20260613223841
-[2026-06-13 22:38:41] [INFO] WorkspaceManager - Config exported to workspace/demo_20260613223841/config.json
-[2026-06-13 22:38:41] [INFO] SourceGenerator - Preprocessor initialized.  enumMax=2147483647 threadMax=8 bfuncPolicy=enum
-[2026-06-13 22:38:41] [INFO] SourceGenerator - Generated 284888 test cases.
-[2026-06-13 22:38:41] [INFO] SourceGenerator - Reducing size from 284888 to 344
-[2026-06-13 22:38:41] [INFO] TesterCore - Source cases preparation completed in 1781361521918 ms.
-[2026-06-13 22:38:41] [INFO] TestExecutor - Initializing test executor
-[2026-06-13 22:38:41] [INFO] TestExecutor - Initializing test executor
-[2026-06-13 22:38:42] [INFO] TesterCore - *** Starting Batch 1 ***
-[2026-06-13 22:38:42] [INFO] TesterCore - Testing source test cases...
-[2026-06-13 22:38:42] [INFO] TestExecutor - Executing tests for 344 tasks.
-[2026-06-13 22:38:48] [INFO] TestExecutor - Progress: 34 / 344, 9%, ETA: 56 s
-[2026-06-13 22:38:53] [INFO] TestExecutor - Progress: 68 / 344, 19%, ETA: 44 s
-[2026-06-13 22:38:58] [INFO] TestExecutor - Progress: 102 / 344, 29%, ETA: 38 s
-[2026-06-13 22:39:03] [INFO] TestExecutor - Progress: 136 / 344, 39%, ETA: 32 s
-[2026-06-13 22:39:08] [INFO] TestExecutor - Progress: 170 / 344, 49%, ETA: 26 s
-[2026-06-13 22:39:13] [INFO] TestExecutor - Progress: 204 / 344, 59%, ETA: 21 s
-[2026-06-13 22:39:18] [INFO] TestExecutor - Progress: 238 / 344, 69%, ETA: 16 s
-[2026-06-13 22:39:23] [INFO] TestExecutor - Progress: 272 / 344, 79%, ETA: 10 s
-[2026-06-13 22:39:28] [INFO] TestExecutor - Progress: 306 / 344, 88%, ETA: 5 s
-[2026-06-13 22:39:33] [INFO] TestExecutor - Progress: 340 / 344, 98%, ETA: 0 s
-[2026-06-13 22:39:33] [INFO] TestExecutor - Execution finished. Test cases checked: 344 / 344 , Time elapsed: 51488 ms
-[2026-06-13 22:39:33] [INFO] TesterCore - Source cases testing completed.
-[2026-06-13 22:39:33] [INFO] ARTCore - Total PU extracted: 1006
-[2026-06-13 22:39:33] [INFO] ARTCore - Total PU 1661244 candidates generated.
-[2026-06-13 22:39:33] [INFO] TesterCore - *** Batch 1 : Round 1 ***
-[2026-06-13 22:39:34] [INFO] ARTCore - Mini batch generated. Binary distance: Min 100.0 Max 100.0 Avg 100.0; Quantifier distance: Min 100.0 Max 100.0 Avg 100.0
-[2026-06-13 22:39:34] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:39:36] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:39:38] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-13 22:39:39] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-13 22:39:41] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:39:42] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-13 22:39:44] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:39:45] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:39:47] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:39:48] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:39:50] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:39:51] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:39:51] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15101 ms
-[2026-06-13 22:39:51] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:39:51] [INFO] TesterCore - *** Batch 1 : Round 2 ***
-[2026-06-13 22:39:51] [INFO] ARTCore - Mini batch generated. Binary distance: Min 31.25 Max 100.0 Avg 83.52678571428571; Quantifier distance: Min 60.9375 Max 100.0 Avg 98.09895833333333
-[2026-06-13 22:39:51] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:39:52] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:39:55] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-13 22:39:56] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-13 22:39:57] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:39:59] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-13 22:40:00] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:40:02] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:40:03] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:40:05] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:40:06] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:40:07] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:40:07] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15060 ms
-[2026-06-13 22:40:07] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:40:07] [INFO] TesterCore - *** Batch 1 : Round 3 ***
-[2026-06-13 22:40:08] [INFO] ARTCore - Mini batch generated. Binary distance: Min 21.875 Max 87.5 Avg 73.08035714285714; Quantifier distance: Min 25.0 Max 100.0 Avg 87.421875
-[2026-06-13 22:40:08] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:40:09] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:40:11] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-13 22:40:12] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-13 22:40:14] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:40:15] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-13 22:40:17] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:40:19] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:40:20] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:40:22] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:40:23] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:40:24] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:40:24] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15604 ms
-[2026-06-13 22:40:24] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:40:24] [INFO] TesterCore - *** Batch 1 : Round 4 ***
-[2026-06-13 22:40:25] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.0 Max 81.25 Avg 68.38169642857143; Quantifier distance: Min 32.8125 Max 87.5 Avg 78.125
-[2026-06-13 22:40:25] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:40:26] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:40:28] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-13 22:40:29] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-13 22:40:31] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:40:32] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-13 22:40:34] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:40:35] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:40:37] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:40:39] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:40:40] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:40:41] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:40:41] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15677 ms
-[2026-06-13 22:40:41] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:40:41] [INFO] TesterCore - *** Batch 1 : Round 5 ***
-[2026-06-13 22:40:42] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.0 Max 81.25 Avg 70.22321428571429; Quantifier distance: Min 39.0625 Max 87.5 Avg 75.05208333333333
-[2026-06-13 22:40:42] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:40:43] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:40:45] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
-[2026-06-13 22:40:47] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
-[2026-06-13 22:40:48] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:40:50] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-13 22:40:52] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:40:53] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:40:54] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:40:56] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:40:58] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:40:59] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:40:59] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15721 ms
-[2026-06-13 22:40:59] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:40:59] [INFO] TesterCore - *** Batch 1 : Round 6 ***
-[2026-06-13 22:40:59] [INFO] ARTCore - Mini batch generated. Binary distance: Min 26.5625 Max 76.5625 Avg 65.63616071428571; Quantifier distance: Min 18.75 Max 75.0 Avg 68.80208333333333
-[2026-06-13 22:40:59] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:41:00] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:41:03] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
-[2026-06-13 22:41:04] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
-[2026-06-13 22:41:05] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
-[2026-06-13 22:41:07] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-13 22:41:09] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:41:10] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:41:12] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:41:13] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:41:15] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:41:16] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:41:16] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15856 ms
-[2026-06-13 22:41:16] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:41:16] [INFO] TesterCore - *** Batch 1 : Round 7 ***
-[2026-06-13 22:41:16] [INFO] ARTCore - Mini batch generated. Binary distance: Min 21.09375 Max 71.875 Avg 62.265625; Quantifier distance: Min 25.0 Max 75.0 Avg 69.73958333333333
-[2026-06-13 22:41:16] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:41:18] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:41:20] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-13 22:41:22] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-13 22:41:23] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:41:24] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-13 22:41:26] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:41:28] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:41:29] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-13 22:41:31] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:41:33] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:41:34] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:41:34] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15792 ms
-[2026-06-13 22:41:34] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:41:34] [INFO] TesterCore - *** Batch 1 : Round 8 ***
-[2026-06-13 22:41:34] [INFO] ARTCore - Mini batch generated. Binary distance: Min 19.53125 Max 68.75 Avg 60.145089285714285; Quantifier distance: Min 37.5 Max 71.875 Avg 67.5
-[2026-06-13 22:41:34] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:41:36] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:41:38] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
-[2026-06-13 22:41:40] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
-[2026-06-13 22:41:41] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-13 22:41:42] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-13 22:41:45] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-13 22:41:46] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-13 22:41:48] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
-[2026-06-13 22:41:49] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:41:51] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:41:52] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:41:52] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 16429 ms
-[2026-06-13 22:41:52] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:41:52] [INFO] TesterCore - *** Batch 1 : Round 9 ***
-[2026-06-13 22:41:52] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.78125 Max 68.75 Avg 59.50892857142857; Quantifier distance: Min 29.6875 Max 70.3125 Avg 64.53125
-[2026-06-13 22:41:52] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:41:54] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:41:57] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
-[2026-06-13 22:41:58] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
-[2026-06-13 22:42:00] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
-[2026-06-13 22:42:01] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-13 22:42:04] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 9 s
-[2026-06-13 22:42:05] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 7 s
-[2026-06-13 22:42:06] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
-[2026-06-13 22:42:09] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-13 22:42:10] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-13 22:42:11] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:42:11] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 17078 ms
-[2026-06-13 22:42:11] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:42:11] [INFO] TesterCore - *** Batch 1 : Round 10 ***
-[2026-06-13 22:42:12] [INFO] ARTCore - Mini batch generated. Binary distance: Min 21.875 Max 64.84375 Avg 55.167410714285715; Quantifier distance: Min 28.125 Max 62.5 Avg 57.395833333333336
-[2026-06-13 22:42:12] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-13 22:42:14] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-13 22:42:16] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 24 s
-[2026-06-13 22:42:18] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 16 s
-[2026-06-13 22:42:19] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 13 s
-[2026-06-13 22:42:21] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 11 s
-[2026-06-13 22:42:24] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 10 s
-[2026-06-13 22:42:26] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 8 s
-[2026-06-13 22:42:28] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 6 s
-[2026-06-13 22:42:30] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 4 s
-[2026-06-13 22:42:34] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 2 s
-[2026-06-13 22:42:35] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-13 22:42:35] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 21746 ms
-[2026-06-13 22:42:35] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-13 22:42:35] [INFO] TesterCore - Batch 1 completed. Processed 1000 follow-up cases.
-[2026-06-13 22:42:35] [INFO] ARTCore - Tested candidates: 1000
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-and-1: 75
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-and-2: 140
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-and-3: 25
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-exists-1: 85
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-exists-2: 81
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-forall-1: 58
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-forall-2: 76
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-implies-1: 79
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-implies-2: 46
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-implies-3: 78
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-implies-4: 36
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-or-1: 48
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-or-2: 62
-[2026-06-13 22:42:35] [INFO] ARTCore - Rule TA-or-3: 111
-[2026-06-13 22:42:35] [INFO] ResultReporter - Result dumped to workspace/demo_20260613223841/result.json
-[2026-06-13 22:42:35] [INFO] TesterCore - Testing completed successfully! Failed cases have been stored in the database.
-[2026-06-13 22:42:35] [INFO] TesterCore - Total time elapsed: 233945 ms. 344 source -> 1000 follow-up checked, 0 failed cases.
+[2026-06-16 11:56:51] [INFO] WorkspaceManager - Workspace created at: workspace/demo_20260616115651
+[2026-06-16 11:56:51] [INFO] WorkspaceManager - Config exported to workspace/demo_20260616115651/config.json
+[2026-06-16 11:56:51] [INFO] SourceGenerator - Preprocessor initialized.  enumMax=2147483647 threadMax=8 bfuncPolicy=enum
+[2026-06-16 11:56:52] [INFO] SourceGenerator - Generated 284888 test cases.
+[2026-06-16 11:56:52] [INFO] SourceGenerator - Reducing size from 284888 to 344
+[2026-06-16 11:56:52] [INFO] TesterCore - Source cases preparation completed in 1781582212262 ms.
+[2026-06-16 11:56:52] [INFO] TestExecutor - Initializing test executor
+[2026-06-16 11:56:52] [INFO] TestExecutor - Initializing test executor
+[2026-06-16 11:56:52] [INFO] TesterCore - *** Starting Batch 1 ***
+[2026-06-16 11:56:52] [INFO] TesterCore - Testing source test cases...
+[2026-06-16 11:56:52] [INFO] TestExecutor - Executing tests for 344 tasks.
+[2026-06-16 11:56:59] [INFO] TestExecutor - Progress: 34 / 344, 9%, ETA: 56 s
+[2026-06-16 11:57:04] [INFO] TestExecutor - Progress: 68 / 344, 19%, ETA: 46 s
+[2026-06-16 11:57:10] [INFO] TestExecutor - Progress: 102 / 344, 29%, ETA: 40 s
+[2026-06-16 11:57:15] [INFO] TestExecutor - Progress: 136 / 344, 39%, ETA: 35 s
+[2026-06-16 11:57:20] [INFO] TestExecutor - Progress: 170 / 344, 49%, ETA: 28 s
+[2026-06-16 11:57:25] [INFO] TestExecutor - Progress: 204 / 344, 59%, ETA: 22 s
+[2026-06-16 11:57:30] [INFO] TestExecutor - Progress: 238 / 344, 69%, ETA: 16 s
+[2026-06-16 11:57:36] [INFO] TestExecutor - Progress: 272 / 344, 79%, ETA: 11 s
+[2026-06-16 11:57:40] [INFO] TestExecutor - Progress: 306 / 344, 88%, ETA: 5 s
+[2026-06-16 11:57:46] [INFO] TestExecutor - Progress: 340 / 344, 98%, ETA: 0 s
+[2026-06-16 11:57:46] [INFO] TestExecutor - Execution finished. Test cases checked: 344 / 344 , Time elapsed: 53740 ms
+[2026-06-16 11:57:46] [INFO] TesterCore - Source cases testing completed.
+[2026-06-16 11:57:46] [INFO] ARTCore - Total PU extracted: 779
+[2026-06-16 11:57:46] [INFO] ARTCore - Total PU 1554312 candidates generated.
+[2026-06-16 11:57:46] [INFO] TesterCore - *** Batch 1 : Round 1 ***
+[2026-06-16 11:57:46] [INFO] ARTCore - Mini batch generated. Binary distance: Min 100.0 Max 100.0 Avg 100.0; Quantifier distance: Min 100.0 Max 100.0 Avg 100.0
+[2026-06-16 11:57:46] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:57:48] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:57:51] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
+[2026-06-16 11:57:53] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 16 s
+[2026-06-16 11:57:54] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 13 s
+[2026-06-16 11:57:56] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 11 s
+[2026-06-16 11:57:58] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 9 s
+[2026-06-16 11:58:00] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 7 s
+[2026-06-16 11:58:01] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
+[2026-06-16 11:58:03] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:58:05] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:58:07] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:58:07] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 18068 ms
+[2026-06-16 11:58:07] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:58:07] [INFO] TesterCore - *** Batch 1 : Round 2 ***
+[2026-06-16 11:58:07] [INFO] ARTCore - Mini batch generated. Binary distance: Min 31.25 Max 100.0 Avg 84.26339285714286; Quantifier distance: Min 40.625 Max 100.0 Avg 93.48958333333333
+[2026-06-16 11:58:07] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:58:09] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:58:11] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
+[2026-06-16 11:58:13] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
+[2026-06-16 11:58:14] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2026-06-16 11:58:16] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 11:58:18] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 11:58:19] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 11:58:21] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 11:58:23] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:58:25] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:58:26] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:58:26] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 16710 ms
+[2026-06-16 11:58:26] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:58:26] [INFO] TesterCore - *** Batch 1 : Round 3 ***
+[2026-06-16 11:58:26] [INFO] ARTCore - Mini batch generated. Binary distance: Min 28.125 Max 93.75 Avg 79.70982142857143; Quantifier distance: Min 26.5625 Max 100.0 Avg 86.640625
+[2026-06-16 11:58:26] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:58:27] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:58:30] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 26 s
+[2026-06-16 11:58:31] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 16 s
+[2026-06-16 11:58:33] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 13 s
+[2026-06-16 11:58:34] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 11 s
+[2026-06-16 11:58:36] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 9 s
+[2026-06-16 11:58:38] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 7 s
+[2026-06-16 11:58:39] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
+[2026-06-16 11:58:41] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:58:43] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:58:44] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:58:44] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 17032 ms
+[2026-06-16 11:58:44] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:58:44] [INFO] TesterCore - *** Batch 1 : Round 4 ***
+[2026-06-16 11:58:44] [INFO] ARTCore - Mini batch generated. Binary distance: Min 28.125 Max 87.5 Avg 75.32366071428571; Quantifier distance: Min 34.375 Max 87.5 Avg 80.625
+[2026-06-16 11:58:44] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:58:45] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:58:48] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
+[2026-06-16 11:58:49] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 16 s
+[2026-06-16 11:58:51] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2026-06-16 11:58:53] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 11:58:54] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 11:58:56] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 11:58:57] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
+[2026-06-16 11:58:59] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:59:00] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:59:01] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:59:01] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15949 ms
+[2026-06-16 11:59:01] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:59:01] [INFO] TesterCore - *** Batch 1 : Round 5 ***
+[2026-06-16 11:59:02] [INFO] ARTCore - Mini batch generated. Binary distance: Min 31.25 Max 81.25 Avg 66.796875; Quantifier distance: Min 43.75 Max 84.375 Avg 78.93229166666667
+[2026-06-16 11:59:02] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:59:03] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:59:05] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
+[2026-06-16 11:59:07] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
+[2026-06-16 11:59:08] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
+[2026-06-16 11:59:10] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 11:59:11] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 11:59:13] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 11:59:14] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 11:59:16] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:59:18] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:59:19] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:59:19] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15641 ms
+[2026-06-16 11:59:19] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:59:19] [INFO] TesterCore - *** Batch 1 : Round 6 ***
+[2026-06-16 11:59:19] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.0 Max 68.75 Avg 59.53125; Quantifier distance: Min 29.6875 Max 81.25 Avg 72.08333333333333
+[2026-06-16 11:59:19] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:59:20] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:59:23] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
+[2026-06-16 11:59:24] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
+[2026-06-16 11:59:25] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
+[2026-06-16 11:59:27] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
+[2026-06-16 11:59:29] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 11:59:30] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 11:59:32] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 11:59:33] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:59:35] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:59:36] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:59:36] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15517 ms
+[2026-06-16 11:59:36] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:59:36] [INFO] TesterCore - *** Batch 1 : Round 7 ***
+[2026-06-16 11:59:36] [INFO] ARTCore - Mini batch generated. Binary distance: Min 22.65625 Max 68.75 Avg 60.234375; Quantifier distance: Min 21.875 Max 75.0 Avg 70.625
+[2026-06-16 11:59:36] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:59:38] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:59:40] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
+[2026-06-16 11:59:41] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
+[2026-06-16 11:59:43] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
+[2026-06-16 11:59:44] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
+[2026-06-16 11:59:46] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 11:59:47] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 11:59:49] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 11:59:51] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 11:59:52] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 11:59:53] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 11:59:53] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15535 ms
+[2026-06-16 11:59:53] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 11:59:53] [INFO] TesterCore - *** Batch 1 : Round 8 ***
+[2026-06-16 11:59:53] [INFO] ARTCore - Mini batch generated. Binary distance: Min 24.21875 Max 66.40625 Avg 59.04017857142857; Quantifier distance: Min 14.0625 Max 75.0 Avg 62.890625
+[2026-06-16 11:59:53] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 11:59:55] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 11:59:58] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
+[2026-06-16 11:59:59] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
+[2026-06-16 12:00:00] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2026-06-16 12:00:02] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 12:00:04] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 12:00:05] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 12:00:07] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 12:00:08] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 12:00:10] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 12:00:11] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 12:00:11] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15590 ms
+[2026-06-16 12:00:11] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 12:00:11] [INFO] TesterCore - *** Batch 1 : Round 9 ***
+[2026-06-16 12:00:11] [INFO] ARTCore - Mini batch generated. Binary distance: Min 22.65625 Max 62.5 Avg 57.020089285714285; Quantifier distance: Min 27.34375 Max 68.75 Avg 61.953125
+[2026-06-16 12:00:11] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 12:00:12] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 12:00:15] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
+[2026-06-16 12:00:16] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 15 s
+[2026-06-16 12:00:17] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2026-06-16 12:00:19] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 12:00:21] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 12:00:22] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 12:00:24] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 12:00:25] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 12:00:27] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 12:00:28] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 12:00:28] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15671 ms
+[2026-06-16 12:00:28] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 12:00:28] [INFO] TesterCore - *** Batch 1 : Round 10 ***
+[2026-06-16 12:00:28] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.0 Max 62.5 Avg 55.64732142857143; Quantifier distance: Min 29.6875 Max 68.75 Avg 63.828125
+[2026-06-16 12:00:28] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
+[2026-06-16 12:00:29] [INFO] TestExecutor - Executing tests for 100 tasks.
+[2026-06-16 12:00:32] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
+[2026-06-16 12:00:33] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
+[2026-06-16 12:00:35] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
+[2026-06-16 12:00:36] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
+[2026-06-16 12:00:38] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
+[2026-06-16 12:00:39] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
+[2026-06-16 12:00:41] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
+[2026-06-16 12:00:43] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
+[2026-06-16 12:00:44] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
+[2026-06-16 12:00:45] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
+[2026-06-16 12:00:45] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15611 ms
+[2026-06-16 12:00:45] [INFO] TestExecutor - Test cases failed: 0 / 100
+[2026-06-16 12:00:45] [INFO] TesterCore - Batch 1 completed. Processed 1000 follow-up cases.
+[2026-06-16 12:00:45] [INFO] ARTCore - Tested candidates: 1000
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-and-1: 66
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-and-2: 81
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-and-3: 76
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-exists-1: 91
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-exists-2: 64
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-forall-1: 76
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-forall-2: 69
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-implies-1: 94
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-implies-2: 39
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-implies-3: 56
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-implies-4: 61
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-or-1: 63
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-or-2: 61
+[2026-06-16 12:00:45] [INFO] ARTCore - Rule TA-or-3: 103
+[2026-06-16 12:00:45] [INFO] ResultReporter - Result dumped to workspace/demo_20260616115651/result.json
+[2026-06-16 12:00:45] [INFO] TesterCore - Testing completed successfully! Failed cases have been stored in the database.
+[2026-06-16 12:00:45] [INFO] TesterCore - Total time elapsed: 233337 ms. 344 source -> 1000 follow-up checked, 0 failed cases.

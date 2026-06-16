@@ -2,7 +2,7 @@ package com.wenzejin.core.mr.jin.rules;
 
 import com.wenzejin.core.mr.jin.BinaryTag;
 import com.wenzejin.core.mr.jin.UtilFunctions;
-import com.wenzejin.core.mr.jin.FormulaWithTag;
+import com.wenzejin.core.mr.jin.PrimitiveUnit;
 import com.wenzejin.core.mr.jin.QuantifierTag;
 import com.wenzejin.core.rule.*;
 
@@ -32,7 +32,7 @@ public class TagUnification {
      * @return        A new {@code FormulaWithTag} object representing the unified formula and tag,
      *                or {@code null} if the tags of the input formulas are invalid.
      */
-    public static FormulaWithTag unifyForQuant(FormulaWithTag f, FormulaWithTag g, String newOp) {
+    public static PrimitiveUnit unifyForQuant(PrimitiveUnit f, PrimitiveUnit g, String newOp) {
         Formula leftFormula = f.formula.clone();
         Formula rightFormula = g.formula.clone();
         Formula gen = null;
@@ -101,10 +101,10 @@ public class TagUnification {
         }
         UtilFunctions.rebindBfuncs(bfuncs, bindMap);
         gen.rebindVariables(bindMap); 
-        return new FormulaWithTag(gen, newTag, patterns, bfuncs);
+        return new PrimitiveUnit(gen, newTag, patterns, bfuncs);
     }
 
-    public static FormulaWithTag unifyForBin(FormulaWithTag f, FormulaWithTag g, String newOp) {
+    public static PrimitiveUnit unifyForBin(PrimitiveUnit f, PrimitiveUnit g, String newOp) {
         Formula leftFormula = f.formula.clone();
         Formula rightFormula = g.formula.clone();
         Formula gen = null;
@@ -175,7 +175,7 @@ public class TagUnification {
             bfuncs.add(bfunc.clone());
         }
 
-        return new FormulaWithTag(gen, newTag, patterns, bfuncs);
+        return new PrimitiveUnit(gen, newTag, patterns, bfuncs);
     }
 
     /* Unification for quantifier tags */

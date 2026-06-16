@@ -41,8 +41,8 @@ public class ARTCore implements MTCore {
     }
 
     public void initCandidates(List<TestOutcome> outcomes) {
-        List<FormulaWithTag> binaryPool = new ArrayList<>();
-        List<FormulaWithTag> quantifierPool = new ArrayList<>();
+        List<PrimitiveUnit> binaryPool = new ArrayList<>();
+        List<PrimitiveUnit> quantifierPool = new ArrayList<>();
         String[] binaryOps = {"and", "or", "implies"};
         String[] quantifierOps = {"forall", "exists"};
 
@@ -53,14 +53,14 @@ public class ARTCore implements MTCore {
             try {
                 BinaryTag wholeTag = new BinaryTag(outcome.sutResult.truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, outcome.sutResult.links);
                 wholeTag.addSource(tc.getId());
-                FormulaWithTag whole = new FormulaWithTag(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
+                PrimitiveUnit whole = new PrimitiveUnit(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
 
                 if (Math.random() < 0.05) {
                     QuantifierTag wholeTagQ = new QuantifierTag(outcome.sutResult.truth);
                     wholeTagQ.addSource(tc.getId());
-                    FormulaWithTag wholeQ = new FormulaWithTag(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
+                    PrimitiveUnit wholeQ = new PrimitiveUnit(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
                     wholeQ.oriRule = tc.getOriRule();
                     quantifierPool.add(wholeQ);
                 }
@@ -68,18 +68,25 @@ public class ARTCore implements MTCore {
                 List<Tag> tags = TagCreation.entry(outcome);
                 if (formula instanceof OpConnector) {
                     // binary formula
-                    Formula leftFormula = ((OpConnector) formula).left;
-                    Formula rightFormula = ((OpConnector) formula).right;
-                    FormulaWithTag left = new FormulaWithTag(leftFormula, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
-                    FormulaWithTag right = new FormulaWithTag(rightFormula, tags.get(1), tc.getPatterns(), tc.getBfuncs(), tc);
-                    left.oriRule = tc.getOriRule();
-                    right.oriRule = tc.getOriRule();
-                    binaryPool.add(left);
-                    binaryPool.add(right);
+                    BinaryTag lt = (BinaryTag) tags.get(0);
+                    if (lt.truth != BinaryTag.Truth.UNKNOWN) {
+                        Formula leftFormula = ((OpConnector) formula).left;
+                        PrimitiveUnit left = new PrimitiveUnit(leftFormula, lt, tc.getPatterns(), tc.getBfuncs(), tc);
+                        left.oriRule = tc.getOriRule();
+                        binaryPool.add(left);
+                    }
+                    
+                    BinaryTag rt = (BinaryTag) tags.get(1);
+                    if (rt.truth != BinaryTag.Truth.UNKNOWN) {
+                        Formula rightFormula = ((OpConnector) formula).right;
+                        PrimitiveUnit right = new PrimitiveUnit(rightFormula, rt, tc.getPatterns(), tc.getBfuncs(), tc);
+                        right.oriRule = tc.getOriRule();
+                        binaryPool.add(right);
+                    }
                 } else if (formula instanceof OpQuantifier) {
                     // quantifier formula
                     Formula child = ((OpQuantifier) formula).formula;
-                    FormulaWithTag quantifier = new FormulaWithTag(child, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
+                    PrimitiveUnit quantifier = new PrimitiveUnit(child, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
                     quantifier.oriRule = tc.getOriRule();
                     quantifierPool.add(quantifier);
                 }
@@ -97,9 +104,9 @@ public class ARTCore implements MTCore {
         logger.info("Total PU {} candidates generated.", binaryCandidates.size() + quantifierCandidates.size());
     }
 
-    private void generateBinaryCandidates(List<FormulaWithTag> binaryPool, String[] binaryOps) {
-        for (FormulaWithTag left : binaryPool) {
-            for (FormulaWithTag right : binaryPool) {
+    private void generateBinaryCandidates(List<PrimitiveUnit> binaryPool, String[] binaryOps) {
+        for (PrimitiveUnit left : binaryPool) {
+            for (PrimitiveUnit right : binaryPool) {
                 if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
@@ -110,18 +117,15 @@ public class ARTCore implements MTCore {
                 }
                 for (String op : binaryOps) {
                     var candidate = new BinaryCandidate(left, right, op);
-                    if (candidate.isUndetermined()) {
-                        continue;
-                    }
                     binaryCandidates.add(candidate);
                 }
             }
         }
     }
 
-    private void generateQuantifierCandidates(List<FormulaWithTag> quantifierPool, String[] binaryOps, String[] quantifierOps) {
-        for (FormulaWithTag left : quantifierPool) {
-            for (FormulaWithTag right : quantifierPool) {
+    private void generateQuantifierCandidates(List<PrimitiveUnit> quantifierPool, String[] binaryOps, String[] quantifierOps) {
+        for (PrimitiveUnit left : quantifierPool) {
+            for (PrimitiveUnit right : quantifierPool) {
                 if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }

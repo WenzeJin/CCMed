@@ -5,13 +5,13 @@ import com.wenzejin.core.mr.jin.rules.TagApplication;
 import com.wenzejin.core.mr.jin.rules.TagUnification;
 
 public class BinaryCandidate implements TestCaseCandidate {
-    final FormulaWithTag left;
-    final FormulaWithTag right;
+    final PrimitiveUnit left;
+    final PrimitiveUnit right;
     final String newOp;
     final byte taRule;
     double minDistance;
 
-    public BinaryCandidate(FormulaWithTag left, FormulaWithTag right, String newOp) {
+    public BinaryCandidate(PrimitiveUnit left, PrimitiveUnit right, String newOp) {
         this.left = left;
         this.right = right;
         this.newOp = newOp;
@@ -20,11 +20,11 @@ public class BinaryCandidate implements TestCaseCandidate {
         minDistance = 100;
     }
 
-    public FormulaWithTag getLeft() {
+    public PrimitiveUnit getLeft() {
         return left;
     }
 
-    public FormulaWithTag getRight() {
+    public PrimitiveUnit getRight() {
         return right;
     }
 
@@ -36,19 +36,11 @@ public class BinaryCandidate implements TestCaseCandidate {
         return minDistance;
     }
 
-    public boolean isUndetermined() {
-        return TagApplication.isUndetermined((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
-    }
-
     @Override
     public TestCase genTestCase() {
-        if (!isUndetermined()) {
-            var gen = TagUnification.unifyForBin(left, right, newOp);
-            if (gen != null) {
-                return TagApplication.binaryFinalize(gen);
-            }
-        } else {
-            return TagApplication.binaryEntry(left, right, newOp);
+        var gen = TagUnification.unifyForBin(left, right, newOp);
+        if (gen != null) {
+            return TagApplication.binaryFinalize(gen);
         }
         return null;
     }

@@ -3,11 +3,9 @@ package com.wenzejin.core.mr.jin.rules;
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.assertion.*;
 import com.wenzejin.core.mr.jin.BinaryTag;
-import com.wenzejin.core.mr.jin.UtilFunctions;
-import com.wenzejin.core.mr.jin.FormulaWithTag;
+import com.wenzejin.core.mr.jin.PrimitiveUnit;
 import com.wenzejin.core.mr.jin.QuantifierTag;
 import com.wenzejin.core.mr.assertion.LinksValueAssertion;
-import com.wenzejin.core.result.Link;
 import com.wenzejin.core.rule.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,7 +16,7 @@ public class TagApplication {
 
     private static final AtomicInteger idCounter = new AtomicInteger();
 
-    public static TestCase binaryFinalize(FormulaWithTag f) {
+    public static TestCase binaryFinalize(PrimitiveUnit f) {
         if (f.tag instanceof BinaryTag tag) {
             if (tag.truth == BinaryTag.Truth.UNKNOWN) {
                 return null;
@@ -32,7 +30,7 @@ public class TagApplication {
                 vars.addAll(link.collectVariables());
             }
 
-            // extend patterns
+            // randomness injection for patterns
             var patterns = new ArrayList<Pattern>();
             var patMap = new HashMap<String, Pattern>();
             for (var p : f.patterns) {
@@ -46,7 +44,7 @@ public class TagApplication {
             boolean dataExtended = false;
 
             if (!simpleMode && Math.random() > 0.5) {
-                // extend patterns by links
+                // randomness injection for patterns
                 var varToPattern = f.formula.collectVariablePatternPairs();
                 for (var v: vars) {
                     if (varToPattern.containsKey(v)) {
@@ -75,31 +73,28 @@ public class TagApplication {
                 assertions.add(assertion);
             }
 
-
-            TestAssertion assertion = null;
+            TestAssertion setAssertion = null;
             if (dataExtended) {
-                assertion = new LinksExtendAssertion(tag.links);
-                assertion.setRule(tag.ruleUsed + dataType);
+                setAssertion = new LinksExtendAssertion(tag.links);
+                setAssertion.setRule(tag.ruleUsed + dataType);
             } else {
-                assertion = new LinksEqualsAssertion(tag.links);
-                assertion.setRule(tag.ruleUsed + dataType);
+                setAssertion = new LinksEqualsAssertion(tag.links);
+                setAssertion.setRule(tag.ruleUsed + dataType);
             }
-            assertions.add(assertion);
+            assertions.add(setAssertion);
 
-
+            // Build rule
             Rule genRule = new Rule("CRC-Gen-" + idCounter.incrementAndGet(), f.formula);
             List<Bfunc> bfuncs = new ArrayList<>(f.bfuncs);
 
+            // Build test case and return
             TestCase genTC = new TestCase(genRule);
             genTC.setPatterns(patterns);
             genTC.setBfuncs(bfuncs);
             genTC.setAssertions(assertions);
-
             genTC.getRuleUsed().add("TA-binary");
             genTC.getRuleUsed().add(tag.ruleUsed);
-
             genTC.setSource(tag.getSource());
-
             return genTC;
 
         } else {
@@ -107,59 +102,7 @@ public class TagApplication {
         }
     }
 
-    public static TestCase binaryEntry(FormulaWithTag left, FormulaWithTag right, String newOp) {
-        Formula leftFormula = left.formula.clone();
-        Formula rightFormula = right.formula.clone();
-        Formula gen = null;
-        List<TestAssertion> assertions = null;
-
-        if (!(left.tag instanceof BinaryTag) || !(right.tag instanceof BinaryTag)) {
-            // Invalid tag
-            return null;
-        }
-
-        switch (newOp) {
-            case "and":
-                gen = new OpConnector(OpConnector.Op.AND, leftFormula, rightFormula);
-                assertions = and((BinaryTag) left.tag, (BinaryTag) right.tag);
-                break;
-            case "or":
-                gen = new OpConnector(OpConnector.Op.OR, leftFormula, rightFormula);
-                assertions = or((BinaryTag) left.tag, (BinaryTag) right.tag);
-                break;
-            case "implies":
-                gen = new OpConnector(OpConnector.Op.IMPLIES, leftFormula, rightFormula);
-                assertions = implies((BinaryTag) left.tag, (BinaryTag) right.tag);
-                break;
-            default:
-                break;
-        }
-
-        if (assertions == null || assertions.isEmpty()) {
-            // Invalid combination
-            return null;
-        }
-        Rule genRule = new Rule("CRC-Gen-" + idCounter.incrementAndGet(), gen);
-        List<Pattern> patterns = new ArrayList<>();
-        patterns.addAll(left.patterns);
-        patterns.addAll(right.patterns);
-        List<Bfunc> bfuncs = new ArrayList<>();
-        bfuncs.addAll(left.bfuncs);
-        bfuncs.addAll(right.bfuncs);
-
-        TestCase genTC = new TestCase(genRule);
-        genTC.setPatterns(patterns);
-        genTC.setBfuncs(bfuncs);
-        genTC.setAssertions(assertions);
-
-        for (TestAssertion assertion : assertions) {
-            genTC.getRuleUsed().add(assertion.getRule());
-        }
-
-        return genTC;
-    }
-
-    public static TestCase quantifierEntry(FormulaWithTag f, String newOp, boolean expectTruth) {
+    public static TestCase quantifierEntry(PrimitiveUnit f, String newOp, boolean expectTruth) {
         Formula ori = f.formula;
         Formula gen = null;
         List<TestAssertion> assertions = null;
@@ -242,194 +185,6 @@ public class TagApplication {
         genTC.setSource(tag.getSource());
 
         return genTC;
-    }
-
-
-    private static List<TestAssertion> and(BinaryTag left, BinaryTag right) {
-        List<TestAssertion> assertions = new ArrayList<>();
-        String usedRule = "";
-        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-and-1
-            usedRule = "TA-and-1";
-            assertions.add(new TruthAssertion(true));
-            Set<Link> cartesian = UtilFunctions.cartesian(left.links, right.links);
-            if (!cartesian.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(cartesian));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-and-2-a
-            usedRule = "TA-and-2";
-            assertions.add(new TruthAssertion(false));
-            if (!right.links.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(right.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-and-3
-            usedRule = "TA-and-3";
-            assertions.add(new TruthAssertion(false));
-            Set<Link> union = UtilFunctions.union(left.links, right.links);
-            if (!union.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(union));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-and-4-a
-            usedRule = "TA-and-4";
-            if (!left.links.isEmpty()) {
-                TestAssertion pre = new TruthAssertion(false);
-                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(left.links));
-                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
-                assertions.add(cond);
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-and-5-a
-            usedRule = "TA-and-5";
-            if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(left.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-and-6 no assertion pass
-            usedRule = "TA-and-6";
-        } else {
-            // try switch to match some rules
-            assertions.addAll(and(right,left));
-        }
-        if (!usedRule.isEmpty()) {
-            for (TestAssertion assertion : assertions) {
-                assertion.setRule(usedRule);
-            }
-        }
-        return assertions;
-    }
-
-    private static List<TestAssertion> or(BinaryTag left, BinaryTag right) {
-        List<TestAssertion> assertions = new ArrayList<>();
-        String usedRule = "";
-        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-or-1
-            usedRule = "TA-or-1";
-            assertions.add(new TruthAssertion(true));
-            Set<Link> union = UtilFunctions.union(left.links, right.links);
-            if (!union.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(union));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-or-2-a
-            usedRule = "TA-or-2";
-            assertions.add(new TruthAssertion(true));
-            if (!left.links.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(left.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-or-3
-            usedRule = "TA-or-3";
-            assertions.add(new TruthAssertion(false));
-            Set<Link> cartesian = UtilFunctions.cartesian(left.links, right.links);
-            if (!cartesian.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(cartesian));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-or-4-a
-            usedRule = "TA-or-4";
-            if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(left.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-or-5-a
-            usedRule = "TA-or-5";
-            if (!left.links.isEmpty()) {
-                TestAssertion pre = new TruthAssertion(true);
-                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(left.links));
-                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
-                assertions.add(cond);
-            }
-        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-or-6 no assertion pass
-            usedRule = "TA-or-6";
-        } else {
-            // try switch to match some rules
-            assertions.addAll(or(right,left));
-        }
-        if (!usedRule.isEmpty()) {
-            for (TestAssertion assertion : assertions) {
-                assertion.setRule(usedRule);
-            }
-        }
-        return assertions;
-    }
-
-    private static List<TestAssertion> implies(BinaryTag left, BinaryTag right) {
-        List<TestAssertion> assertions = new ArrayList<>();
-        String usedRule;
-        if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-implies-1
-            usedRule = "TA-implies-1";
-            assertions.add(new TruthAssertion(true));
-            if (!right.links.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(right.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-implies-2
-            usedRule = "TA-implies-2";
-            assertions.add(new TruthAssertion(false));
-            Set<Link> cartesian = UtilFunctions.cartesian(UtilFunctions.flipSet(left.links), right.links);
-            if (!cartesian.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(cartesian));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-implies-3
-            usedRule = "TA-implies-3";
-            assertions.add(new TruthAssertion(true));
-            Set<Link> union = UtilFunctions.union(UtilFunctions.flipSet(left.links), right.links);
-            if (!union.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(union));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-implies-4
-            usedRule = "TA-implies-4";
-            assertions.add(new TruthAssertion(true));
-            if (!left.links.isEmpty()) {
-                assertions.add(new LinksEqualsAssertion(UtilFunctions.flipSet(left.links)));
-            }
-        } else if (left.truth == BinaryTag.Truth.TRUE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-implies-5
-            usedRule = "TA-implies-5";
-            if (!left.links.isEmpty()) {
-                TestAssertion pre = new TruthAssertion(false);
-                TestAssertion after = new LinksExceptAssertion(left.links);
-                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
-                assertions.add(cond);
-            }
-        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.TRUE) {
-            // TA-implies-6
-            usedRule = "TA-implies-6";
-            assertions.add(new TruthAssertion(true));
-            if (!right.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(right.links));
-            }
-        } else if (left.truth == BinaryTag.Truth.FALSE && right.truth == BinaryTag.Truth.UNKNOWN) {
-            // TA-implies-7
-            usedRule = "TA-implies-7";
-            assertions.add(new TruthAssertion(true));
-            if (!left.links.isEmpty()) {
-                assertions.add(new LinksSubsetAssertion(UtilFunctions.flipSet(left.links)));
-            }
-        } else if (left.truth == BinaryTag.Truth.UNKNOWN && right.truth == BinaryTag.Truth.FALSE) {
-            // TA-implies-8
-            usedRule = "TA-implies-8";
-            if (!right.links.isEmpty()) {
-                TestAssertion pre = new TruthAssertion(true);
-                TestAssertion after = new LinksExceptAssertion(UtilFunctions.flipSet(right.links));
-                TestAssertion cond = new CombinedAssertion(pre, after, CombinedAssertion.Type.IMPLIES);
-                assertions.add(cond);
-            }
-        } else {
-            // TA-implies-9 no assertions pass
-            usedRule = "TA-implies-9";
-        }
-        for (TestAssertion assertion : assertions) {
-            assertion.setRule(usedRule);
-        }
-        return assertions;
     }
 
     public static List<TestAssertion> forall(QuantifierTag tag, Set<String> newData, boolean expectTruth) {
@@ -644,10 +399,5 @@ public class TagApplication {
             case "implies" -> "TA-implies-" + ruleCode;
             default -> "";
         };
-    }
-
-    public static boolean isUndetermined(BinaryTag left, BinaryTag right, String newOp) {
-        byte ruleCode = getRuleCode(left, right, newOp);
-        return ruleCode > 3;
     }
 }
