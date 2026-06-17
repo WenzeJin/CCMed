@@ -59,6 +59,14 @@ public class Pattern {
         return name + " : " + data;
     }
 
+    /**
+     * 深拷贝当前 Pattern 对象。
+     * @return 一个独立的新 Pattern 实例，其 data 集合与原对象内容相同但互不影响。
+     */
+    public Pattern copy() {
+        return new Pattern(name, data);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

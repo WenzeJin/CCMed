@@ -38,7 +38,15 @@ public class BinaryCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        var gen = TagUnification.unifyForBin(left, right, newOp);
+        PrimitiveUnit l = left;
+        if (Math.random() > 0.75) {
+            l = TagUnification.negation(l);
+        }
+        PrimitiveUnit r = right;
+        if (Math.random() > 0.75) {
+            r = TagUnification.negation(r);
+        }
+        var gen = TagUnification.unifyForBin(l, r, newOp);
         if (gen != null) {
             return TagApplication.binaryFinalize(gen);
         }

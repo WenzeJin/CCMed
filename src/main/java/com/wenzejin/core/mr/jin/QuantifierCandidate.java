@@ -37,7 +37,15 @@ public class QuantifierCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        PrimitiveUnit unified = TagUnification.unifyForQuant(left, right, newConn);
+        PrimitiveUnit l = left;
+        if (Math.random() > 0.75) {
+            l = TagUnification.negation(l);
+        }
+        PrimitiveUnit r = right;
+        if (Math.random() > 0.75) {
+            r = TagUnification.negation(r);
+        }
+        PrimitiveUnit unified = TagUnification.unifyForQuant(l, r, newConn);
         if (unified != null) {
             return TagApplication.quantifierEntry(unified, newQuant, expectTruth);
         } else {

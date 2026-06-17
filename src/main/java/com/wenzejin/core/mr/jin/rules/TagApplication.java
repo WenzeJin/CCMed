@@ -34,7 +34,7 @@ public class TagApplication {
             var patterns = new ArrayList<Pattern>();
             var patMap = new HashMap<String, Pattern>();
             for (var p : f.patterns) {
-                var newPat = new Pattern(p.getName(), p.getData());
+                var newPat = p.copy();
                 patterns.add(newPat);
                 patMap.put(p.getName(), newPat);
             }

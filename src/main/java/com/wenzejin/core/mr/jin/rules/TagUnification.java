@@ -4,6 +4,7 @@ import com.wenzejin.core.mr.jin.BinaryTag;
 import com.wenzejin.core.mr.jin.UtilFunctions;
 import com.wenzejin.core.mr.jin.PrimitiveUnit;
 import com.wenzejin.core.mr.jin.QuantifierTag;
+import com.wenzejin.core.mr.jin.Tag;
 import com.wenzejin.core.rule.*;
 
 import java.util.*;
@@ -42,20 +43,7 @@ public class TagUnification {
             // Invalid tags
             return null;
         }
-
-        boolean notInserted = false;
-        // random insert not on left or right
-        if (Math.random() > 0.75) {
-            leftFormula = new OpNot(leftFormula);
-            fTag = notInsert(fTag);
-            notInserted = true;
-        }
-        if (Math.random() > 0.75) {
-            rightFormula = new OpNot(rightFormula);
-            gTag = notInsert(gTag);
-            notInserted = true;
-        }
-
+        
         switch (newOp) {
             case "and":
                 gen = new OpConnector(OpConnector.Op.AND, leftFormula, rightFormula);
@@ -77,10 +65,6 @@ public class TagUnification {
             return null;
         }
 
-        if (notInserted) {
-            newTag.ruleUsed += "+NotInserted";
-        }
-
         newTag.addAllSources(fTag.getSource());
         newTag.addAllSources(gTag.getSource());
 
@@ -90,8 +74,12 @@ public class TagUnification {
         bindMap.put(gTag.variable, newVar);
 
         List<Pattern> patterns = new ArrayList<>();
-        patterns.addAll(f.patterns);
-        patterns.addAll(g.patterns);
+        for (Pattern p : f.patterns) {
+            patterns.add(p.copy());
+        }
+        for (Pattern p : g.patterns) {
+            patterns.add(p.copy());
+        }
         List<Bfunc> bfuncs = new ArrayList<>();
         for (Bfunc bfunc: f.bfuncs) {
             bfuncs.add(bfunc.clone());
@@ -100,7 +88,7 @@ public class TagUnification {
             bfuncs.add(bfunc.clone());
         }
         UtilFunctions.rebindBfuncs(bfuncs, bindMap);
-        gen.rebindVariables(bindMap); 
+        gen.rebindVariables(bindMap);
         return new PrimitiveUnit(gen, newTag, patterns, bfuncs);
     }
 
@@ -115,38 +103,26 @@ public class TagUnification {
             return null;
         }
 
-        boolean notInserted = false;
-        // random insert not on left or right
-        if (Math.random() > 0.75) {
-            leftFormula = new OpNot(leftFormula);
-            fTag = notInsert(fTag);
-            notInserted = true;
-        }
-        if (Math.random() > 0.75) {
-            rightFormula = new OpNot(rightFormula);
-            gTag = notInsert(gTag);
-            notInserted = true;
-        }
         switch (newOp) {
             case "and":
                 gen = new OpConnector(OpConnector.Op.AND, leftFormula, rightFormula);
                 newTag = and(fTag, gTag);
                 if (newTag != null) {
-                    newTag.ruleUsed = "TU-and";
+                    newTag.ruleUsed = "and";
                 }
                 break;
             case "or":
                 gen = new OpConnector(OpConnector.Op.OR, leftFormula, rightFormula);
                 newTag = or(fTag, gTag);
                 if (newTag != null) {
-                    newTag.ruleUsed = "TU-or";
+                    newTag.ruleUsed = "or";
                 }
                 break;
             case "implies":
                 gen = new OpConnector(OpConnector.Op.IMPLIES, leftFormula, rightFormula);
                 newTag = implies(fTag, gTag);
                 if (newTag != null) {
-                    newTag.ruleUsed = "TU-implies";
+                    newTag.ruleUsed = "implies";
                 }
                 break;
             default:
@@ -157,16 +133,16 @@ public class TagUnification {
             return null;
         }
 
-        if (notInserted) {
-            newTag.ruleUsed += "+NotInserted";
-        }
-
         newTag.addAllSources(fTag.getSource());
         newTag.addAllSources(gTag.getSource());
 
         List<Pattern> patterns = new ArrayList<>();
-        patterns.addAll(f.patterns);
-        patterns.addAll(g.patterns);
+        for (Pattern p : f.patterns) {
+            patterns.add(p.copy());
+        }
+        for (Pattern p : g.patterns) {
+            patterns.add(p.copy());
+        }
         List<Bfunc> bfuncs = new ArrayList<>();
         for (Bfunc bfunc: f.bfuncs) {
             bfuncs.add(bfunc.clone());
@@ -177,6 +153,27 @@ public class TagUnification {
 
         return new PrimitiveUnit(gen, newTag, patterns, bfuncs);
     }
+
+    public static PrimitiveUnit negation(PrimitiveUnit pu) {
+        Formula newFormula = new OpNot(pu.formula.clone());
+        Tag tag = pu.tag;
+        Tag newTag = null;
+        if (tag instanceof QuantifierTag qTag) {
+            newTag = notInsert(qTag);
+        } else if (tag instanceof BinaryTag bTag) {
+            newTag = notInsert(bTag);
+        }
+        List<Pattern> patterns = new ArrayList<>();
+        for (Pattern p : pu.patterns) {
+            patterns.add(p.copy());
+        }
+        List<Bfunc> bfuncs = new ArrayList<>();
+        for (Bfunc bfunc: pu.bfuncs) {
+            bfuncs.add(bfunc.clone());
+        }
+        return new PrimitiveUnit(newFormula, newTag, patterns, bfuncs);
+    }
+
 
     /* Unification for quantifier tags */
 
@@ -276,11 +273,9 @@ public class TagUnification {
 
     private static QuantifierTag notInsert(QuantifierTag f) {
         QuantifierTag newTag = new QuantifierTag(f.variable);
-
         newTag.valueTrue = new HashSet<>(f.valueFalse);
         newTag.valueFalse = new HashSet<>(f.valueTrue);
         newTag.addAllSources(f.getSource());
-
         return newTag;
     }
 }

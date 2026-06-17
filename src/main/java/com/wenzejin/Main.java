@@ -41,6 +41,9 @@ public class Main {
         }
 
         if (!gui) {
+            System.out.println("CCMorpher is running in CLI mode.");
+            System.out.println("Configuration file: " + configPath + " will be used.");
+
             try {
                 Config conf = Config.loadFromJson(configPath);
                 if (detailData) {

@@ -12,7 +12,6 @@ public class QuantifierTag implements Tag{
     public Set<String> valueTrue;
     public Set<String> valueFalse;
     public String ruleUsed;
-    public String parentID;
     public List<Integer> source;
     public boolean isRealQuantifier;
 
@@ -21,7 +20,6 @@ public class QuantifierTag implements Tag{
         valueTrue = new HashSet<>();
         valueFalse = new HashSet<>();
         ruleUsed = "";
-        parentID = "";
         source = new ArrayList<>();
         isRealQuantifier = true;
     }
@@ -37,7 +35,6 @@ public class QuantifierTag implements Tag{
         }
         variable = "fake_variable";
         ruleUsed = "";
-        parentID = "";
         source = new ArrayList<>();
     }
 
