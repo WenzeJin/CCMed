@@ -52,5 +52,6 @@ workspace/
 result.json
 
 *.log
+log/
 
 docs/

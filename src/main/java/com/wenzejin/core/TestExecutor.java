@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestExecutor {
@@ -33,9 +34,11 @@ public class TestExecutor {
     private final Mode mode;
     private final Path logSpace;
     private final String storeMode;
+    private final boolean panicMode;
 
     // --- State ---
     private long startTime;
+    private final AtomicBoolean panicFlag = new AtomicBoolean(false);
 
     private ExecutorService executor;
     private ThreadLocal<TestWorker> threadLocalWorker;
@@ -46,12 +49,13 @@ public class TestExecutor {
     /**
      * Constructs a new TestExecutor instance with the specified parameters.
      */
-    public TestExecutor(Mode mode, String workspace, String workerType, Map<String, Object> workerArguments, int threadNum, String storeMode) {
+    public TestExecutor(Mode mode, String workspace, String workerType, Map<String, Object> workerArguments, int threadNum, String storeMode, boolean panicMode) {
         this.mode = mode;
         this.workspace = workspace;
         this.workerType = workerType;
         this.workerArguments = workerArguments;
         this.threadNum = threadNum;
+        this.panicMode = panicMode;
 
         logSpace = Paths.get(workspace, "logs");
         this.storeMode = storeMode;
@@ -96,6 +100,7 @@ public class TestExecutor {
         }
         
         startTime = System.currentTimeMillis();
+        panicFlag.set(false);
         final AtomicInteger progress = new AtomicInteger(0);
         final int totalTasks = tcs.size();
         logger.info("Executing tests for {} tasks.", totalTasks);
@@ -105,10 +110,19 @@ public class TestExecutor {
             tasks.add(() -> {
                 TestWorker worker = threadLocalWorker.get();
                 RawExecutionResult rawResult = null;
-                ExecutionStatus status = ExecutionStatus.CRASHED;
+                ExecutionStatus status = ExecutionStatus.SKIPPED;
                 Result sutResult = null;
                 List<TestAssertion> failedAssertions = new ArrayList<>();
                 String errorMessage = null;
+
+                // Panic mode early-stop: if the flag is set, skip this test case entirely.
+                if (panicMode && panicFlag.get()) {
+                    int currentProgress = progress.incrementAndGet();
+                    procedureCallback(currentProgress, totalTasks);
+                    TestOutcome skipped = new TestOutcome(tc, mode == Mode.SOURCE, ExecutionStatus.SKIPPED, null, new ArrayList<>(), "Skipped due to panic mode", 0);
+                    logTestCase(skipped, null);
+                    return skipped;
+                }
 
                 try {
                     for (int retry = 0; retry <= 2; retry++) {
@@ -159,6 +173,10 @@ public class TestExecutor {
                     errorMessage, 
                     rawResult != null ? rawResult.durationMs : 0
                 );
+
+                if (panicMode && ((mode == Mode.FOLLOW && !outcome.isPassed()) || (status != ExecutionStatus.SUCCESS && status != ExecutionStatus.SKIPPED))) {
+                    panicFlag.set(true);
+                }
                 
                 logTestCase(outcome, rawResult);
                 return outcome;

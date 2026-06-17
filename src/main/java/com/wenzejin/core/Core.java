@@ -55,9 +55,9 @@ public class Core {
             final List<TestOutcome> failedOutcomes = new ArrayList<>();
 
                 preExecutor = new TestExecutor(
-                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
+                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode, config.stopMode.contains("panic"));
                 postExecutor = new TestExecutor(
-                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit, config.storeMode);
+                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit, config.storeMode, config.stopMode.contains("panic"));
             preExecutor.init();
             postExecutor.init();
 
