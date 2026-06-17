@@ -85,11 +85,15 @@ public class TestExecutor {
         });
     }
 
+
     /**
-     * Executes a list of test cases using a thread pool executor. Each test case is processed
-     * by a thread-local worker, with retries for failed executions. Progress is logged.
+     * Executes a list of test cases with an optional per-step callback.
+     *
+     * @param tcs the test cases to execute
+     * @param onEachStep a callback invoked after each test case completes (may be null);
+     *                   called from worker threads — keep it fast and thread-safe
      */
-    public List<TestOutcome> execute(List<TestCase> tcs) {
+    public List<TestOutcome> execute(List<TestCase> tcs, Runnable onEachStep) {
         if (tcs == null || tcs.isEmpty()) {
             logger.warn("No test cases provided for execution.");
             return Collections.emptyList();
@@ -98,13 +102,13 @@ public class TestExecutor {
             logger.error("Executor or thread-local worker is not initialized. Call init() before execute().");
             throw new IllegalStateException("TestExecutor is not properly initialized.");
         }
-        
+
         startTime = System.currentTimeMillis();
         panicFlag.set(false);
         final AtomicInteger progress = new AtomicInteger(0);
         final int totalTasks = tcs.size();
         logger.info("Executing tests for {} tasks.", totalTasks);
-        
+
         List<Callable<TestOutcome>> tasks = new ArrayList<>();
         for (final TestCase tc : tcs) {
             tasks.add(() -> {
@@ -119,6 +123,7 @@ public class TestExecutor {
                 if (panicMode && panicFlag.get()) {
                     int currentProgress = progress.incrementAndGet();
                     procedureCallback(currentProgress, totalTasks);
+                    if (onEachStep != null) onEachStep.run();
                     TestOutcome skipped = new TestOutcome(tc, mode == Mode.SOURCE, ExecutionStatus.SKIPPED, null, new ArrayList<>(), "Skipped due to panic mode", 0);
                     logTestCase(skipped, null);
                     return skipped;
@@ -162,6 +167,7 @@ public class TestExecutor {
                 } finally {
                     int currentProgress = progress.incrementAndGet();
                     procedureCallback(currentProgress, totalTasks);
+                    if (onEachStep != null) onEachStep.run();
                 }
                 
                 TestOutcome outcome = new TestOutcome(

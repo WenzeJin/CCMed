@@ -5,21 +5,25 @@ plugins {
 
 group = 'com.wenzejin'
 version = '1.1.0'
-mainClassName = 'com.wenzejin.Main'
+application {
+    mainClass = 'com.wenzejin.Main'
+}
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = JavaVersion.VERSION_21  // 源码兼容性为 Java 21
-targetCompatibility = JavaVersion.VERSION_21  // 目标编译版本为 Java 21
+java {
+    sourceCompatibility = JavaVersion.VERSION_21  // 源码兼容性为 Java 21
+    targetCompatibility = JavaVersion.VERSION_21  // 目标编译版本为 Java 21
+}
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE // 忽略重复的文件
 
     manifest {
         attributes(
-            'Main-Class': mainClassName
+            'Main-Class': application.mainClass
         )
     }
 

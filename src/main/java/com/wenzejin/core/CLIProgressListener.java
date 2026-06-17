@@ -15,7 +15,7 @@ public class CLIProgressListener implements ProgressListener {
     }
 
     @Override
-    public void onStep(int steps, String message) {
+    public synchronized void onStep(int steps, String message) {
         if (pb != null) {
             if (message != null) {
                 pb.setExtraMessage(message);

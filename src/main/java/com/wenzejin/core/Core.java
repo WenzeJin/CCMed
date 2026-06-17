@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Core {
     // --- Logger & Config ---
@@ -75,20 +76,25 @@ public class Core {
                 detailDataRecorder = new DetailDataRecorder(detailDataPath);
             }
 
-
+            final int totalSourceCases = preprocessor.getSize();
             if (config.stopMode.contains("limited")) {
-                progressListener.onStart(config.followUpLimit, "Testing Progress");
+                progressListener.onStart(totalSourceCases + config.followUpLimit, "Testing Progress");
             } else {
                 progressListener.onStart(-1, "Testing Progress");
             }
 
             for (int batch = 1; batch <= totalBatches; batch++) {
-                logger.info("*** Starting Batch {} ***", batch);
+                final int currentBatch = batch;
+                logger.info("*** Starting Batch {} ***", currentBatch);
                 logger.info("Testing source test cases...");
-                progressListener.onStep(0, "B #" + batch + " S");
+                progressListener.onStep(0, "B #" + currentBatch + " S");
                 List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
-                
-                List<TestOutcome> sourceOutcomes = preExecutor.execute(sourceCases);
+                final int sourceTotal = sourceCases.size();
+                AtomicInteger sourceDone = new AtomicInteger(0);
+                List<TestOutcome> sourceOutcomes = preExecutor.execute(sourceCases, () -> {
+                    int done = sourceDone.incrementAndGet();
+                    progressListener.onStep(1, "B #" + currentBatch + " S (" + done + "/" + sourceTotal + ")");
+                });
                 for (TestOutcome sourceOutcome : sourceOutcomes) {
                     if (sourceOutcome.testCase != null
                             && sourceOutcome.testCase.getRule() != null
@@ -114,19 +120,24 @@ public class Core {
                     int processedCount = 0;
                     while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
                         round++;
-                        logger.info("*** Batch {} : Round {} ***", batch, round);
-                        progressListener.onStep(0, "B #" + batch + " FMB #" + round);
+                        final int currentRound = round;
+                        logger.info("*** Batch {} : Round {} ***", currentBatch, currentRound);
+                        progressListener.onStep(0, "B #" + currentBatch + " FMB #" + currentRound);
                         int currentBatchSize = config.stopMode.contains("limited")
                                 ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
                                 : config.miniBatchSize;
                         List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
-                        
-                        List<TestOutcome> followUpOutcomes = postExecutor.execute(followUpCases);
+                        final int followUpTotal = followUpCases.size();
+                        AtomicInteger followUpDone = new AtomicInteger(0);
+                        List<TestOutcome> followUpOutcomes = postExecutor.execute(followUpCases, () -> {
+                            int done = followUpDone.incrementAndGet();
+                            progressListener.onStep(1, "B #" + currentBatch + " FMB #" + currentRound + " (" + done + "/" + followUpTotal + ")");
+                        });
                         if (detailDataRecorder != null) {
                             detailDataRecorder.recordFollowUpOutcomes(followUpOutcomes, sourceRootTypeMap);
                         }
                         processedCount += followUpCases.size();
-                        
+
                         List<TestOutcome> batchFailures = new ArrayList<>();
                         for (int i = 0; i < followUpOutcomes.size(); i++) {
                             TestOutcome outcome = followUpOutcomes.get(i);
@@ -137,18 +148,17 @@ public class Core {
                                 }
                             }
                         }
-                        
+
                         failedOutcomes.addAll(batchFailures);
                         hasFailures = hasFailures || !batchFailures.isEmpty();
-                        
+
                         totalFollowUp += followUpCases.size();
-                        progressListener.onStep(followUpCases.size(), null);
                         if (hasFailures && config.stopMode.contains("panic")) {
-                            logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", batch);
+                            logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", currentBatch);
                             break;
                         }
                     }
-                    logger.info("Batch {} completed. Processed {} follow-up cases.", batch, processedCount);
+                    logger.info("Batch {} completed. Processed {} follow-up cases.", currentBatch, processedCount);
                     mtCore.logStats();
                 } else {
                     logger.warn("Testing interrupted due to failed source cases. No follow-up tests will be performed.");
