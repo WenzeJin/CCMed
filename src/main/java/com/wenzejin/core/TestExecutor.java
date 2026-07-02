@@ -181,6 +181,7 @@ public class TestExecutor {
                 );
 
                 if (panicMode && ((mode == Mode.FOLLOW && !outcome.isPassed()) || (status != ExecutionStatus.SUCCESS && status != ExecutionStatus.SKIPPED))) {
+                    logger.info("Panic activated due to test case {} status: {} passed: {}. Setting panic flag.", tc.getId(), status, outcome.isPassed());
                     panicFlag.set(true);
                 }
                 
