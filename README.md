@@ -42,7 +42,7 @@ The execution is controlled by `config.json`. Key parameters include:
 *   `rulesPath`: Directory containing XML rule templates.
 *   `bfuncPath`: Path to the Bfunction support class.
 
-> [!NOTE] Bfunction Support Class
+> [!NOTE] 
 > The `bfuncPath` is only required if the SUT / SUT worker uses Bfunction support to read the generated `bfunc_in.txt` and instantiate Bfunctions. However, it is a required parameter because mainstream CC implementations and their workers (e.g., Infuse, MG) use Bfunction support class. If the SUT / SUT worker does not use Bfunction support, you can set `bfuncPath` to an empty string `""`.
 
 A example configuration file can be found in `conf/rt_conf.json`, which is for running the framework with a small number of source and follow-up cases for regression testing.
