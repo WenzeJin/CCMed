@@ -1,6 +1,6 @@
 # CCMed: Metamorphic Testing Framework for Constraint Checking Implementations
 
-**CCMed** is an automated testing framework designed to test constraint checking implementations. It is the artifact of the paper 
+**CCMed** is an automated testing framework designed to test constraint checking implementations. It is the artifact of our accepted paper 
 
 *"Compositional Constructive Metamorphism for Testing Constraint Checking Implementations"* 
 
