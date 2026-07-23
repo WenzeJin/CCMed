@@ -1,0 +1,19 @@
+{
+  "taskName": "rt",
+  "timeStamp": true,
+  "stopMode": "limited",
+  "mtCore": "ART",
+  "sourceLimit": 200,
+  "bfuncPolicy": "enum",
+  "followUpLimit": 1000,
+  "batchSize": 200,
+  "miniBatchSize": 100,
+  "threadLimit": 8,
+  "workerType": "infuse",
+  "workspaceRoot": "workspace",
+  "targetPath": "cc/INFUSE_ORI/std.jar",
+  "rulesPath": "rules/level3all",
+  "bfuncPath": "utils/Bfunction.class",
+  "storeMode": "fail",
+  "arguments": ["-approach", "ECC+GEAS_ori", "-mg"]
+}

@@ -61,6 +61,24 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.17.1'
 }
 
+run {
+    standardInput = System.in
+    doFirst {
+        environment 'COLUMNS', System.getenv('COLUMNS') ?: detectColumns()
+    }
+}
+
+def detectColumns() {
+    try {
+        def p = 'stty size'.execute()
+        def output = new String(p.in.readAllBytes()).trim()
+        p.waitFor()
+        def parts = output.split(' ')
+        if (parts.length >= 2) return parts[1]
+    } catch (Exception ignored) {}
+    return '120'
+}
+
 test {
     useJUnitPlatform()
 }
