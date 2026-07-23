@@ -14,7 +14,7 @@ public class MGWorker extends StandardWorker {
     }
 
     @Override
-    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args) {
+    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path bf, Path inc, List<String> args) {
         target = target.resolve("bin").resolve("app");
 
         try {
@@ -34,7 +34,7 @@ public class MGWorker extends StandardWorker {
                 "-i", cp.toString(),
                 "-o", inc.toString(),
                 "-r", rule.toString(),
-                "-j", bfc.toString()
+                "-j", bf.toString()
         ));
         cmdLine.addAll(args);
 

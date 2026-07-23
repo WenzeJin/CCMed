@@ -10,13 +10,13 @@ public class InfuseWorker extends StandardWorker {
     }
 
     @Override
-    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args) {
+    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path bf, Path inc, List<String> args) {
         Path cctPath = workspace.resolve("cct.txt");
         List<String> cmdLine = new ArrayList<>( List.of(
             "java", "-jar", target.toString(),
             "-test",
             "-rules", rule.toString(),
-            "-bfuncs", bfc.toString(),
+            "-bfuncs", bf.toString(),
             "-contextpool", cp.toString(),
             "-incs", inc.toString(),
             "-cct", cctPath.toString()

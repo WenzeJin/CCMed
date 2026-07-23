@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Standard worker is for those cc which support the new interface for testing.
  */
-public abstract class StandardWorker implements TestWorker {
+public class StandardWorker implements TestWorker {
 
     static Logger logger = LogManager.getLogger("StandardWorker");
 
@@ -66,9 +66,32 @@ public abstract class StandardWorker implements TestWorker {
     /* A variant of std worker should implement the method below */
 
     /**
-     * Use the given path to generate the cmd line for execution.
+     * Builds the command line for executing the SUT.
+     * <p>
+     * Default implementation uses {@code java -jar} with standard flags
+     * ({@code -rules}, {@code -bfuncs}, {@code -contextpool}, {@code -incs}).
+     * Subclasses may override for SUTs that need different flags or a native binary.
+     *
+     * @param target path to the SUT jar or binary
+     * @param rule   path to the generated rule XML
+     * @param cp     path to the context pool JSON
+     * @param bfc    path to the bfunc class file
+     * @param bf     path to the bfunc input data file ({@code bfunc_in.txt})
+     * @param inc    path for the output inconsistencies file
+     * @param args   additional command-line arguments from config
+     * @return the full command line as a list of strings
      */
-    protected abstract List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args);
+    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path bf, Path inc, List<String> args) {
+        List<String> cmdLine = new ArrayList<>(List.of(
+            "java", "-jar", target.toString(),
+            "-rules", rule.toString(),
+            "-bfuncs", bf.toString(),
+            "-contextpool", cp.toString(),
+            "-incs", inc.toString()
+        ));
+        cmdLine.addAll(args);
+        return cmdLine;
+    }
 
     /**
      * Initialize temporary workspace for StandardWorker
@@ -212,7 +235,8 @@ public abstract class StandardWorker implements TestWorker {
 
     private int execute() {
         Path absoluteJar = copiedJar.toAbsolutePath();
-        Path absoluteBfunc = copiedBfuncClass.toAbsolutePath();
+        Path absoluteBfuncClass = copiedBfuncClass.toAbsolutePath();
+        Path bfuncInput = workspace.resolve("bfunc_in.txt").toAbsolutePath();
         Path contextPool = workspace.resolve("context_pool.json").toAbsolutePath();
         Path ruleInput = workspace.resolve("rule.xml").toAbsolutePath();
         Path outputInc = workspace.resolve("incs.json").toAbsolutePath();
@@ -226,7 +250,7 @@ public abstract class StandardWorker implements TestWorker {
             return 1;
         }
 
-        var args = getCmdLine(absoluteJar, ruleInput, contextPool, absoluteBfunc, outputInc, arguments);
+        var args = getCmdLine(absoluteJar, ruleInput, contextPool, absoluteBfuncClass, bfuncInput, outputInc, arguments);
 
         ProcessBuilder builder = new ProcessBuilder(args)
                 .redirectOutput(logPath.toFile())

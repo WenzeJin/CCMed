@@ -10,12 +10,12 @@ public class InfuseOldWorker extends StandardWorker {
     }
 
     @Override
-    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path inc, List<String> args) {
+    protected List<String> getCmdLine(Path target, Path rule, Path cp, Path bfc, Path bf, Path inc, List<String> args) {
         List<String> cmdLine = new ArrayList<>(List.of(
             "java", "-jar", target.toString(),
             "-t",
             "-rf", rule.toString(),
-            "-bf", bfc.toString(),
+            "-bf", bf.toString(),
             "-cp", cp.toString(),
             "-o", inc.toString()
         ));
