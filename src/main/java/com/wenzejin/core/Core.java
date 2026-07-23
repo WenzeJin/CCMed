@@ -2,9 +2,9 @@ package com.wenzejin.core;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.MTCore;
-import com.wenzejin.core.mr.jin.ARTCore;
-import com.wenzejin.core.mr.jin.ChainCompositionCore;
-import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.ccm.ARTCore;
+import com.wenzejin.core.mr.ccm.ChainCompositionCore;
+import com.wenzejin.core.mr.ccm.rules.TestCaseSetup;
 import com.wenzejin.core.result.ExecutionStatus;
 import com.wenzejin.core.result.TestOutcome;
 import org.apache.logging.log4j.LogManager;
@@ -45,10 +45,10 @@ public class Core {
 
         try {
             final Map<String, Object> arguments = prepareArguments();
-            final SourceGenerator preprocessor = new SourceGenerator(config.rulesPath, config.enumLimit, config.threadLimit, config.bfuncPolicy);
+            final SourceGenerator preprocessor = new SourceGenerator(config.getRulesPath(), config.getEnumLimit(), config.getThreadLimit(), config.getBfuncPolicy());
 
             preprocessor.generateTestCases();
-            preprocessor.reduceSize(config.sourceLimit);
+            preprocessor.reduceSize(config.getSourceLimit());
             logger.info("Source cases preparation completed in {} ms.", System.currentTimeMillis());
 
             boolean hasFailures = false;
@@ -56,29 +56,29 @@ public class Core {
             final List<TestOutcome> failedOutcomes = new ArrayList<>();
 
                 preExecutor = new TestExecutor(
-                    TestExecutor.Mode.SOURCE, workspace, config.workerType, arguments, config.threadLimit, config.storeMode, config.stopMode.contains("panic"));
+                    TestExecutor.Mode.SOURCE, workspace, config.getWorkerType(), arguments, config.getThreadLimit(), config.getStoreMode(), config.getStopMode().contains("panic"));
                 postExecutor = new TestExecutor(
-                    TestExecutor.Mode.FOLLOW, workspace, config.workerType, arguments, config.threadLimit, config.storeMode, config.stopMode.contains("panic"));
+                    TestExecutor.Mode.FOLLOW, workspace, config.getWorkerType(), arguments, config.getThreadLimit(), config.getStoreMode(), config.getStopMode().contains("panic"));
             preExecutor.init();
             postExecutor.init();
 
-            TestCaseSetup.simpleMode = config.simpleMode;
+            TestCaseSetup.simpleMode = config.isSimpleMode();
 
-            final int totalBatches = preprocessor.getSize() / config.batchSize + ((preprocessor.getSize() % config.batchSize) == 0 ? 0 : 1);
-            final int batchFollowUpLimit = config.followUpLimit / totalBatches;
+            final int totalBatches = preprocessor.getSize() / config.getBatchSize() + ((preprocessor.getSize() % config.getBatchSize()) == 0 ? 0 : 1);
+            final int batchFollowUpLimit = config.getFollowUpLimit() / totalBatches;
             int totalFollowUp = 0;
             int firstFailure = -1;
             long startTime = System.currentTimeMillis();
             final Map<Integer, String> sourceRootTypeMap = new HashMap<>();
 
-            if (config.detailData) {
+            if (config.isDetailData()) {
                 String detailDataPath = Paths.get(workspace, "detail-data.txt").toString();
                 detailDataRecorder = new DetailDataRecorder(detailDataPath);
             }
 
             final int totalSourceCases = preprocessor.getSize();
-            if (config.stopMode.contains("limited")) {
-                progressListener.onStart(totalSourceCases + config.followUpLimit, "Testing Progress");
+            if (config.getStopMode().contains("limited")) {
+                progressListener.onStart(totalSourceCases + config.getFollowUpLimit(), "Testing Progress");
             } else {
                 progressListener.onStart(-1, "Testing Progress");
             }
@@ -88,7 +88,7 @@ public class Core {
                 logger.info("*** Starting Batch {} ***", currentBatch);
                 logger.info("Testing source test cases...");
                 progressListener.onStep(0, "B #" + currentBatch + " S");
-                List<TestCase> sourceCases = preprocessor.getBatch(config.batchSize);
+                List<TestCase> sourceCases = preprocessor.getBatch(config.getBatchSize());
                 final int sourceTotal = sourceCases.size();
                 AtomicInteger sourceDone = new AtomicInteger(0);
                 List<TestOutcome> sourceOutcomes = preExecutor.execute(sourceCases, () -> {
@@ -114,23 +114,23 @@ public class Core {
 
                 if (!sourceCaseFailures) {
                     MTCore mtCore;
-                    if ("chain".equalsIgnoreCase(config.mtCore)) {
-                        mtCore = new ChainCompositionCore(config.chainLength, "random");
-                        logger.info("Using ChainCompositionCore with chainLength={}", config.chainLength);
+                    if ("chain".equalsIgnoreCase(config.getMtCore())) {
+                        mtCore = new ChainCompositionCore(config.getChainLength(), "random");
+                        logger.info("Using ChainCompositionCore with chainLength={}", config.getChainLength());
                     } else {
-                        mtCore = new ARTCore(config.threadLimit);
+                        mtCore = new ARTCore(config.getThreadLimit());
                     }
                     mtCore.initCandidates(sourceOutcomes);
                     int round = 0;
                     int processedCount = 0;
-                    while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.stopMode.contains("limited"))) {
+                    while (mtCore.hasMore() && (processedCount < batchFollowUpLimit || !config.getStopMode().contains("limited"))) {
                         round++;
                         final int currentRound = round;
                         logger.info("*** Batch {} : Round {} ***", currentBatch, currentRound);
                         progressListener.onStep(0, "B #" + currentBatch + " FMB #" + currentRound);
-                        int currentBatchSize = config.stopMode.contains("limited")
-                                ? Math.min(batchFollowUpLimit - processedCount, config.miniBatchSize)
-                                : config.miniBatchSize;
+                        int currentBatchSize = config.getStopMode().contains("limited")
+                                ? Math.min(batchFollowUpLimit - processedCount, config.getMiniBatchSize())
+                                : config.getMiniBatchSize();
                         List<TestCase> followUpCases = mtCore.getNextBatch(currentBatchSize);
                         final int followUpTotal = followUpCases.size();
                         AtomicInteger followUpDone = new AtomicInteger(0);
@@ -158,7 +158,7 @@ public class Core {
                         hasFailures = hasFailures || !batchFailures.isEmpty();
 
                         totalFollowUp += followUpCases.size();
-                        if (hasFailures && config.stopMode.contains("panic")) {
+                        if (hasFailures && config.getStopMode().contains("panic")) {
                             logger.info("Batch {} interrupted due to failed cases. Panic mode activated.", currentBatch);
                             break;
                         }
@@ -169,7 +169,7 @@ public class Core {
                     logger.warn("Testing interrupted due to failed source cases. No follow-up tests will be performed.");
                     break;
                 }
-                if (hasFailures && config.stopMode.contains("panic")) {
+                if (hasFailures && config.getStopMode().contains("panic")) {
                     logger.warn("Testing interrupted due to failed cases. Panic mode activated.");
                     System.out.println("Testing interrupted due to failed cases. (panic mode activated)");
                     break;
@@ -182,7 +182,7 @@ public class Core {
             
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
-                    System.currentTimeMillis() - startTime, totalBatches * config.batchSize, totalFollowUp, failedOutcomes.size());
+                    System.currentTimeMillis() - startTime, totalBatches * config.getBatchSize(), totalFollowUp, failedOutcomes.size());
             System.out.println("Testing completed successfully! Result: " +
                     (hasFailures ? "FAILED cases detected." : "All passed.") +
                     " Total time: " + (System.currentTimeMillis() - startTime) / 1000 + " s.");
@@ -212,13 +212,13 @@ public class Core {
     // --- Argument Preparation ---
     private Map<String, Object> prepareArguments() {
         Map<String, Object> arguments = new HashMap<>();
-        arguments.put("preprocessor.rules-input-directory", config.rulesPath);
+        arguments.put("preprocessor.rules-input-directory", config.getRulesPath());
 
-        arguments.put("std.jar-target-path", config.targetPath);
-        arguments.put("std.bfunc-class-path", config.bfuncPath);
-        arguments.put("std.arguments", config.arguments);
+        arguments.put("std.jar-target-path", config.getTargetPath());
+        arguments.put("std.bfunc-class-path", config.getBfuncPath());
+        arguments.put("std.arguments", config.getArguments());
 
-        arguments.putAll(config.otherArgs);
+        arguments.putAll(config.getOtherArgs());
 
         return arguments;
     }

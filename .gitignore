@@ -41,20 +41,25 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+# Project data directories (root only)
+/rules/
+/data/
+/workspace/
+/cc/
+/cc_utils/
+/logs/
+/docs/
 
-rules/
-
-data/
+# IDE
 .idea/
+*.iml
+*.iws
+
+# Build outputs
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 result.txt
-workspace/
 result.json
-
 *.log
-logs/
-
-docs/
-cc/
-
 detail-data.txt
+settings.json

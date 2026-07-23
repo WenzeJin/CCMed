@@ -7,6 +7,7 @@ import com.wenzejin.core.exception.XmlParseException;
 import com.wenzejin.core.rule.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class SourceGenerator {
 
-    private List<TestCase> testCases;
+    private static final int RANDOM_BFUNC_FAIL_LIMIT = 3;
+
+    private final List<TestCase> testCases;
 
     // configurable arguments
     private final String rulesInputDirectory;
@@ -40,7 +43,7 @@ public class SourceGenerator {
         this.rulesInputDirectory = rulesInput;
         this.enumMax = enumMax;
         this.threadMax = threadMax;
-        testCases = new ArrayList<>();
+        this.testCases = Collections.synchronizedList(new ArrayList<>());
         this.bfuncPolicy = bfuncPolicy;
         logger.info("Preprocessor initialized.  enumMax={} threadMax={} bfuncPolicy={}", enumMax, threadMax, bfuncPolicy);
     }
@@ -64,7 +67,9 @@ public class SourceGenerator {
      */
     public void reduceSize(int size) {
         logger.info("Reducing size from {} to {}", testCases.size(), size);
-        testCases = RandomSubset.getRandom(testCases, size);
+        List<TestCase> subset = RandomSubset.getRandom(testCases, size);
+        testCases.clear();
+        testCases.addAll(subset);
     }
 
     /**
@@ -313,9 +318,7 @@ public class SourceGenerator {
             testCase.setOriRule(rule.getId());
             testCase.setPatterns(newPatterns);
             testCase.setBfuncs(combination);
-            synchronized (testCases) {
-                testCases.add(testCase);
-            }
+            testCases.add(testCase);
             count++;
         }
     }
@@ -387,7 +390,7 @@ public class SourceGenerator {
                 idCounter++;
             }
 
-            if (failCount >= 3) {
+            if (failCount >= RANDOM_BFUNC_FAIL_LIMIT) {
                 break;
             }
         }

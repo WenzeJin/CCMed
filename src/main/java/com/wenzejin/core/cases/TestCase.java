@@ -12,11 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestCase {
 
-    private static AtomicInteger idCounter = new AtomicInteger(0);
-
-    public static void syncCounter(int id) {
-        idCounter.set(id);
-    }
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
 
     private final int id;
 
@@ -32,7 +28,7 @@ public class TestCase {
     private final List<Integer> source;
 
     public TestCase() {
-        id = idCounter.getAndIncrement();
+        id = ID_COUNTER.getAndIncrement();
         oriRule = null;
         assertions = null;
         ruleUsed = new ArrayList<>();
@@ -93,10 +89,6 @@ public class TestCase {
 
     public void setSource(List<Integer> source) {
         this.source.addAll(source);
-    }
-
-    public boolean isValid() {
-        return true;
     }
 
     @Override

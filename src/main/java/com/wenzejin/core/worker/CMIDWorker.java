@@ -17,7 +17,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,6 +26,11 @@ import java.util.concurrent.TimeUnit;
 public class CMIDWorker implements TestWorker {
 
     static Logger logger = LogManager.getLogger("CMIDWorker");
+
+    private static final int PROCESS_TIMEOUT_SECONDS = 5;
+    private static final int EXIT_CODE_TIMEOUT = 2;
+    private static final int EXIT_CODE_ERROR = 1;
+    private static final int EXIT_CODE_SUCCESS = 0;
 
     // Configurable Arguments
     private final String workspaceRoot;
@@ -130,43 +134,6 @@ public class CMIDWorker implements TestWorker {
     }
 
 
-    private Path copyFileToWorkspace(String sourcePath, Path workspace, String fileDescription) throws IOException {
-        Path sourceFile = Paths.get(sourcePath);
-        if (!Files.exists(sourceFile)) {
-            logger.fatal("{} not found at: {}", fileDescription, sourcePath);
-            throw new FileNotFoundException(fileDescription + " not found at: " + sourcePath);
-        }
-
-        Path destinationFile = workspace.resolve(sourceFile.getFileName());
-        if (Files.isDirectory(sourceFile)) {
-            // Recursively copy directory with try-with-resources
-            try (var paths = Files.walk(sourceFile)) {
-                paths.forEach(path -> {
-                    Path destPath = destinationFile.resolve(sourceFile.relativize(path));
-                    try {
-                        if (Files.isDirectory(path)) {
-                            Files.createDirectories(destPath);
-                        } else {
-                            Files.copy(path, destPath, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                    } catch (IOException e) {
-                        logger.fatal("Failed to copy {} to workspace: {}", fileDescription, destPath, e);
-                        throw new UncheckedIOException(e);
-                    }
-                });
-            }
-        } else {
-            try {
-                Files.copy(sourceFile, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                logger.fatal("Failed to copy {} to workspace: {}", fileDescription, destinationFile, e);
-                throw new IOException("Failed to copy " + fileDescription + " to workspace: " + destinationFile, e);
-            }
-        }
-
-        return destinationFile;
-    }
-
     /**
      * Initialize temporary workspace for InfuseWorker
      * the workspace path will be "[workspaceRoot]/infuse_worker_[UUID]"
@@ -186,7 +153,7 @@ public class CMIDWorker implements TestWorker {
         }
 
         // Copy jar file to workspace
-        copiedJar = copyFileToWorkspace(jarTargetPath, workspace, "Jar target file");
+        copiedJar = WorkerFileUtils.copyFileToWorkspace(jarTargetPath, workspace, "Jar target file");
     }
 
 
@@ -318,26 +285,26 @@ public class CMIDWorker implements TestWorker {
         try {
             Process process = builder.start();
 
-            if (!process.waitFor(5, TimeUnit.SECONDS)) {
+            if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 logger.warn("Execution time limit exceeded. Terminating process.");
                 process.destroy();
-                return 2;
+                return EXIT_CODE_TIMEOUT;
             }
 
             int exitCode = process.exitValue();
             if (exitCode != 0) {
                 logger.warn("Process exited with non-zero code: {}", exitCode);
-                return 1;
+                return EXIT_CODE_ERROR;
             }
         } catch (IOException e) {
             logger.error("IOException occurred during process execution.", e);
-            return 1;
+            return EXIT_CODE_ERROR;
         } catch (InterruptedException e) {
             logger.error("Process execution was interrupted.", e);
-            return 1;
+            return EXIT_CODE_ERROR;
         }
 
-        return 0;
+        return EXIT_CODE_SUCCESS;
     }
 
     private String getWorkspacePath() {

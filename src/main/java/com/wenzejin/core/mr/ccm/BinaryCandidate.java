@@ -1,10 +1,13 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
-import com.wenzejin.core.mr.jin.rules.PUComposition;
+import com.wenzejin.core.mr.ccm.rules.TestCaseSetup;
+import com.wenzejin.core.mr.ccm.rules.PUComposition;
 
 public class BinaryCandidate implements TestCaseCandidate {
+    private static final double NEGATION_PROBABILITY = 0.75;
+    private static final double INITIAL_DISTANCE = 100.0;
+
     final PrimitiveUnit left;
     final PrimitiveUnit right;
     final String newOp;
@@ -16,8 +19,7 @@ public class BinaryCandidate implements TestCaseCandidate {
         this.right = right;
         this.newOp = newOp;
         this.taRule = TestCaseSetup.getRealRuleCode((ClosedTag) left.tag, (ClosedTag) right.tag, newOp);
-        // generate a random double above 1000
-        minDistance = 100;
+        minDistance = INITIAL_DISTANCE;
     }
 
     public PrimitiveUnit getLeft() {
@@ -39,11 +41,11 @@ public class BinaryCandidate implements TestCaseCandidate {
     @Override
     public TestCase genTestCase() {
         PrimitiveUnit l = left;
-        if (Math.random() > 0.75) {
+        if (Math.random() > NEGATION_PROBABILITY) {
             l = PUComposition.negation(l);
         }
         PrimitiveUnit r = right;
-        if (Math.random() > 0.75) {
+        if (Math.random() > NEGATION_PROBABILITY) {
             r = PUComposition.negation(r);
         }
         var gen = PUComposition.unifyForBin(l, r, newOp);

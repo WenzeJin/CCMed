@@ -1,4 +1,4 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.rule.Bfunc;
 import com.wenzejin.core.rule.Formula;
@@ -31,9 +31,15 @@ public class PrimitiveUnit {
         this.oriRules = null;
     }
 
+    /**
+     * Initializes oriRules for composition tracking. If already initialized, adds
+     * the original rule to the existing list (idempotent across repeated calls).
+     */
     public void initializeForComposition() {
-        this.oriRules = new ArrayList<>();
-        this.oriRules.add(oriRule);
+        if (this.oriRules == null) {
+            this.oriRules = new ArrayList<>();
+            this.oriRules.add(oriRule);
+        }
     }
 
     @Override

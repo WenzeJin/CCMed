@@ -19,15 +19,15 @@ public class WorkspaceManager {
     }
 
     public String setupWorkspace() {
-        String taskName = config.taskName;
-        if (config.timeStamp) {
+        String taskName = config.getTaskName();
+        if (config.isTimeStamp()) {
             String timestamp = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             taskName = taskName + "_" + timestamp;
         }
-        workspacePath = Paths.get(config.workspaceRoot, taskName).toString();
+        workspacePath = Paths.get(config.getWorkspaceRoot(), taskName).toString();
         try {
-            Files.createDirectories(Paths.get(config.workspaceRoot, taskName));
+            Files.createDirectories(Paths.get(config.getWorkspaceRoot(), taskName));
             logger.info("Workspace created at: {}", workspacePath);
         }  catch (IOException e) {
             logger.error("Failed to create workspace directory: {}", e.getMessage());

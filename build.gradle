@@ -7,6 +7,7 @@ group = 'com.wenzejin'
 version = '1.1.0'
 application {
     mainClass = 'com.wenzejin.Main'
+    applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
 }
 
 repositories {
@@ -14,12 +15,12 @@ repositories {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21  // 源码兼容性为 Java 21
-    targetCompatibility = JavaVersion.VERSION_21  // 目标编译版本为 Java 21
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // 忽略重复的文件
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes(
@@ -37,25 +38,30 @@ jar {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // 添加 JAXB 依赖
+    // JAXB is bundled with JDK 21+; these dependencies are kept for compatibility
+    // with older JDK versions. Remove if targeting JDK 21+ exclusively.
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
 
-    // 添加 log4j 依赖
+    // Log4j
     implementation 'org.apache.logging.log4j:log4j-core:2.24.3'
     implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
 
+    // JSON libraries
     implementation 'org.json:json:20250107'
 
     // Gson
     implementation 'com.google.code.gson:gson:2.12.1'
 
-    // Progressbar
+    // Progress bar (uses JLine → needs --enable-native-access=ALL-UNNAMED on JDK 21+)
     implementation 'me.tongfei:progressbar:0.10.1'
 
+    // CLI argument parsing
     implementation 'commons-cli:commons-cli:1.5.0'
 
+    // Jackson for config serialization
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.17.1'
@@ -63,6 +69,7 @@ dependencies {
 
 run {
     standardInput = System.in
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
     doFirst {
         environment 'COLUMNS', System.getenv('COLUMNS') ?: detectColumns()
     }

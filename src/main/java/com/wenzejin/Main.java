@@ -39,7 +39,7 @@ public class Main {
         try {
             Config conf = Config.loadFromJson(configPath);
             if (detailData) {
-                conf.detailData = true;
+                conf.setDetailData(true);
             }
             if (!conf.validate(true)) {
                 System.exit(-1);

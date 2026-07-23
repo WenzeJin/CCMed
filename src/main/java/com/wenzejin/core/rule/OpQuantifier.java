@@ -41,11 +41,11 @@ public class OpQuantifier implements Formula {
             case "forall": case "exists":
                 if (getNodeType().equals(formula.getNodeType())) {
                     // This layer of two formulas are the same, so we compare the inner formulae.
-                    return formula.distance(((OpQuantifier) formula).formula) * 0.5;
+                    return this.formula.distance(((OpQuantifier) formula).formula) * 0.5;
                 } else {
                     // This layer of two formulas are different, but the structure is similar.
                     // So we return a medium distance, and compare the inner formulae.
-                    return 25 + formula.distance(((OpQuantifier) formula).formula) * 0.5;
+                    return 25 + this.formula.distance(((OpQuantifier) formula).formula) * 0.5;
                 }
             default:
                 return 100;

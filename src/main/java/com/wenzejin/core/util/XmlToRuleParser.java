@@ -24,7 +24,7 @@ public class XmlToRuleParser {
                 try {
                     // 对每个 XML 文件进行解析
                     List<Rule> rules = parseRuleFromXmlFile(file.toString());
-                    allRules.addAll(rules); // 将解析结果添加到总列表
+                    allRules.addAll(rules);
                 } catch (XmlParseException e) {
                     System.err.println("Failed to parse file: " + file + " - " + e.getMessage());
                 }
@@ -38,13 +38,10 @@ public class XmlToRuleParser {
     }
 
     public List<Rule> parseRuleFromXmlFile(String filePath) throws XmlParseException {
-        try {
-            // 读取文件内容
-            FileInputStream fileInputStream = new FileInputStream(filePath);
-            // 使用文件内容调用 parseRuleFromXmlDoc 方法进行解析
+        try (FileInputStream fileInputStream = new FileInputStream(filePath)) {
             return parseRuleFromXmlDoc(fileInputStream);
-        } catch (FileNotFoundException e) {
-            throw new XmlParseException("File not found: " + filePath);
+        } catch (IOException e) {
+            throw new XmlParseException("Failed to read file: " + filePath + " - " + e.getMessage());
         } catch (XmlParseException e) {
             String message = e.getMessage();
             throw new XmlParseException("File \" " + filePath + "\" could not be parsed: \n" + message);
@@ -174,7 +171,7 @@ public class XmlToRuleParser {
 
     private static NodeList getDirectChildElements(Element element) {
         NodeList allChildNodes = element.getChildNodes();
-        // 使用一个 ArrayList 来收集直接子元素
+        // Use an ArrayList to collect direct child elements
         List<Element> directChildren = new ArrayList<>();
 
         for (int i = 0; i < allChildNodes.getLength(); i++) {
@@ -184,7 +181,7 @@ public class XmlToRuleParser {
             }
         }
 
-        // 将结果转换为 NodeList 返回
+        // Return the result as a NodeList
         return new NodeList() {
             @Override
             public int getLength() {

@@ -1,7 +1,7 @@
 package com.wenzejin.core.mr.assertion;
 
 
-import com.wenzejin.core.mr.jin.UtilFunctions;
+import com.wenzejin.core.mr.ccm.UtilFunctions;
 import com.wenzejin.core.result.Result;
 
 import java.util.Set;

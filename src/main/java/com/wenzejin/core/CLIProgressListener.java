@@ -36,7 +36,7 @@ public class CLIProgressListener implements ProgressListener {
     }
 
     @Override
-    public void onStart(int totalSteps, String taskName) {
+    public synchronized void onStart(int totalSteps, String taskName) {
         int width = detectTerminalWidth();
         if (totalSteps > 0) {
             pb = new ProgressBarBuilder()
@@ -64,7 +64,7 @@ public class CLIProgressListener implements ProgressListener {
     }
 
     @Override
-    public void onFinish(String message) {
+    public synchronized void onFinish(String message) {
         if (pb != null) {
             pb.close();
         }
@@ -74,7 +74,7 @@ public class CLIProgressListener implements ProgressListener {
     }
 
     @Override
-    public void onError(String errorMessage) {
+    public synchronized void onError(String errorMessage) {
         if (pb != null) {
             pb.close();
         }

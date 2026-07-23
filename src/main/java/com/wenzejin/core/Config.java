@@ -2,6 +2,7 @@ package com.wenzejin.core;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,60 +10,97 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-@JsonIgnoreProperties(ignoreUnknown = true)  // 忽略未知字段，避免出错
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Config {
 
     // =====================
-    // 已知字段
+    // Known fields
     // =====================
 
     // Task info
-    public String taskName = "DefaultTask";
-    public boolean timeStamp = true;
-    public String workspaceRoot;
+    @JsonProperty private String taskName = "DefaultTask";
+    @JsonProperty private boolean timeStamp = true;
+    @JsonProperty private String workspaceRoot;
 
     // Threading
-    public int threadLimit = Runtime.getRuntime().availableProcessors();
+    @JsonProperty private int threadLimit = Runtime.getRuntime().availableProcessors();
 
     // Stopping criteria
-    public String stopMode = "panic";
-    public int sourceLimit;
-    public int followUpLimit;
+    @JsonProperty private String stopMode = "panic";
+    @JsonProperty private int sourceLimit;
+    @JsonProperty private int followUpLimit;
 
     // Batching
-    public int batchSize;
-    public int miniBatchSize;
+    @JsonProperty private int batchSize;
+    @JsonProperty private int miniBatchSize;
 
     // Target and supplementary class
-    public String workerType;
-    public String targetPath;
-    public String bfuncPath;
+    @JsonProperty private String workerType;
+    @JsonProperty private String targetPath;
+    @JsonProperty private String bfuncPath;
 
     // Target arguments
-    public List<String> arguments;
+    @JsonProperty private List<String> arguments;
 
     // Source cases generation
-    public String rulesPath;
-    public String bfuncPolicy = "enum";
-    public int enumLimit = Integer.MAX_VALUE;
-    
+    @JsonProperty private String rulesPath;
+    @JsonProperty private String bfuncPolicy = "enum";
+    @JsonProperty private int enumLimit = Integer.MAX_VALUE;
+
     // MT core selection: "ART" (default) or "chain"
-    public String mtCore = "ART";
+    @JsonProperty private String mtCore = "ART";
     // Chain length for ChainCompositionCore (2-6), only used when mtCore = "chain"
-    public int chainLength = 5;
+    @JsonProperty private int chainLength = 5;
 
     // Other options
-    public boolean simpleMode = false;
-    public String storeMode = "fail";
-    public boolean detailData = false;
+    @JsonProperty private boolean simpleMode = false;
+    @JsonProperty private String storeMode = "fail";
+    @JsonProperty private boolean detailData = false;
 
     // =====================
-    // 未知字段（用户自定义）
+    // Unknown fields (user-defined)
     // =====================
-    public Map<String, JsonNode> otherArgs = new HashMap<>();
+    @JsonProperty private Map<String, JsonNode> otherArgs = new HashMap<>();
+
+    // =====================
+    // Getters
+    // =====================
+
+    public String getTaskName() { return taskName; }
+    public boolean isTimeStamp() { return timeStamp; }
+    public String getWorkspaceRoot() { return workspaceRoot; }
+    public int getThreadLimit() { return threadLimit; }
+    public String getStopMode() { return stopMode; }
+    public int getSourceLimit() { return sourceLimit; }
+    public int getFollowUpLimit() { return followUpLimit; }
+    public int getBatchSize() { return batchSize; }
+    public int getMiniBatchSize() { return miniBatchSize; }
+    public String getWorkerType() { return workerType; }
+    public String getTargetPath() { return targetPath; }
+    public String getBfuncPath() { return bfuncPath; }
+    public List<String> getArguments() { return arguments; }
+    public String getRulesPath() { return rulesPath; }
+    public String getBfuncPolicy() { return bfuncPolicy; }
+    public int getEnumLimit() { return enumLimit; }
+    public String getMtCore() { return mtCore; }
+    public int getChainLength() { return chainLength; }
+    public boolean isSimpleMode() { return simpleMode; }
+    public String getStoreMode() { return storeMode; }
+    public boolean isDetailData() { return detailData; }
+    public Map<String, JsonNode> getOtherArgs() { return otherArgs; }
+
+    // =====================
+    // Setters (for programmatic overrides)
+    // =====================
+
+    public void setDetailData(boolean detailData) { this.detailData = detailData; }
+
+    // =====================
+    // Serialization / Deserialization
+    // =====================
 
     /**
-     * 自动解析 JSON 配置
+     * Load configuration from JSON file.
      */
     public static Config loadFromJson(String jsonPath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -71,12 +109,11 @@ public class Config {
 
     public void saveToJson(String path) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.writerWithDefaultPrettyPrinter().withDefaultPrettyPrinter();
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File(path), this);
     }
 
     /**
-     * 将未知字段（未映射字段）自动放到 otherArgs 中
+     * Automatically collects unknown JSON fields into otherArgs.
      */
     @JsonAnySetter
     public void handleUnknown(String key, JsonNode value) {
@@ -122,10 +159,10 @@ public class Config {
             return false;
         }
 
-        // bfuncPath check
-        if (bfuncPath == null || !new File(bfuncPath).exists()) {
+        // bfuncPath check — empty string is allowed when SUT does not use Bfunction support
+        if (bfuncPath != null && !bfuncPath.isEmpty() && !new File(bfuncPath).exists()) {
             if (verbose) {
-                System.out.println("FATAL: bfuncPath is null or the file does not exist!");
+                System.out.println("FATAL: bfuncPath file does not exist!");
             }
             return false;
         }
@@ -151,4 +188,3 @@ public class Config {
         return true;
     }
 }
-

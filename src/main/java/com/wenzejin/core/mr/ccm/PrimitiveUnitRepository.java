@@ -1,4 +1,4 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import java.util.List;
 import java.util.ArrayList;

@@ -91,10 +91,10 @@ public class Rule implements Cloneable {
     @Override
     public Rule clone() {
         try {
-            // 调用 Object 的 clone() 方法，进行浅拷贝
+            // Shallow copy via Object.clone()
             Rule clonedRule = (Rule) super.clone();
 
-            // 深拷贝 formula
+            // Deep copy formula
             if (this.formula != null) {
                 clonedRule.formula = this.formula.clone();
             }

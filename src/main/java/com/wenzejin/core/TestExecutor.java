@@ -40,6 +40,9 @@ public class TestExecutor {
     private long startTime;
     private final AtomicBoolean panicFlag = new AtomicBoolean(false);
 
+    private static final int MAX_RETRY_COUNT = 3;
+    private static final int PROGRESS_REPORT_INTERVAL = 10; // report progress every 10%
+
     private ExecutorService executor;
     private ThreadLocal<TestWorker> threadLocalWorker;
     private Set<TestWorker> workersRegistry;
@@ -130,7 +133,7 @@ public class TestExecutor {
                 }
 
                 try {
-                    for (int retry = 0; retry <= 2; retry++) {
+                    for (int retry = 0; retry < MAX_RETRY_COUNT; retry++) {
                         rawResult = worker.execute(tc);
                         if (rawResult.exitCode == 0) {
                             status = ExecutionStatus.SUCCESS;
@@ -248,7 +251,7 @@ public class TestExecutor {
     }
 
     private void procedureCallback(int currentProgress, int totalTasks) {
-        int onePercent = totalTasks / 10;
+        int onePercent = totalTasks / PROGRESS_REPORT_INTERVAL;
         if (onePercent == 0) onePercent = 1;
         long currentTime = System.currentTimeMillis();
         if (currentProgress % onePercent == 0) {

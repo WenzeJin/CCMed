@@ -1,10 +1,14 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
-import com.wenzejin.core.mr.jin.rules.PUComposition;
+import com.wenzejin.core.mr.ccm.rules.TestCaseSetup;
+import com.wenzejin.core.mr.ccm.rules.PUComposition;
 
 public class QuantifierCandidate implements TestCaseCandidate {
+    private static final double NEGATION_PROBABILITY = 0.75;
+    private static final double INITIAL_DISTANCE = 100.0;
+    private static final double SEMANTIC_CONNECTOR_PENALTY = 50.0;
+
     final PrimitiveUnit left;
     final PrimitiveUnit right;
     final String newConn;
@@ -19,7 +23,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
         this.newConn = newConn;
         this.newQuant = newQuant;
         this.expectTruth = expectTruth;
-        minDistance = 100;
+        minDistance = INITIAL_DISTANCE;
     }
 
     public String getNewQuant() {
@@ -38,11 +42,11 @@ public class QuantifierCandidate implements TestCaseCandidate {
     @Override
     public TestCase genTestCase() {
         PrimitiveUnit l = left;
-        if (Math.random() > 0.75) {
+        if (Math.random() > NEGATION_PROBABILITY) {
             l = PUComposition.negation(l);
         }
         PrimitiveUnit r = right;
-        if (Math.random() > 0.75) {
+        if (Math.random() > NEGATION_PROBABILITY) {
             r = PUComposition.negation(r);
         }
         PrimitiveUnit unified = PUComposition.unifyForQuant(l, r, newConn);
@@ -105,7 +109,7 @@ public class QuantifierCandidate implements TestCaseCandidate {
             boolean qEqual = newQuant.equals(anotherQuant.newQuant);
             boolean eEqual = expectTruth == anotherQuant.expectTruth;
             boolean cEqual = newConn.equals(anotherQuant.newConn);
-            return (qEqual && eEqual) ? (cEqual ? 0 : 50) : 100;
+            return (qEqual && eEqual) ? (cEqual ? 0 : SEMANTIC_CONNECTOR_PENALTY) : 100;
         } else {
             return 100;
         }

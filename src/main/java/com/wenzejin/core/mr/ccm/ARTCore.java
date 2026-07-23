@@ -1,11 +1,11 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MTCore;
-import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
-import com.wenzejin.core.mr.jin.rules.PUExtraction;
+import com.wenzejin.core.mr.ccm.rules.TestCaseSetup;
+import com.wenzejin.core.mr.ccm.rules.PUExtraction;
 import com.wenzejin.core.result.TestOutcome;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -22,8 +22,9 @@ import java.util.Map;
 
 public class ARTCore implements MTCore {
     private static final Logger logger = LogManager.getLogger("ARTCore");
-    private static final double binaryRate = 0.7;
-    private static final double randomRate = 0.3;
+    private static final double BINARY_RATE = 0.7;
+    private static final double RANDOM_RATE = 0.3;
+    private static final double QUANTIFIER_POOL_SAMPLE_RATE = 0.05;
 
     List<TestCaseCandidate> tested;
 
@@ -57,7 +58,7 @@ public class ARTCore implements MTCore {
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
 
-                if (Math.random() < 0.05) {
+                if (Math.random() < QUANTIFIER_POOL_SAMPLE_RATE) {
                     OpenTag wholeTagQ = new OpenTag(outcome.sutResult.truth);
                     wholeTagQ.addSource(tc.getId());
                     PrimitiveUnit wholeQ = new PrimitiveUnit(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs());
@@ -159,11 +160,11 @@ public class ARTCore implements MTCore {
         Collections.shuffle(binaryCandidates);
         Collections.shuffle(quantifierCandidates);
 
-        int binaryBudget = (int) (size * binaryRate);
+        int binaryBudget = (int) (size * BINARY_RATE);
         int quantifierBudget = size - binaryBudget;
 
         // first, we add some random candidates into this batch (by random rate)
-        int randomSize = (int) (size * randomRate);
+        int randomSize = (int) (size * RANDOM_RATE);
         for (int i = 0; i < randomSize; i++) {
             if (binaryCandidates.isEmpty() && quantifierCandidates.isEmpty()) {
                 break;
@@ -174,7 +175,7 @@ public class ARTCore implements MTCore {
             } else if (quantifierCandidates.isEmpty() || quant.size() >= quantifierBudget) {
                 candidate = binaryCandidates.remove(0);
             } else {
-                candidate = Math.random() < binaryRate ? binaryCandidates.remove(0) : quantifierCandidates.remove(0);
+                candidate = Math.random() < BINARY_RATE ? binaryCandidates.remove(0) : quantifierCandidates.remove(0);
             }
             TestCase tc = candidate.genTestCase();
             if (tc != null) {

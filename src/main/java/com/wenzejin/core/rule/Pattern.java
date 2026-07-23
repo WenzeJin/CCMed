@@ -60,8 +60,8 @@ public class Pattern {
     }
 
     /**
-     * 深拷贝当前 Pattern 对象。
-     * @return 一个独立的新 Pattern 实例，其 data 集合与原对象内容相同但互不影响。
+     * Deep copy of the current Pattern object.
+     * @return a new independent Pattern instance whose data set has the same content but is independent.
      */
     public Pattern copy() {
         return new Pattern(name, data);

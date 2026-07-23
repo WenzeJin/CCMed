@@ -1,10 +1,10 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MTCore;
-import com.wenzejin.core.mr.jin.rules.*;
+import com.wenzejin.core.mr.ccm.rules.*;
 import com.wenzejin.core.result.TestOutcome;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -20,6 +20,11 @@ import org.apache.logging.log4j.Logger;
 public class ChainCompositionCore implements MTCore {
     private static final Logger logger = LogManager.getLogger("ChainCompCore");
 
+    private static final int MIN_CHAIN_LENGTH = 2;
+    private static final int MAX_CHAIN_LENGTH = 6;
+    private static final int MAX_GENERATION_ATTEMPTS = 4;
+    private static final int BATCH_ATTEMPT_MULTIPLIER = 4;
+
     PrimitiveUnitRepository puRepo;
     private final int chainLength;
     private final String strategy;
@@ -32,14 +37,14 @@ public class ChainCompositionCore implements MTCore {
     public ChainCompositionCore(int chainLength, String strategy) {
         puRepo = new PrimitiveUnitRepository();
 
-        if (chainLength < 2) {
-            chainLength = 2;
-            logger.warn("chainLength < 2, reset to 2");
+        if (chainLength < MIN_CHAIN_LENGTH) {
+            chainLength = MIN_CHAIN_LENGTH;
+            logger.warn("chainLength < {}, reset to {}", MIN_CHAIN_LENGTH, MIN_CHAIN_LENGTH);
         }
 
-        if (chainLength > 6) {
-            chainLength = 6;
-            logger.warn("chainLength > 6, reset to 6");
+        if (chainLength > MAX_CHAIN_LENGTH) {
+            chainLength = MAX_CHAIN_LENGTH;
+            logger.warn("chainLength > {}, reset to {}", MAX_CHAIN_LENGTH, MAX_CHAIN_LENGTH);
         }
 
         this.chainLength = chainLength;
@@ -110,7 +115,7 @@ public class ChainCompositionCore implements MTCore {
     public List<TestCase> getNextBatch(int size) {
         List<TestCase> batch = new ArrayList<>();
         int attempts = 0;
-        for (int i = 0; i < 4 * size && batch.size() < size; i++) {
+        for (int i = 0; i < BATCH_ATTEMPT_MULTIPLIER * size && batch.size() < size; i++) {
             String[] chain = getRandomChain();
             TestCase tc = generateTestCaseByChain(chain);
             attempts++;
@@ -187,7 +192,7 @@ public class ChainCompositionCore implements MTCore {
             isOpen = true;
         }
 
-        for (int attempt = 1; attempt <= 4; attempt++) {
+        for (int attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
             PrimitiveUnit current;
 
             // Phase 1: Initialize a random starting unit from repository
@@ -267,7 +272,7 @@ public class ChainCompositionCore implements MTCore {
 
         // All attempts exhausted
         totalFailed++;
-        totalAttempts += 4;
+        totalAttempts += MAX_GENERATION_ATTEMPTS;
         logger.warn("chain: {}, failed to generate test case after 4 attempts",
             Arrays.toString(chain));
         return null;

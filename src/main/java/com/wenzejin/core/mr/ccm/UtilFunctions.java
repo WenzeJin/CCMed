@@ -1,4 +1,4 @@
-package com.wenzejin.core.mr.jin;
+package com.wenzejin.core.mr.ccm;
 
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.result.Link;
