@@ -22,11 +22,13 @@ public class TestCase {
 
     // Constraint
     private Rule rule;
-    private String oriRule;
     private List<Pattern> patterns;
     private List<Bfunc> bfuncs;
+
     private List<TestAssertion> assertions;    // Assertion
     private List<String> ruleUsed;
+    
+    private String oriRule;
     private final List<Integer> source;
 
     public TestCase() {

@@ -2,7 +2,7 @@
   "taskName": "CMID_test",
   "timeStamp": true,
   "stopMode": "limited",
-  "ART": true,
+  "mtCore": "ART",
   "simpleMode": false,
   "sourceLimit": 344,
   "followUpLimit": 100,

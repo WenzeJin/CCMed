@@ -1,30 +1,30 @@
 package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.mr.jin.rules.TagUnification;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.jin.rules.PUComposition;
 
 public class BinaryCandidate implements TestCaseCandidate {
-    final FormulaWithTag left;
-    final FormulaWithTag right;
+    final PrimitiveUnit left;
+    final PrimitiveUnit right;
     final String newOp;
     final byte taRule;
     double minDistance;
 
-    public BinaryCandidate(FormulaWithTag left, FormulaWithTag right, String newOp) {
+    public BinaryCandidate(PrimitiveUnit left, PrimitiveUnit right, String newOp) {
         this.left = left;
         this.right = right;
         this.newOp = newOp;
-        this.taRule = TagApplication.getRealRuleCode((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
+        this.taRule = TestCaseSetup.getRealRuleCode((ClosedTag) left.tag, (ClosedTag) right.tag, newOp);
         // generate a random double above 1000
         minDistance = 100;
     }
 
-    public FormulaWithTag getLeft() {
+    public PrimitiveUnit getLeft() {
         return left;
     }
 
-    public FormulaWithTag getRight() {
+    public PrimitiveUnit getRight() {
         return right;
     }
 
@@ -36,19 +36,19 @@ public class BinaryCandidate implements TestCaseCandidate {
         return minDistance;
     }
 
-    public boolean isUndetermined() {
-        return TagApplication.isUndetermined((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
-    }
-
     @Override
     public TestCase genTestCase() {
-        if (!isUndetermined()) {
-            var gen = TagUnification.unifyForBin(left, right, newOp);
-            if (gen != null) {
-                return TagApplication.binaryFinalize(gen);
-            }
-        } else {
-            return TagApplication.binaryEntry(left, right, newOp);
+        PrimitiveUnit l = left;
+        if (Math.random() > 0.75) {
+            l = PUComposition.negation(l);
+        }
+        PrimitiveUnit r = right;
+        if (Math.random() > 0.75) {
+            r = PUComposition.negation(r);
+        }
+        var gen = PUComposition.unifyForBin(l, r, newOp);
+        if (gen != null) {
+            return TestCaseSetup.binaryFinalize(gen);
         }
         return null;
     }

@@ -1,19 +1,19 @@
 package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.mr.jin.rules.TagUnification;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.jin.rules.PUComposition;
 
 public class QuantifierCandidate implements TestCaseCandidate {
-    final FormulaWithTag left;
-    final FormulaWithTag right;
+    final PrimitiveUnit left;
+    final PrimitiveUnit right;
     final String newConn;
     final String newQuant;
     final boolean expectTruth;
 
     double minDistance;
 
-    public QuantifierCandidate(FormulaWithTag left, FormulaWithTag right, String newConn, String newQuant, boolean expectTruth) {
+    public QuantifierCandidate(PrimitiveUnit left, PrimitiveUnit right, String newConn, String newQuant, boolean expectTruth) {
         this.left = left;
         this.right = right;
         this.newConn = newConn;
@@ -37,9 +37,17 @@ public class QuantifierCandidate implements TestCaseCandidate {
 
     @Override
     public TestCase genTestCase() {
-        FormulaWithTag unified = TagUnification.unifyForQuant(left, right, newConn);
+        PrimitiveUnit l = left;
+        if (Math.random() > 0.75) {
+            l = PUComposition.negation(l);
+        }
+        PrimitiveUnit r = right;
+        if (Math.random() > 0.75) {
+            r = PUComposition.negation(r);
+        }
+        PrimitiveUnit unified = PUComposition.unifyForQuant(l, r, newConn);
         if (unified != null) {
-            return TagApplication.quantifierEntry(unified, newQuant, expectTruth);
+            return TestCaseSetup.quantifierEntry(unified, newQuant, expectTruth);
         } else {
             return null;
         }

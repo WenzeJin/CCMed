@@ -15,30 +15,45 @@ public class Config {
     // =====================
     // 已知字段
     // =====================
+
+    // Task info
     public String taskName = "DefaultTask";
     public boolean timeStamp = true;
+    public String workspaceRoot;
 
+    // Threading
     public int threadLimit = Runtime.getRuntime().availableProcessors();
-    public int enumLimit = Integer.MAX_VALUE;
 
+    // Stopping criteria
     public String stopMode = "panic";
     public int sourceLimit;
     public int followUpLimit;
 
-    public boolean ART = true;
+    // Batching
     public int batchSize;
     public int miniBatchSize;
 
-    public String workspaceRoot;
+    // Target and supplementary class
     public String workerType;
-    public String rulesPath;
     public String targetPath;
     public String bfuncPath;
+
+    // Target arguments
     public List<String> arguments;
 
+    // Source cases generation
+    public String rulesPath;
+    public String bfuncPolicy = "enum";
+    public int enumLimit = Integer.MAX_VALUE;
+    
+    // MT core selection: "ART" (default) or "chain"
+    public String mtCore = "ART";
+    // Chain length for ChainCompositionCore (2-6), only used when mtCore = "chain"
+    public int chainLength = 5;
+
+    // Other options
     public boolean simpleMode = false;
     public String storeMode = "fail";
-    public String bfuncPolicy = "enum";
     public boolean detailData = false;
 
     // =====================

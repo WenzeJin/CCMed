@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
  * Generate random data for each rule.
  * List bfuncs for rules and bind them.
  */
-public class Preprocessor {
+public class SourceGenerator {
 
     private List<TestCase> testCases;
 
@@ -34,9 +34,9 @@ public class Preprocessor {
     private final int threadMax;
     private final String bfuncPolicy;
 
-    private static final Logger logger = LogManager.getLogger("Preprocessor");
+    private static final Logger logger = LogManager.getLogger("SourceGenerator");
 
-    public Preprocessor(String rulesInput, int enumMax, int threadMax, String bfuncPolicy) {
+    public SourceGenerator(String rulesInput, int enumMax, int threadMax, String bfuncPolicy) {
         this.rulesInputDirectory = rulesInput;
         this.enumMax = enumMax;
         this.threadMax = threadMax;
