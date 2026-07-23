@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BinaryTag implements Tag {
+public class ClosedTag implements Tag {
 
     public enum Truth {
         TRUE, FALSE, UNKNOWN
@@ -17,7 +17,7 @@ public class BinaryTag implements Tag {
     public String ruleUsed;
     public List<Integer> source;
 
-    public BinaryTag(Truth truth, Set<Link> links) {
+    public ClosedTag(Truth truth, Set<Link> links) {
         this.truth = truth;
         this.links = links;
         ruleUsed = "";
@@ -70,7 +70,7 @@ public class BinaryTag implements Tag {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        BinaryTag that = (BinaryTag) obj;
+        ClosedTag that = (ClosedTag) obj;
         return truth == that.truth && links.equals(that.links);
     }
 

@@ -46,6 +46,11 @@ public class Config {
     public String bfuncPolicy = "enum";
     public int enumLimit = Integer.MAX_VALUE;
     
+    // MT core selection: "ART" (default) or "chain"
+    public String mtCore = "ART";
+    // Chain length for ChainCompositionCore (2-6), only used when mtCore = "chain"
+    public int chainLength = 5;
+
     // Other options
     public boolean simpleMode = false;
     public String storeMode = "fail";

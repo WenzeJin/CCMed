@@ -1,8 +1,8 @@
 package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.mr.jin.rules.TagUnification;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.jin.rules.PUComposition;
 
 public class QuantifierCandidate implements TestCaseCandidate {
     final PrimitiveUnit left;
@@ -39,15 +39,15 @@ public class QuantifierCandidate implements TestCaseCandidate {
     public TestCase genTestCase() {
         PrimitiveUnit l = left;
         if (Math.random() > 0.75) {
-            l = TagUnification.negation(l);
+            l = PUComposition.negation(l);
         }
         PrimitiveUnit r = right;
         if (Math.random() > 0.75) {
-            r = TagUnification.negation(r);
+            r = PUComposition.negation(r);
         }
-        PrimitiveUnit unified = TagUnification.unifyForQuant(l, r, newConn);
+        PrimitiveUnit unified = PUComposition.unifyForQuant(l, r, newConn);
         if (unified != null) {
-            return TagApplication.quantifierEntry(unified, newQuant, expectTruth);
+            return TestCaseSetup.quantifierEntry(unified, newQuant, expectTruth);
         } else {
             return null;
         }

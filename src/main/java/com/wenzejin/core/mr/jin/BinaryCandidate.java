@@ -1,8 +1,8 @@
 package com.wenzejin.core.mr.jin;
 
 import com.wenzejin.core.cases.TestCase;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.mr.jin.rules.TagUnification;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.jin.rules.PUComposition;
 
 public class BinaryCandidate implements TestCaseCandidate {
     final PrimitiveUnit left;
@@ -15,7 +15,7 @@ public class BinaryCandidate implements TestCaseCandidate {
         this.left = left;
         this.right = right;
         this.newOp = newOp;
-        this.taRule = TagApplication.getRealRuleCode((BinaryTag) left.tag, (BinaryTag) right.tag, newOp);
+        this.taRule = TestCaseSetup.getRealRuleCode((ClosedTag) left.tag, (ClosedTag) right.tag, newOp);
         // generate a random double above 1000
         minDistance = 100;
     }
@@ -40,15 +40,15 @@ public class BinaryCandidate implements TestCaseCandidate {
     public TestCase genTestCase() {
         PrimitiveUnit l = left;
         if (Math.random() > 0.75) {
-            l = TagUnification.negation(l);
+            l = PUComposition.negation(l);
         }
         PrimitiveUnit r = right;
         if (Math.random() > 0.75) {
-            r = TagUnification.negation(r);
+            r = PUComposition.negation(r);
         }
-        var gen = TagUnification.unifyForBin(l, r, newOp);
+        var gen = PUComposition.unifyForBin(l, r, newOp);
         if (gen != null) {
-            return TagApplication.binaryFinalize(gen);
+            return TestCaseSetup.binaryFinalize(gen);
         }
         return null;
     }

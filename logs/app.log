@@ -1,124 +1,580 @@
-[2026-06-16 14:56:36] [INFO] WorkspaceManager - Workspace created at: workspace/demo_20260616145636
-[2026-06-16 14:56:36] [INFO] WorkspaceManager - Config exported to workspace/demo_20260616145636/config.json
-[2026-06-16 14:56:36] [INFO] SourceGenerator - Preprocessor initialized.  enumMax=2147483647 threadMax=8 bfuncPolicy=enum
-[2026-06-16 14:56:37] [INFO] SourceGenerator - Generated 284888 test cases.
-[2026-06-16 14:56:37] [INFO] SourceGenerator - Reducing size from 284888 to 200
-[2026-06-16 14:56:37] [INFO] TesterCore - Source cases preparation completed in 1781592997371 ms.
-[2026-06-16 14:56:37] [INFO] TestExecutor - Initializing test executor
-[2026-06-16 14:56:37] [INFO] TestExecutor - Initializing test executor
-[2026-06-16 14:56:37] [INFO] TesterCore - *** Starting Batch 1 ***
-[2026-06-16 14:56:37] [INFO] TesterCore - Testing source test cases...
-[2026-06-16 14:56:37] [INFO] TestExecutor - Executing tests for 200 tasks.
-[2026-06-16 14:56:41] [INFO] TestExecutor - Progress: 20 / 200, 10%, ETA: 34 s
-[2026-06-16 14:56:44] [INFO] TestExecutor - Progress: 40 / 200, 20%, ETA: 26 s
-[2026-06-16 14:56:47] [INFO] TestExecutor - Progress: 60 / 200, 30%, ETA: 22 s
-[2026-06-16 14:56:50] [INFO] TestExecutor - Progress: 80 / 200, 40%, ETA: 19 s
-[2026-06-16 14:56:53] [INFO] TestExecutor - Progress: 100 / 200, 50%, ETA: 15 s
-[2026-06-16 14:56:56] [INFO] TestExecutor - Progress: 120 / 200, 60%, ETA: 12 s
-[2026-06-16 14:56:59] [INFO] TestExecutor - Progress: 140 / 200, 70%, ETA: 9 s
-[2026-06-16 14:57:02] [INFO] TestExecutor - Progress: 160 / 200, 80%, ETA: 6 s
-[2026-06-16 14:57:05] [INFO] TestExecutor - Progress: 180 / 200, 90%, ETA: 3 s
-[2026-06-16 14:57:07] [INFO] TestExecutor - Progress: 200 / 200, 100%, ETA: 0 s
-[2026-06-16 14:57:07] [INFO] TestExecutor - Execution finished. Test cases checked: 200 / 200 , Time elapsed: 30063 ms
-[2026-06-16 14:57:07] [INFO] TesterCore - Source cases testing completed.
-[2026-06-16 14:57:07] [INFO] ARTCore - Total PU extracted: 459
-[2026-06-16 14:57:07] [INFO] ARTCore - Total PU 554694 candidates generated.
-[2026-06-16 14:57:07] [INFO] TesterCore - *** Batch 1 : Round 1 ***
-[2026-06-16 14:57:07] [INFO] ARTCore - Mini batch generated. Binary distance: Min 100.0 Max 100.0 Avg 100.0; Quantifier distance: Min 100.0 Max 100.0 Avg 100.0
-[2026-06-16 14:57:07] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-16 14:57:08] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-16 14:57:11] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-16 14:57:12] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-16 14:57:13] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-16 14:57:15] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-16 14:57:16] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-16 14:57:18] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-16 14:57:19] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-16 14:57:21] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-16 14:57:22] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-16 14:57:23] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-16 14:57:23] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15173 ms
-[2026-06-16 14:57:23] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-16 14:57:23] [INFO] TesterCore - *** Batch 1 : Round 2 ***
-[2026-06-16 14:57:24] [INFO] ARTCore - Mini batch generated. Binary distance: Min 34.375 Max 87.5 Avg 78.39285714285714; Quantifier distance: Min 25.0 Max 100.0 Avg 83.59375
-[2026-06-16 14:57:24] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-16 14:57:24] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-16 14:57:26] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-16 14:57:28] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-16 14:57:29] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-16 14:57:30] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-16 14:57:32] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-16 14:57:33] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-16 14:57:35] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-16 14:57:37] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-16 14:57:38] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-16 14:57:39] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-16 14:57:39] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15090 ms
-[2026-06-16 14:57:39] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-16 14:57:39] [INFO] TesterCore - *** Batch 1 : Round 3 ***
-[2026-06-16 14:57:39] [INFO] ARTCore - Mini batch generated. Binary distance: Min 27.34375 Max 87.5 Avg 72.71205357142857; Quantifier distance: Min 45.3125 Max 100.0 Avg 82.60416666666667
-[2026-06-16 14:57:39] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-16 14:57:40] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-16 14:57:42] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 22 s
-[2026-06-16 14:57:43] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-16 14:57:44] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-16 14:57:46] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-16 14:57:48] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-16 14:57:49] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-16 14:57:51] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-16 14:57:53] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-16 14:57:54] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-16 14:57:55] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-16 14:57:55] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15336 ms
-[2026-06-16 14:57:55] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-16 14:57:55] [INFO] TesterCore - *** Batch 1 : Round 4 ***
-[2026-06-16 14:57:55] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.78125 Max 81.25 Avg 65.01116071428571; Quantifier distance: Min 50.0 Max 81.25 Avg 73.48958333333333
-[2026-06-16 14:57:55] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-16 14:57:55] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-16 14:57:58] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 21 s
-[2026-06-16 14:57:59] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 14 s
-[2026-06-16 14:58:01] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 11 s
-[2026-06-16 14:58:02] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 9 s
-[2026-06-16 14:58:04] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-16 14:58:05] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-16 14:58:07] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 4 s
-[2026-06-16 14:58:08] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-16 14:58:10] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-16 14:58:11] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-16 14:58:11] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 15490 ms
-[2026-06-16 14:58:11] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-16 14:58:11] [INFO] TesterCore - *** Batch 1 : Round 5 ***
-[2026-06-16 14:58:11] [INFO] ARTCore - Mini batch generated. Binary distance: Min 25.0 Max 75.0 Avg 63.96205357142857; Quantifier distance: Min 15.625 Max 75.0 Avg 65.83333333333333
-[2026-06-16 14:58:11] [INFO] ARTCore - Binary cases: 70, Quantifier cases: 30
-[2026-06-16 14:58:12] [INFO] TestExecutor - Executing tests for 100 tasks.
-[2026-06-16 14:58:14] [INFO] TestExecutor - Progress: 10 / 100, 10%, ETA: 23 s
-[2026-06-16 14:58:16] [INFO] TestExecutor - Progress: 20 / 100, 20%, ETA: 16 s
-[2026-06-16 14:58:17] [INFO] TestExecutor - Progress: 30 / 100, 30%, ETA: 12 s
-[2026-06-16 14:58:18] [INFO] TestExecutor - Progress: 40 / 100, 40%, ETA: 10 s
-[2026-06-16 14:58:20] [INFO] TestExecutor - Progress: 50 / 100, 50%, ETA: 8 s
-[2026-06-16 14:58:22] [INFO] TestExecutor - Progress: 60 / 100, 60%, ETA: 6 s
-[2026-06-16 14:58:23] [INFO] TestExecutor - Progress: 70 / 100, 70%, ETA: 5 s
-[2026-06-16 14:58:25] [INFO] TestExecutor - Progress: 80 / 100, 80%, ETA: 3 s
-[2026-06-16 14:58:27] [INFO] TestExecutor - Progress: 90 / 100, 90%, ETA: 1 s
-[2026-06-16 14:58:28] [INFO] TestExecutor - Progress: 100 / 100, 100%, ETA: 0 s
-[2026-06-16 14:58:28] [INFO] TestExecutor - Execution finished. Test cases checked: 100 / 100 , Time elapsed: 16004 ms
-[2026-06-16 14:58:28] [INFO] TestExecutor - Test cases failed: 0 / 100
-[2026-06-16 14:58:28] [INFO] TesterCore - Batch 1 completed. Processed 500 follow-up cases.
-[2026-06-16 14:58:28] [INFO] ARTCore - Tested candidates: 500
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-and-1: 54
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-and-2: 37
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-and-3: 24
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-exists-1: 37
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-exists-2: 38
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-forall-1: 45
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-forall-2: 30
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-implies-1: 32
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-implies-2: 28
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-implies-3: 14
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-implies-4: 29
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-or-1: 23
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-or-2: 61
-[2026-06-16 14:58:28] [INFO] ARTCore - Rule TA-or-3: 48
-[2026-06-16 14:58:28] [INFO] ResultReporter - Result dumped to workspace/demo_20260616145636/result.json
-[2026-06-16 14:58:28] [INFO] TesterCore - Testing completed successfully! Failed cases have been stored in the database.
-[2026-06-16 14:58:28] [INFO] TesterCore - Total time elapsed: 110751 ms. 200 source -> 500 follow-up checked, 0 failed cases.
+[2026-07-02 17:54:55] [INFO] WorkspaceManager - Workspace created at: workspace/demo_20260702175455
+[2026-07-02 17:54:55] [INFO] WorkspaceManager - Config exported to workspace/demo_20260702175455/config.json
+[2026-07-02 17:54:55] [INFO] SourceGenerator - Preprocessor initialized.  enumMax=2147483647 threadMax=8 bfuncPolicy=enum
+[2026-07-02 17:54:56] [INFO] SourceGenerator - Generated 284888 test cases.
+[2026-07-02 17:54:56] [INFO] SourceGenerator - Reducing size from 284888 to 344
+[2026-07-02 17:54:56] [INFO] TesterCore - Source cases preparation completed in 1782986096323 ms.
+[2026-07-02 17:54:56] [INFO] TestExecutor - Initializing test executor
+[2026-07-02 17:54:56] [INFO] TestExecutor - Initializing test executor
+[2026-07-02 17:54:56] [INFO] TesterCore - *** Starting Batch 1 ***
+[2026-07-02 17:54:56] [INFO] TesterCore - Testing source test cases...
+[2026-07-02 17:54:56] [INFO] TestExecutor - Executing tests for 344 tasks.
+[2026-07-02 17:55:02] [INFO] TestExecutor - Progress: 34 / 344, 9%, ETA: 56 s
+[2026-07-02 17:55:08] [INFO] TestExecutor - Progress: 68 / 344, 19%, ETA: 47 s
+[2026-07-02 17:55:13] [INFO] TestExecutor - Progress: 102 / 344, 29%, ETA: 40 s
+[2026-07-02 17:55:19] [INFO] TestExecutor - Progress: 136 / 344, 39%, ETA: 34 s
+[2026-07-02 17:55:24] [INFO] TestExecutor - Progress: 170 / 344, 49%, ETA: 28 s
+[2026-07-02 17:55:29] [INFO] TestExecutor - Progress: 204 / 344, 59%, ETA: 22 s
+[2026-07-02 17:55:34] [INFO] TestExecutor - Progress: 238 / 344, 69%, ETA: 17 s
+[2026-07-02 17:55:40] [INFO] TestExecutor - Progress: 272 / 344, 79%, ETA: 11 s
+[2026-07-02 17:55:45] [INFO] TestExecutor - Progress: 306 / 344, 88%, ETA: 6 s
+[2026-07-02 17:55:51] [INFO] TestExecutor - Progress: 340 / 344, 98%, ETA: 0 s
+[2026-07-02 17:55:51] [INFO] TestExecutor - Execution finished. Test cases checked: 344 / 344 , Time elapsed: 54530 ms
+[2026-07-02 17:55:51] [INFO] TesterCore - Source cases testing completed.
+[2026-07-02 17:55:51] [INFO] TesterCore - Using ChainCompositionCore with chainLength=5
+[2026-07-02 17:55:51] [INFO] ChainCompCore - PU extracted: 776 total (690 closed + 86 open), chainLength=5
+[2026-07-02 17:55:51] [INFO] TesterCore - *** Batch 1 : Round 1 ***
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, NOT, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, NOT, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDl, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ANDl, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, NOT, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ANDr, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, IMPr, ANDl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ANDl, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, NOT, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, IMPl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, NOT, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ANDr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ANDr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ANDl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, IMPr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ANDr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, IMPr, ANDr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, NOT, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ANDr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, ANDl, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, IMPr, ANDl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ANDr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, NOT, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, NOT, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, NOT, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, ORr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ANDr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, NOT, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, IMPr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, IMPr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, IMPl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ANDr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, IMPl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ANDr, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, NOT, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ANDr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, IMPl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ANDl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, NOT, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, ANDr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, NOT, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, ANDl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, IMPr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, NOT, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ORr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ANDr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, NOT, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ANDr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, NOT, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, IMPr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, NOT, ANDr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ANDl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, IMPr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, ANDr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, ORr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, NOT, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, NOT, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, NOT, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, NOT, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, ORr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, NOT, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ANDr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, IMPl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, IMPr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, IMPl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ORr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ANDr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, IMPl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ANDl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, NOT, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, IMPl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ORl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ANDl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, ANDl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, NOT, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ANDl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, NOT, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, IMPl, ANDr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, IMPl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ANDr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, NOT, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDl, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ORl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ANDr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, IMPr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDl, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ANDl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, IMPl, ANDl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, NOT, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, NOT, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ANDr, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, NOT, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, ORl, ANDr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, IMPr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ANDr, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, IMPl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ORr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDl, ORl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ANDl, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ORl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, NOT, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ANDl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPl, ANDl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, IMPl, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, IMPl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, NOT, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORr, ANDr, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ANDr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, IMPl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, ANDl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, ANDl, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ORl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, ANDr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORl, IMPl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, NOT, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPr, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORl, NOT, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, ANDl, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, NOT, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, IMPl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, IMPr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ANDl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, NOT, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, ANDr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ANDr, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, ANDl, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, NOT, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPl, ANDl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ORl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDr, ANDr, ANDl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, NOT, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, IMPr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDr, ORr, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDr, ORl, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, NOT, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORr, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, IMPl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ANDr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, NOT, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORr, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, NOT, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ANDr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ANDl, ANDr, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPr, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, IMPr, NOT, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ORr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, ORr, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, ANDl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ORl, ORr, IMPl, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ANDr, ANDl, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, IMPl, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, IMPl, ORl, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, NOT, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ANDr, ANDr, ANDr, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, ANDr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, NOT, ANDr, NOT, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, NOT, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, IMPl, IMPl, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, NOT, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, NOT, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORl, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, IMPr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, ORr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ORl, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, ANDr, ANDl, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ANDr, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, ORr, NOT, IMPl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, ORr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ORr, ORl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, IMPr, ORl, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, IMPr, ANDr, ANDr, EXISTSt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, IMPr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, ANDl, IMPl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, IMPl, ORr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ORl, NOT, FORALLt], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORr, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, ORr, ORr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ANDl, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDl, ORr, IMPr, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [NOT, NOT, ORl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ORl, ORl, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, ANDl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, IMPr, NOT, IMPl, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, NOT, ANDl, NOT, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORl, NOT, ORl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ORr, ORl, ANDl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [ANDr, IMPr, IMPl, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, IMPr, ORr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPr, IMPl, ORr, IMPr, FORALLf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [WARN] ChainCompCore - chain: [IMPl, NOT, IMPl, IMPr, EXISTSf], failed to generate test case after 4 attempts
+[2026-07-02 17:55:51] [INFO] ChainCompCore - getNextBatch: 10000/10000 cases generated (10551 attempts, 94.8% success)
+[2026-07-02 17:55:51] [INFO] TestExecutor - Executing tests for 10000 tasks.
+[2026-07-02 17:59:53] [INFO] TestExecutor - Progress: 1000 / 10000, 10%, ETA: 36 m 16 s

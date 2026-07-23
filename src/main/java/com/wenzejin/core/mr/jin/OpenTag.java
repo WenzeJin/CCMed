@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class QuantifierTag implements Tag{
+public class OpenTag implements Tag{
 
     public String variable;
     public Set<String> valueTrue;
@@ -15,7 +15,7 @@ public class QuantifierTag implements Tag{
     public List<Integer> source;
     public boolean isRealQuantifier;
 
-    public QuantifierTag(String variable) {
+    public OpenTag(String variable) {
         this.variable = variable;
         valueTrue = new HashSet<>();
         valueFalse = new HashSet<>();
@@ -24,7 +24,7 @@ public class QuantifierTag implements Tag{
         isRealQuantifier = true;
     }
 
-    public QuantifierTag(boolean truth) {
+    public OpenTag(boolean truth) {
         isRealQuantifier = false;
         if (truth) {
             valueTrue = new HashSet<>(Set.of("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
@@ -77,7 +77,7 @@ public class QuantifierTag implements Tag{
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        QuantifierTag that = (QuantifierTag) obj;
+        OpenTag that = (OpenTag) obj;
         return variable.equals(that.variable) && valueTrue.equals(that.valueTrue) && valueFalse.equals(that.valueFalse);
     }
 

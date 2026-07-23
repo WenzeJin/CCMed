@@ -4,8 +4,8 @@ import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.exception.NoRuleException;
 import com.wenzejin.core.exception.NoTestResultException;
 import com.wenzejin.core.mr.MTCore;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
-import com.wenzejin.core.mr.jin.rules.TagCreation;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
+import com.wenzejin.core.mr.jin.rules.PUExtraction;
 import com.wenzejin.core.result.TestOutcome;
 import com.wenzejin.core.rule.Formula;
 import com.wenzejin.core.rule.OpConnector;
@@ -51,42 +51,42 @@ public class ARTCore implements MTCore {
             TestCase tc = outcome.testCase;
             Formula formula = tc.getRule().formula;
             try {
-                BinaryTag wholeTag = new BinaryTag(outcome.sutResult.truth ? BinaryTag.Truth.TRUE: BinaryTag.Truth.FALSE, outcome.sutResult.links);
+                ClosedTag wholeTag = new ClosedTag(outcome.sutResult.truth ? ClosedTag.Truth.TRUE: ClosedTag.Truth.FALSE, outcome.sutResult.links);
                 wholeTag.addSource(tc.getId());
-                PrimitiveUnit whole = new PrimitiveUnit(formula, wholeTag, tc.getPatterns(), tc.getBfuncs(), tc);
+                PrimitiveUnit whole = new PrimitiveUnit(formula, wholeTag, tc.getPatterns(), tc.getBfuncs());
                 whole.oriRule = tc.getOriRule();
                 binaryPool.add(whole);
 
                 if (Math.random() < 0.05) {
-                    QuantifierTag wholeTagQ = new QuantifierTag(outcome.sutResult.truth);
+                    OpenTag wholeTagQ = new OpenTag(outcome.sutResult.truth);
                     wholeTagQ.addSource(tc.getId());
-                    PrimitiveUnit wholeQ = new PrimitiveUnit(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs(), tc);
+                    PrimitiveUnit wholeQ = new PrimitiveUnit(formula, wholeTagQ, tc.getPatterns(), tc.getBfuncs());
                     wholeQ.oriRule = tc.getOriRule();
                     quantifierPool.add(wholeQ);
                 }
 
-                List<Tag> tags = TagCreation.entry(outcome);
+                List<Tag> tags = PUExtraction.entry(outcome);
                 if (formula instanceof OpConnector) {
                     // binary formula
-                    BinaryTag lt = (BinaryTag) tags.get(0);
-                    if (lt.truth != BinaryTag.Truth.UNKNOWN) {
+                    ClosedTag lt = (ClosedTag) tags.get(0);
+                    if (lt.truth != ClosedTag.Truth.UNKNOWN) {
                         Formula leftFormula = ((OpConnector) formula).left;
-                        PrimitiveUnit left = new PrimitiveUnit(leftFormula, lt, tc.getPatterns(), tc.getBfuncs(), tc);
+                        PrimitiveUnit left = new PrimitiveUnit(leftFormula, lt, tc.getPatterns(), tc.getBfuncs());
                         left.oriRule = tc.getOriRule();
                         binaryPool.add(left);
                     }
                     
-                    BinaryTag rt = (BinaryTag) tags.get(1);
-                    if (rt.truth != BinaryTag.Truth.UNKNOWN) {
+                    ClosedTag rt = (ClosedTag) tags.get(1);
+                    if (rt.truth != ClosedTag.Truth.UNKNOWN) {
                         Formula rightFormula = ((OpConnector) formula).right;
-                        PrimitiveUnit right = new PrimitiveUnit(rightFormula, rt, tc.getPatterns(), tc.getBfuncs(), tc);
+                        PrimitiveUnit right = new PrimitiveUnit(rightFormula, rt, tc.getPatterns(), tc.getBfuncs());
                         right.oriRule = tc.getOriRule();
                         binaryPool.add(right);
                     }
                 } else if (formula instanceof OpQuantifier) {
                     // quantifier formula
                     Formula child = ((OpQuantifier) formula).formula;
-                    PrimitiveUnit quantifier = new PrimitiveUnit(child, tags.get(0), tc.getPatterns(), tc.getBfuncs(), tc);
+                    PrimitiveUnit quantifier = new PrimitiveUnit(child, tags.get(0), tc.getPatterns(), tc.getBfuncs());
                     quantifier.oriRule = tc.getOriRule();
                     quantifierPool.add(quantifier);
                 }
@@ -110,9 +110,9 @@ public class ARTCore implements MTCore {
                 if (left == right || left.oriRule.equals(right.oriRule)) {
                     continue;
                 }
-                BinaryTag lt = (BinaryTag) left.tag;
-                BinaryTag rt = (BinaryTag) right.tag;
-                if (lt.truth == BinaryTag.Truth.UNKNOWN && rt.truth == BinaryTag.Truth.UNKNOWN) {
+                ClosedTag lt = (ClosedTag) left.tag;
+                ClosedTag rt = (ClosedTag) right.tag;
+                if (lt.truth == ClosedTag.Truth.UNKNOWN && rt.truth == ClosedTag.Truth.UNKNOWN) {
                     continue;
                 }
                 for (String op : binaryOps) {
@@ -130,8 +130,8 @@ public class ARTCore implements MTCore {
                     continue;
                 }
 
-                var lt = (QuantifierTag) left.tag;
-                var rt = (QuantifierTag) right.tag;
+                var lt = (OpenTag) left.tag;
+                var rt = (OpenTag) right.tag;
 
                 if (!lt.isRealQuantifier && !rt.isRealQuantifier) {
                     continue;
@@ -289,8 +289,8 @@ public class ARTCore implements MTCore {
         Map<String, Integer> stats = new HashMap<>();
         for (TestCaseCandidate candidate : tested) {
             if (candidate instanceof BinaryCandidate binaryCandidate) {
-                String ruleName = TagApplication.getRuleName((BinaryTag) binaryCandidate.getLeft().tag,
-                        (BinaryTag) binaryCandidate.getRight().tag, binaryCandidate.getNewOp());
+                String ruleName = TestCaseSetup.getRuleName((ClosedTag) binaryCandidate.getLeft().tag,
+                        (ClosedTag) binaryCandidate.getRight().tag, binaryCandidate.getNewOp());
                 stats.put(ruleName, stats.getOrDefault(ruleName, 0) + 1);
             } else if (candidate instanceof QuantifierCandidate quantifierCandidate) {
                 String ruleName = "";

@@ -3,7 +3,8 @@ package com.wenzejin.core;
 import com.wenzejin.core.cases.TestCase;
 import com.wenzejin.core.mr.MTCore;
 import com.wenzejin.core.mr.jin.ARTCore;
-import com.wenzejin.core.mr.jin.rules.TagApplication;
+import com.wenzejin.core.mr.jin.ChainCompositionCore;
+import com.wenzejin.core.mr.jin.rules.TestCaseSetup;
 import com.wenzejin.core.result.ExecutionStatus;
 import com.wenzejin.core.result.TestOutcome;
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +61,7 @@ public class Core {
             preExecutor.init();
             postExecutor.init();
 
-            TagApplication.simpleMode = config.simpleMode;
+            TestCaseSetup.simpleMode = config.simpleMode;
 
             final int totalBatches = preprocessor.getSize() / config.batchSize + ((preprocessor.getSize() % config.batchSize) == 0 ? 0 : 1);
             final int batchFollowUpLimit = config.followUpLimit / totalBatches;
@@ -106,7 +107,13 @@ public class Core {
                 logger.info("Source cases testing completed.");
 
                 if (!sourceCaseFailures) {
-                    MTCore mtCore = new ARTCore(config.threadLimit);
+                    MTCore mtCore;
+                    if ("chain".equalsIgnoreCase(config.mtCore)) {
+                        mtCore = new ChainCompositionCore(config.chainLength, "random");
+                        logger.info("Using ChainCompositionCore with chainLength={}", config.chainLength);
+                    } else {
+                        mtCore = new ARTCore(config.threadLimit);
+                    }
                     mtCore.initCandidates(sourceOutcomes);
                     int round = 0;
                     int processedCount = 0;
