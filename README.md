@@ -1,6 +1,6 @@
 # CCMed: Metamorphic Testing Framework for Constraint Checking Implementations
 
-[![CI](https://github.com/your-repo/CCTester/actions/workflows/ci.yml/badge.svg)](https://github.com/WenzeJin/CCMed/actions/workflows/ci.yml)
+[![CI](https://github.com/WenzeJin/CCMed/actions/workflows/ci.yml/badge.svg)](https://github.com/WenzeJin/CCMed/actions/workflows/ci.yml)
 
 **CCMed** is an automated testing framework designed to test constraint checking implementations. It is the artifact of our accepted paper 
 
