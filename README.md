@@ -1,5 +1,7 @@
 # CCMed: Metamorphic Testing Framework for Constraint Checking Implementations
 
+[![CI](https://github.com/your-repo/CCTester/actions/workflows/ci.yml/badge.svg)](https://github.com/WenzeJin/CCMed/actions/workflows/ci.yml)
+
 **CCMed** is an automated testing framework designed to test constraint checking implementations. It is the artifact of our accepted paper 
 
 *"Compositional Constructive Metamorphism for Testing Constraint Checking Implementations"* 
@@ -160,6 +162,10 @@ Built-in worker names (`infuse`, `standard`, `mg`, `cmid`, `infuse-old`) are als
 
 > [!NOTE] 
 > Custom workers are instantiated via reflection. The class must have a public constructor `(String workspace, Map<String, Object> arguments)` and implement `TestWorker`.
+
+## 📄 License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
 ## 📄 Citation
 
