@@ -85,7 +85,7 @@ public class StandardWorker implements TestWorker {
         List<String> cmdLine = new ArrayList<>(List.of(
             "java", "-jar", target.toString(),
             "-rules", rule.toString(),
-            "-bfuncs", bf.toString(),
+            "-bfuncs", bfc.toString(),
             "-contextpool", cp.toString(),
             "-incs", inc.toString()
         ));

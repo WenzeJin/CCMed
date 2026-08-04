@@ -16,7 +16,7 @@ public class InfuseWorker extends StandardWorker {
             "java", "-jar", target.toString(),
             "-test",
             "-rules", rule.toString(),
-            "-bfuncs", bf.toString(),
+            "-bfuncs", bfc.toString(),
             "-contextpool", cp.toString(),
             "-incs", inc.toString(),
             "-cct", cctPath.toString()

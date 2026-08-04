@@ -7,7 +7,6 @@ group = 'com.wenzejin'
 version = '1.2.0'
 application {
     mainClass = 'com.wenzejin.Main'
-    applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
 }
 
 repositories {
@@ -55,8 +54,7 @@ dependencies {
     // Gson
     implementation 'com.google.code.gson:gson:2.12.1'
 
-    // Progress bar (uses JLine → needs --enable-native-access=ALL-UNNAMED on JDK 21+)
-    implementation 'me.tongfei:progressbar:0.10.1'
+    // Progress bar — custom ANSI implementation, no external dependency needed
 
     // CLI argument parsing
     implementation 'commons-cli:commons-cli:1.5.0'
@@ -69,7 +67,6 @@ dependencies {
 
 run {
     standardInput = System.in
-    jvmArgs '--enable-native-access=ALL-UNNAMED'
     doFirst {
         environment 'COLUMNS', System.getenv('COLUMNS') ?: detectColumns()
     }
