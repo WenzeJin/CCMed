@@ -39,6 +39,9 @@ public class Core {
         workspace = workspaceManager.setupWorkspace();
         workspaceManager.exportConfig();
 
+        // ── Welcome banner ──────────────────────────────────────
+        ConsoleUI.printWelcome(config);
+
         TestExecutor preExecutor = null;
         TestExecutor postExecutor = null;
         DetailDataRecorder detailDataRecorder = null;
@@ -53,7 +56,9 @@ public class Core {
 
             boolean hasFailures = false;
             boolean sourceCaseFailures = false;
+            int failedSourceCount = 0;
             final List<TestOutcome> failedOutcomes = new ArrayList<>();
+            final List<TestOutcome> sourceFailures = new ArrayList<>();
 
                 preExecutor = new TestExecutor(
                     TestExecutor.Mode.SOURCE, workspace, config.getWorkerType(), arguments, config.getThreadLimit(), config.getStoreMode(), config.getStopMode().contains("panic"));
@@ -109,6 +114,16 @@ public class Core {
                         .filter(o -> o.status == ExecutionStatus.SUCCESS)
                         .count();
                 sourceCaseFailures = successfulSourceCases != sourceCases.size();
+
+                // Collect source-case failures for reporting
+                for (TestOutcome so : sourceOutcomes) {
+                    if (!so.isPassed() && so.status != ExecutionStatus.SKIPPED) {
+                        sourceFailures.add(so);
+                    }
+                }
+                failedSourceCount += (int) sourceOutcomes.stream()
+                        .filter(o -> !o.isPassed() && o.status != ExecutionStatus.SKIPPED)
+                        .count();
                 
                 logger.info("Source cases testing completed.");
 
@@ -176,16 +191,41 @@ public class Core {
                 }
             }
             progressListener.onFinish(null);
-            
+
+            // ── Categorise all failures for the result summary ─────
+            int assertionFails = 0, crashesCount = 0, timeoutsCount = 0, invalidCount = 0;
+            for (TestOutcome o : sourceFailures) {
+                if (!o.failedAssertions.isEmpty()) assertionFails++;
+                switch (o.status) {
+                    case CRASHED:        crashesCount++;  break;
+                    case TIMEOUT:        timeoutsCount++;  break;
+                    case INVALID_OUTPUT: invalidCount++;   break;
+                    default: break;
+                }
+            }
+            for (TestOutcome o : failedOutcomes) {
+                if (!o.failedAssertions.isEmpty()) assertionFails++;
+                switch (o.status) {
+                    case CRASHED:        crashesCount++;  break;
+                    case TIMEOUT:        timeoutsCount++;  break;
+                    case INVALID_OUTPUT: invalidCount++;   break;
+                    default: break;
+                }
+            }
+
+            long elapsed = System.currentTimeMillis() - startTime;
+            ConsoleUI.printResult(sourceCaseFailures,
+                    totalSourceCases, failedSourceCount,
+                    totalFollowUp, failedOutcomes.size(),
+                    assertionFails, crashesCount, timeoutsCount, invalidCount,
+                    elapsed, workspace);
+
             ResultReporter reporter = new ResultReporter(workspace);
             reporter.dumpJsonResult(hasFailures, sourceCaseFailures, failedOutcomes, firstFailure);
-            
+
             logger.info("Testing completed successfully! Failed cases have been stored in the database.");
             logger.info("Total time elapsed: {} ms. {} source -> {} follow-up checked, {} failed cases.",
-                    System.currentTimeMillis() - startTime, totalBatches * config.getBatchSize(), totalFollowUp, failedOutcomes.size());
-            System.out.println("Testing completed successfully! Result: " +
-                    (hasFailures ? "FAILED cases detected." : "All passed.") +
-                    " Total time: " + (System.currentTimeMillis() - startTime) / 1000 + " s.");
+                    elapsed, totalBatches * config.getBatchSize(), totalFollowUp, failedOutcomes.size());
         } catch (IllegalArgumentException e) {
             logger.error("Illegal Argument Exception occurred: {}", e.getMessage(), e);
             progressListener.onError(e.getMessage());
