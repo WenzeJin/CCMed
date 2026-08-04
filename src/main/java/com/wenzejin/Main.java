@@ -13,6 +13,7 @@ public class Main {
 
         Options options = new Options();
         options.addOption("c","config",true,"Specify the configuration file");
+        options.addOption("g","gui",false,"Launch the CCMed graphical user interface");
         options.addOption("d", "detail-data", false,
             "Enable follow-up detail data export (saved in job workspace)");
         // Parse the command line arguments
@@ -30,6 +31,11 @@ public class Main {
             }
             if (cmd.hasOption("detail-data")) {
                 detailData = true;
+            }
+            if (cmd.hasOption("g")) {
+                String preloadPath = cmd.hasOption("c") ? cmd.getOptionValue("c") : null;
+                com.wenzejin.gui.GuiMain.launch(preloadPath);
+                return;
             }
         } catch (ParseException e) {
             System.out.println("Error parsing command line: " + e.getMessage());

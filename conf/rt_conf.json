@@ -11,7 +11,7 @@
   "threadLimit": 8,
   "workerType": "infuse",
   "workspaceRoot": "workspace",
-  "targetPath": "cc/INFUSE_ORI/std.jar",
+  "targetPath": "cc/INFUSE_ORI/1011.jar",
   "rulesPath": "rules/level3all",
   "bfuncPath": "utils/Bfunction.class",
   "storeMode": "fail",
