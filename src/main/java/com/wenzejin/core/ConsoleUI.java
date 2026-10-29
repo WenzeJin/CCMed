@@ -19,31 +19,13 @@ public final class ConsoleUI {
 
     // ── Welcome ─────────────────────────────────────────────────────
 
-    public static void printWelcome(Config config) {
+    public static void printWelcome(Config config, String configPath) {
         String version = Config.class.getPackage().getImplementationVersion();
         if (version == null) version = "1.2.0";
 
         System.out.println();
-        System.out.println(BLD + CYN + "  CCM Test Runner v" + version + RST);
-        System.out.println(DIM + "  " + BAR.substring(0, 50) + RST);
-        System.out.println();
-
-        row("Task",       config.getTaskName());
-        row("Rules",      config.getRulesPath());
-        row("Target",     config.getTargetPath());
-        row("Threads",    String.valueOf(config.getThreadLimit()));
-        row("Stop Mode",  config.getStopMode());
-        row("Store Mode", config.getStoreMode());
-        row("MT Core",    config.getMtCore()
-                + ("chain".equalsIgnoreCase(config.getMtCore())
-                    ? " (len=" + config.getChainLength() + ")" : ""));
-        row("Bfunc",      config.getBfuncPath() != null && !config.getBfuncPath().isEmpty()
-                ? config.getBfuncPath() : "(none)");
-        row("Arguments",  config.getArguments() != null && !config.getArguments().isEmpty()
-                ? String.join(" ", config.getArguments()) : "(none)");
-
-        System.out.println();
-        System.out.println(DIM + "  " + BAR + RST);
+        System.out.println(BLD + CYN + "  CCMed v" + version + RST);
+        System.out.println("  " + DIM + configPath + "  →  " + config.getTargetPath() + RST);
         System.out.println();
     }
 

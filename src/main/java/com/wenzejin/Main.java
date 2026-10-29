@@ -45,6 +45,7 @@ public class Main {
                 System.exit(-1);
             }
             Core core = new Core(conf);
+            core.setConfigPath(configPath);
             core.execute();
         } catch (IOException e) {
             throw new RuntimeException(e);

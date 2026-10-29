@@ -21,6 +21,7 @@ public class Core {
     private final ProgressListener progressListener;
 
     private String workspace;
+    private String configPath = "(unknown)";
 
     public Core(Config config) {
         this(config, new CLIProgressListener());
@@ -29,6 +30,10 @@ public class Core {
     public Core(Config config, ProgressListener progressListener) {
         this.config = config;
         this.progressListener = progressListener;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
     }
 
     // --- Main Execution Entry ---
@@ -40,7 +45,7 @@ public class Core {
         workspaceManager.exportConfig();
 
         // ── Welcome banner ──────────────────────────────────────
-        ConsoleUI.printWelcome(config);
+        ConsoleUI.printWelcome(config, configPath);
 
         TestExecutor preExecutor = null;
         TestExecutor postExecutor = null;
